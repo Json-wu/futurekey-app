@@ -3,18 +3,31 @@
     <!-- 自定义顶部导航栏 -->
     <view class="custom-header">
       <image src="/static/logo.png" class="header-logo" />
-      <picker @change="onStudentChange" :value="selectedStudentIndex" :range="students" range-key="name">
-        <view class="student-select">{{ students[selectedStudentIndex].name }} ▼</view>
-      </picker>
+      <view class="centered-picker-container">
+        <picker @change="onStudentChange" :value="selectedStudentIndex" :range="students" range-key="name">
+          <view class="student-select">{{ students[selectedStudentIndex].name }} ▼</view>
+        </picker>
+      </view>
       <!-- 占位元素：确保与系统按钮对齐 -->
       <view class="header-placeholder"></view>
     </view>
 
-    <!-- 日期选择器 -->
-    <view class="date-picker">
-      <view class="date-range">{{ dateRange }}</view>
-      <text class="calendar-icon">🗓️</text>
+   <view class="date-filter">
+      <!-- 日期选择器 -->
+      <view class="date-range">
+        <text class="date-text">2024-01-09</text>
+        <text class="separator">-</text>
+        <text class="date-text">2024-01-26</text>
+      </view>
+      
+      <!-- 筛选按钮 -->
+      <view class="filter-button">
+        <text>洒脱机</text>
+        <text class="icon">▼</text>
+      </view>
     </view>
+
+    
 
     <!-- 滚动课程列表 -->
     <scroll-view class="course-list" scroll-y>
@@ -39,6 +52,7 @@
       <button class="footer-btn stat-btn">统计</button>
       <button class="footer-btn leave-btn">请假</button>
     </view>
+
   </view>
 </template>
 
@@ -110,7 +124,7 @@ export default {
 <style scoped>
 /* 页面背景 */
 .container {
-  background: linear-gradient(to bottom, #4c9aff, #ffffff);
+  background: linear-gradient(to bottom,rgb(7, 101, 241), #ffffff);
   height: 100vh;
   flex-direction: column;
 }
@@ -118,17 +132,37 @@ export default {
 /* 顶部导航栏 */
 /* 自定义导航栏样式 */
 .custom-header {
+  display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 44px; /* 小程序导航栏高度 */
-  background-color: #4c9aff;
+  height: 54px;
   color: #fff;
+  padding-top: 44px;
 }
 
 .header-logo {
-  width: 100px;
-  height: 20px;
+  width: 55px;
+  height: 32px;
+  margin-top: 6px;
+  margin-left: 10px;
 }
+
+.centered-picker-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-grow: 1;
+  padding-right: 16px;
+}
+
+.student-select {
+  /* 可以根据需要调整样式 */
+}
+
+.header-placeholder {
+  width: 50px; /* 根据实际占位元素大小调整 */
+}
+
 
 .student-select {
   flex: 1;
@@ -139,37 +173,65 @@ export default {
 }
 
 /* 日期选择器 */
-.date-picker {
+/* 顶部筛选栏样式 */
+.date-filter {
   display: flex;
-  justify-content: center;
   align-items: center;
-  background-color: #fff;
-  border-radius: 10px;
-  margin: 10px 15px;
-  padding: 5px 10px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  justify-content: space-between;
+  color: #f5f5f5;
+  padding: 10rpx 20rpx;
+  border-radius: 10rpx;
+  width: 90%;
+  margin: 10rpx auto;
 }
 
+/* 日期选择器区域 */
 .date-range {
-  font-size: 14px;
+  display: flex;
+  align-items: center;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  padding: 4px;
+  width: 78%;
 }
 
-.calendar-icon {
-  margin-left: 10px;
-  font-size: 18px;
+.date-text {
+  font-size: 28rpx;
+  color: #4c4949;
+  margin-left: 48rpx;
+  margin-right: 40rpx;
 }
+
+.separator {
+  font-size: 28rpx;
+  color: #4c4949;
+  margin-left: 10px;
+}
+
+/* 筛选按钮区域 */
+.filter-button {
+  display: flex;
+  align-items: center;
+  font-size: 28rpx;
+}
+
+.icon {
+  font-size: 20rpx;
+  margin-left: 5rpx;
+}
+
 
 /* 课程列表 */
 .course-list {
   flex: 1;
   margin-bottom: 60px; /* 留出底部按钮位置 */
-  padding: 10px 15px;
 }
 
 .month-title {
-  font-size: 14px;
-  color: #333;
-  margin: 10px 0;
+    font-size: 14px;
+    color: #333;
+    margin-top: 10px;
+    text-align: center;
 }
 
 .course-card {
@@ -177,7 +239,7 @@ export default {
   background: #fff;
   border-radius: 10px;
   padding: 10px;
-  margin-bottom: 10px;
+  margin: 16px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
