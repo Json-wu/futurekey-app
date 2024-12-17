@@ -1,9 +1,15 @@
 {
-	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+	"pages": [
 		{
 			"path": "pages/customer/index",
 			"style": {
-				"navigationStyle": "custom" // 使用自定义导航栏
+				"navigationStyle": "custom" 
+			}
+		}, 
+		{
+			"path": "pages/courseDetail/index",
+			"style": {
+				"navigationStyle": "custom" 
 			}
 		},
 		{

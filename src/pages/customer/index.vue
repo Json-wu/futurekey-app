@@ -49,7 +49,7 @@
             <!-- 状态文本 -->
             <text class="status-text">{{ course.status }}</text>
           </view>
-          <view class="course-arrow"> 
+          <view class="course-arrow" @tap="goToDetail(course.id)"> 
             <image src="/static/detail.png" class="arrow-icon"></image>
           </view>
         </view>
@@ -264,6 +264,11 @@ export default {
       const m = String(date.getMonth() + 1).padStart(2, '0');
       const d = String(date.getDate()).padStart(2, '0');
       return `${y}-${m}-${d}`;
+    },
+     goToDetail(courseId) {
+      uni.navigateTo({
+        url: `/pages/courseDetail/index?id=${courseId}`
+      });
     }
   },
   onLoad() {
