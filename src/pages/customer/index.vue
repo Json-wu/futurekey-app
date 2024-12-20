@@ -2,7 +2,7 @@
   <view class="container">
     <!-- 自定义顶部导航栏 -->
     <view class="custom-header">
-      <image src="/static/logo.png" class="header-logo" />
+      <image src="/static/logo.png" class="header-logo" @click="showAboutUs" />
       <view class="centered-picker-container">
         <picker @change="onStudentChange" :value="selectedStudentIndex" :range="students" range-key="name">
           <view class="student-select">{{ students[selectedStudentIndex].name }} ▼</view>
@@ -101,15 +101,31 @@
       </view>
       <button class="confirm-btn" @tap="confirmDates">确认</button>
     </view>
-  </view>
+
+     <!-- 引用 AboutUsPopup 组件 -->
+    <AboutUsPopup
+      :visible="isAboutUsVisible"
+      @close="isAboutUsVisible = false"
+    />
   </view>
 
 </template>
 
 <script>
+import aboutUsPopup from '@/components/AboutUsPopup.vue';
 export default {
+  components: {
+    aboutUsPopup
+  },
   data() {
     return {
+      isAboutUsVisible: false, // 控制弹窗显示/隐藏
+      aboutUsData: {
+        website: { text: "官方网站", url: "https://www.futurekey.com", title: "www.futurekey.com" },
+        phone: { text: "客服电话", number: "400-189-0866" },
+        agreement: { text: "用户协议", url: "https://futurekey.com/private", title: "《用户隐私协议》" },
+      },
+      miniProgramLink: "https://futurekey.com",
       startDate: '',       // 开始日期
       endDate: '',         // 截止日期
       tempStartDate: '',   // 临时记录开始日期
@@ -173,6 +189,9 @@ export default {
     };
   },
   methods: {
+     showAboutUs() {
+      this.isAboutUsVisible = true;
+    },
     onStudentChange(event) {
       this.selectedStudentIndex = event.detail.value;
     },

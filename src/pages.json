@@ -1,21 +1,22 @@
 {
 	"pages": [
 		{
-			"path": "pages/customer/index",
+			"path": "pages/index/index",
 			"style": {
-				"navigationStyle": "custom" 
-			}
-		}, 
-		{
-			"path": "pages/courseDetail/index",
-			"style": {
-				"navigationStyle": "custom" 
+				"navigationStyle": "custom"
 			}
 		},
 		{
-			"path": "pages/index/index",
+			"path": "pages/courseDetail/index",
 			"style": {
-				"navigationBarTitleText": "uni-app"
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/webview/webview",
+			"style": {
+				"navigationBarTitleText": "网页",
+				"enablePullDownRefresh": false
 			}
 		}
 	],

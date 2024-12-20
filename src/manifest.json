@@ -14,7 +14,13 @@
 			"delay": 0
 		},
 		"modules": { /* 模块配置 */
-
+			"uniShare": {
+				"platform": [
+					"weixin",
+					"sinaweibo",
+					"qq"
+				]
+			}
 		},
 		"distribute": { /* 应用发布信息 */
 			"android": { /* android打包配置 */
