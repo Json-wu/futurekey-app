@@ -1,8 +1,11 @@
 <template>
-  <view v-if="visible" class="about-us-page">
+  <view v-if="showAbout" class="about-us-page">
     <!-- 弹窗主体 -->
     <view class="popup">
-      <view class="popup-header">关于我们</view>
+      <view class="calendar-header">
+        <text class="datechoose-text">关于我们</text>
+        <view class="close-btn" @tap="closeAbout">×</view>
+      </view>
       <view class="popup-content">
         <!-- 官方网站 -->
         <view class="item" @click="openLink(data.website.url)">
@@ -29,7 +32,7 @@
         <text class="share-text">觉得不错？分享到：</text>
         <view class="share-buttons">
           <image src="/static/icons/wechat.png" class="share-icon" @click="share('wechat')" />
-          <image src="/static/icons/moments.png" class="share-icon" @click="share('moments')" />
+          <image src="/static/icons/moments.png" class="share-icon" @click="share('wechatMoments')" />
           <image src="/static/icons/weibo.png" class="share-icon" @click="share('weibo')" />
           <image src="/static/icons/qq.png" class="share-icon" @click="share('qq')" />
           <image src="/static/icons/copy-link.png" class="share-icon" @click="copyLink()" />
@@ -43,7 +46,7 @@
 export default {
   name: "AboutUsPopup",
   props: {
-    visible: {
+    showAbout: {
       type: Boolean,
       required: true,
     },
@@ -53,6 +56,11 @@ export default {
         website: { text: "官方网站", url: "https://www.futurekey.com", title: "www.futurekey.com" },
         phone: { text: "客服电话", number: "400-189-0866" },
         agreement: { text: "用户协议", url: "https://futurekey.com/private", title: "《用户隐私协议》" },
+        shareData: {
+          title: '科爱信',
+          path: '/pages/index/index', // 分享路径
+          imageUrl: 'https://futurekey.com/favicon.ico' // 分享图片URL
+        }
       }),
     },
     miniProgramLink: {
@@ -61,6 +69,9 @@ export default {
     },
   },
   methods: {
+    closeAbout(){
+       this.$emit('update:showAbout', false);
+    },
     // 打开外部链接
     openLink(url) {
       uni.navigateTo({
@@ -72,14 +83,6 @@ export default {
       uni.makePhoneCall({
         phoneNumber,
       });
-    },
-    // 分享功能
-    share(platform) {
-      uni.showToast({
-        title: `分享至 ${platform}`,
-        icon: "none",
-      });
-      // 分享逻辑需要结合具体实现
     },
     // 复制链接
     copyLink() {
@@ -93,14 +96,66 @@ export default {
         },
       });
     },
+    share(platform) {
+      if (platform === 'wechat') {
+        this.shareToWeChat();
+      } else if (platform === 'wechatMoments') {
+        this.shareToWeChatMoments();
+      } else if (platform === 'qq') {
+        this.shareToQQ();
+      } else if (platform === 'weibo') {
+        this.shareToWeibo();
+      }
+    },
+
+    showShareMenu(menus) {
+      uni.showShareMenu({
+        withShareTicket: true,
+        menus: menus
+      });
+    },
+
+    shareToWeChat() {
+      uni.showShareMenu({
+        withShareTicket: true,
+        menus: ['shareAppMessage', 'shareTimeline']
+      });
+      this.$emit('update:shareTarget', 'wechat');
+    },
+
+    shareToWeChatMoments() {
+      uni.showShareMenu({
+        withShareTicket: true,
+        menus: ['shareTimeline']
+      });
+      this.$emit('update:shareTarget', 'wechatMoments');
+    },
+
+    shareToQQ() {
+      uni.showToast({ title: 'QQ 分享暂不支持', icon: 'none' });
+    },
+
+    shareToWeibo() {
+      uni.showToast({ title: '微博分享暂不支持', icon: 'none' });
+    }
   },
-  onShareAppMessage() {
+  onShareAppMessage(res) {
+    if (res.from === 'button') {
+      // 来自页面内转发按钮
+      return {
+        title: this.shareData.title,
+        path: this.shareData.path,
+        imageUrl: this.shareData.imageUrl
+      };
+    }
+  },
+  onShareTimeline() {
     return {
-      title: "科爱信",
-      path: "/pages/index/index", // 小程序路径
-      imageUrl: "/static/logo.png", // 分享图片
+      title: this.shareData.title,
+      path: this.shareData.path,
+      imageUrl: this.shareData.imageUrl
     };
-  },
+  }
 };
 </script>
 
@@ -162,6 +217,7 @@ export default {
   margin-bottom: 10rpx;
 }
 .share-buttons {
+  margin-top: 18rpx;
   display: flex;
   justify-content: space-around;
 }
@@ -170,5 +226,25 @@ export default {
   height: 60px;
   gap: 8px;
   opacity: 0px;
+}
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-align: center;
+  font-weight: bold;
+  padding: 10rpx 30rpx;
+}
+
+.datechoose-text {
+  width: 670rpx;
+  font-weight: bold;
+  font-size: 32rpx;
+  color: #333;
+}
+.close-btn {
+  font-size: 50rpx;
+  color: #999;
+  cursor: pointer;
 }
 </style>

@@ -2,7 +2,7 @@
   <view class="container">
     <!-- 自定义顶部导航栏 -->
     <view class="custom-header">
-      <image src="/static/logo.png" class="header-logo" @click="showAboutUs" />
+      <image src="/static/logo.png" class="header-logo" @click="showAboutUs"/>
       <view class="centered-picker-container">
         <picker @change="onStudentChange" :value="selectedStudentIndex" :range="students" range-key="name">
           <view class="student-select">{{ students[selectedStudentIndex].name }} ▼</view>
@@ -32,27 +32,42 @@
 
     <!-- 滚动课程列表 -->
     <scroll-view class="course-list" scroll-y>
-      <view class="month-title">2024年1月</view>
-      <view class="course-card" v-for="(course, index) in courses" :key="index">
+      <view class="month-title">{{currentYear}}年{{currentMonth}}月</view>
+      <view class="course-card" v-for="(course, index) in courses" :key="index" v-if = "courses.length">
         <view :class="course.css">
-          <image :src="course.icon" class="course-icon"></image>
+          <image :src="course.class_category=='writing'? '../../static/write.png' : '../../static/default.png'" class="course-icon"></image>
         </view>
         <view class="course-info">
           <view class="course-title">{{ course.title }}</view>
-          <view class="course-time">{{ course.time }}</view>
-          <view class="course-teacher">{{ course.teacher }}</view>
+          <view class="course-time">
+            <image src='../../static/icons/time.png' class="who-icon"></image>
+            {{ course.time }}
+          </view>
+          <view class="course-teacher">
+            <image src='../../static/icons/who.png' class="who-icon"></image>
+            {{ course.student }}
+          </view>
         </view>
         <view class="course-status">
          <view class="status-container">
             <!-- 状态图标 -->
-            <view class="status-icon" :class="course.status=='已出席' ? 'status-attended' : (course.status=='已请假' ? 'status-leave' : 'status-pending' )"></view>
+            <view class="status-icon" :class="course.state==1 ? 'status-attended' : (course.state==2 ? 'status-leave' : 'status-pending' )"></view>
             <!-- 状态文本 -->
-            <text class="status-text">{{ course.status }}</text>
+            <text class="status-text">{{ getState(course.state) }}</text>
           </view>
           <view class="course-arrow" @tap="goToDetail(course.id)"> 
-            <image src="/static/detail.png" class="arrow-icon"></image>
+            <!-- 圆形背景 + 箭头 -->
+            <view class="circle-arrow">
+              <view class="arrow"></view>
+            </view>
           </view>
         </view>
+      </view>
+      <view v-else-if="loading">
+        <text>加载中...</text>
+      </view>
+      <view v-else>
+        <text>暂无课程</text>
       </view>
     </scroll-view>
 
@@ -65,7 +80,7 @@
           <text class="button-text">统计</text>
         </view>
         <!-- 分割线 -->
-        <view class="divider"></view>
+        <view class="viewider"></view>
         <!-- 请假按钮 -->
         <view class="button-item">
           <image src="/static/leave.png" class="icon" mode="widthFix"></image>
@@ -75,59 +90,63 @@
     </view>
 
 
-  <!-- 自定义日历弹出框 -->
-    <view class="calendar-popup" v-if="showCalendar">
-      <view class="calendar-header">
-        <text>请选择日期</text>
-      </view>
-      <!-- 日历表格 -->
-      <view class="calendar">
-        <block v-for="(week, wIndex) in calendar" :key="wIndex">
-          <view class="calendar-row">
-            <block v-for="(day, dIndex) in week" :key="dIndex">
-              <view
-                class="calendar-day"
-                :class="{
-                  'selected': day.date === tempStartDate || day.date === tempEndDate,
-                  'in-range': isInRange(day.date)
-                }"
-                @tap="selectDate(day.date)"
-              >
-                <text>{{ day.day }}</text>
-              </view>
-            </block>
-          </view>
-        </block>
-      </view>
-      <button class="confirm-btn" @tap="confirmDates">确认</button>
-    </view>
+   <!-- 引入 CalendarPopup 组件 -->
+    <CalendarPopup
+      :showCalendar="showCalendar"
+      :currentYear="currentYear"
+      :currentMonth="currentMonth"
+      :startDate="startDate"
+      :endDate="endDate"
+      :tempStartDate="tempStartDate"
+      :tempEndDate="tempEndDate"
+      :weekDays="weekDays"
+      :calendar="calendar"
+      :currentStep="currentStep"
+      @update:showCalendar="val => showCalendar = val"
+      @update:currentYear="val => currentYear = val"
+      @update:currentMonth="val => currentMonth = val"
+      @update:startDate="val => startDate = val"
+      @update:endDate="val => endDate = val"
+      @update:tempStartDate="val => tempStartDate = val"
+      @update:tempEndDate="val => tempEndDate = val"
+      @update:currentStep="val => currentStep = val"
+      @initCalendar="initCalendar"
+      @fetchData="fetchData"
+    />
 
      <!-- 引用 AboutUsPopup 组件 -->
     <AboutUsPopup
-      :visible="isAboutUsVisible"
-      @close="isAboutUsVisible = false"
+      :showAbout="showAbout"
+      @update:showAbout="val => showAbout = val"
     />
   </view>
-
 </template>
 
 <script>
 import aboutUsPopup from '@/components/AboutUsPopup.vue';
+import CalendarPopup from '@/components/CalendarPopup.vue';
+
+import { getCourseList } from '../../utils/api';
+
 export default {
   components: {
-    aboutUsPopup
+    aboutUsPopup,
+    CalendarPopup
   },
   data() {
     return {
-      isAboutUsVisible: false, // 控制弹窗显示/隐藏
+      showAbout: false, // 控制弹窗显示/隐藏
       aboutUsData: {
         website: { text: "官方网站", url: "https://www.futurekey.com", title: "www.futurekey.com" },
         phone: { text: "客服电话", number: "400-189-0866" },
         agreement: { text: "用户协议", url: "https://futurekey.com/private", title: "《用户隐私协议》" },
       },
       miniProgramLink: "https://futurekey.com",
+      currentYear: 0, // 当前年份
+      currentMonth: 0, // 当前月份
       startDate: '',       // 开始日期
       endDate: '',         // 截止日期
+      weekDays: ["日", "一", "二", "三", "四", "五", "六"],
       tempStartDate: '',   // 临时记录开始日期
       tempEndDate: '',     // 临时记录截止日期
       showCalendar: false, // 控制日历弹窗显示
@@ -135,75 +154,48 @@ export default {
       currentStep: 0,     // 记录选择的步骤 (0: 第一步, 1: 第二步)
       selectedStudentIndex: 0, // 当前选中学生索引
       selectedTimeZoneIndex: 0, // 当前选中时区索引
+      timezone: "Asia/Shanghai",
       students: [
         { name: "王一言" },
         { name: "王二言" },
       ],
        timezones: [
+        { name: "Shanghai Time", value: "Asia/Shanghai" },
         { name: "Pacific Time", value: "America/Los_Angeles" },
         { name: "Mountain Time", value: "America/Denver" },
         { name: "Central Time", value: "America/Chicago" },
         { name: "Eastern Time", value: "America/New_York" },
-        { name: "Shanghai Time", value: "Asia/Shanghai" },
         { name: "Madrid Time", value: "Europe/Madrid" },
       ],
       dateRange: "2024-01-09 - 2024-01-26", // 日期范围
-      courses: [
-        {
-          icon: "/static/write.png",
-          css: "write",
-          title: "英语基础语法",
-          time: "2024-01-20 14:00-14:27",
-          teacher: "John Wilson",
-          status: "待出席"
-        },
-        {
-          icon: "/static/default.png",
-          title: "英语写作",
-          time: "2024-01-20 14:00-14:27",
-          teacher: "John Wilson",
-          status: "待出席"
-        },
-        {
-          icon: "/static/default.png",
-          title: "阅读理解专项",
-          time: "2024-01-20 14:00-14:27",
-          teacher: "John Wilson",
-          status: "待出席"
-        },
-        {
-          icon: "/static/default.png",
-          title: "英语基础语法",
-          time: "2024-01-09 14:00-14:27",
-          teacher: "John Wilson",
-          status: "已出席"
-        },
-        {
-          icon: "/static/default.png",
-          title: "欧洲艺术鉴赏",
-          time: "2024-01-09 15:00-15:27",
-          teacher: "John Wilson",
-          status: "已请假"
-        }
-      ]
+      courses: [],
+      states:{
+        0: "待出席",
+        1: "已出席",
+        2: "已请假"
+      },
     };
   },
+   created() {
+    const now = new Date();
+    this.currentYear = now.getFullYear();
+    this.currentMonth = now.getMonth() + 1;
+  },
   methods: {
-     showAboutUs() {
-      this.isAboutUsVisible = true;
+    showAboutUs() {
+      this.showAbout = true;
     },
     onStudentChange(event) {
       this.selectedStudentIndex = event.detail.value;
     },
     onTimeZoneChange(event){
       this.selectedTimeZoneIndex = event.detail.value;
+      this.selectedTimeZone = this.timezones[this.selectedTimeZoneIndex]; // 根据索引获取对应的时区对象
+      this.timezone = this.selectedTimeZone.value;
+      console.log('选中的时区:', this.timezone); // 输出选中的时区值
     },
-    statusClass(status) {
-      return {
-        'status-pending': status === '待出席',
-        'status-attended': status === '已出席',
-        'status-leave': status === '已请假'
-      };
+    getState(state) {
+      return this.states[state];
     },
     // 设置默认本周的开始和结束日期
     setDefaultWeek() {
@@ -217,6 +209,7 @@ export default {
 
       this.tempStartDate = this.startDate;
       this.tempEndDate = this.endDate;
+      this.initCalendar();
     },
     // 打开日历
     openCalendar() {
@@ -226,7 +219,9 @@ export default {
     confirmDates() {
       this.startDate = this.tempStartDate;
       this.endDate = this.tempEndDate;
+      console.log(this.startDate, this.endDate)
       this.showCalendar = false;
+      this.fetchData();
     },
     // 判断是否在选中范围内
     isInRange(date) {
@@ -236,7 +231,8 @@ export default {
       return false;
     },
     // 选择日期
-    selectDate(date) {
+    selectDate(date, isOtherMonth) {
+      if (isOtherMonth) return;
       if (this.currentStep === 0) {
         this.tempStartDate = date;
         this.currentStep = 1; // 进入选择截止日期步骤
@@ -249,32 +245,70 @@ export default {
         }
       }
     },
-    // 生成日历数据
+    // 切换月份
+    changeMonth(step) {
+      const newMonth = this.currentMonth + step;
+      if (newMonth > 12) {
+        this.currentYear++;
+        this.currentMonth = 1;
+      } else if (newMonth < 1) {
+        this.currentYear--;
+        this.currentMonth = 12;
+      } else {
+        this.currentMonth = newMonth;
+      }
+      this.initCalendar();
+    },
+    // 生成日历数据，补齐完整的周数据
     initCalendar() {
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = today.getMonth();
-      const daysInMonth = new Date(year, month + 1, 0).getDate();
-      const firstDay = new Date(year, month, 1).getDay();
+      let year = this.currentYear;
+      let month =  this.currentMonth;
+      const daysInMonth = new Date(year, month, 0).getDate(); // 当月天数
+      const firstDay = new Date(year, month, 1).getDay(); // 当月1号是星期几 (0-6, 0代表周日)
       
+      // 上个月的相关数据
+      const prevMonthYear = month === 1 ? year - 1 : year; // 上个月的年份
+      const prevMonth = month === 1 ? 12 : month-1; // 上个月的月份
+      const prevMonthDays = new Date(prevMonthYear, prevMonth, 0).getDate(); // 上个月的总天数
+
+      // 下个月的相关数据
+      const nextMonthYear = month === 12 ? year + 1 : year; // 下个月的年份
+      const nextMonth = month === 12 ? 1 : month+1; // 下个月的月份
+
       let calendar = [];
       let week = [];
-      
-      // 补齐空白天数（前面）
-      for (let i = 0; i < firstDay; i++) {
-        week.push({ day: '', date: '' });
+
+      // 补齐空白天数（上个月的日期）
+      for (let i = firstDay - 1; i >= 0; i--) {
+        let day = prevMonthDays - i;
+        let date = `${prevMonthYear}-${String(prevMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        week.push({ day, date, isOtherMonth: true });
       }
 
       // 生成当前月的天数
       for (let i = 1; i <= daysInMonth; i++) {
-        let date = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
-        week.push({ day: i, date });
+        let date = `${year}-${String(month).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+        week.push({ day: i, date, isOtherMonth: false });
 
-        if (week.length === 7 || i === daysInMonth) {
+        if (week.length === 7) {
           calendar.push(week);
           week = [];
         }
       }
+
+      // 补齐空白天数（下个月的日期）
+      let nextMonthDay = 1;
+      while (week.length < 7) {
+        let date = `${nextMonthYear}-${String(nextMonth).padStart(2, '0')}-${String(nextMonthDay).padStart(2, '0')}`;
+        week.push({ day: nextMonthDay, date, isOtherMonth: true });
+        nextMonthDay++;
+      }
+
+      // 添加最后一周到日历
+      if (week.length > 0) {
+        calendar.push(week);
+      }
+
       this.calendar = calendar;
     },
     // 格式化日期
@@ -284,14 +318,43 @@ export default {
       const d = String(date.getDate()).padStart(2, '0');
       return `${y}-${m}-${d}`;
     },
-     goToDetail(courseId) {
+    goToDetail(courseId) {
       uni.navigateTo({
         url: `/pages/courseDetail/index?id=${courseId}`
       });
-    }
+    },
+    async fetchData() {
+      try {
+        // 显示加载提示
+        uni.showLoading({
+          title: '加载中...'
+        });
+        this.loading = true;
+
+        console.log('开始时间', this.startDate, this.endDate, this.timezone);
+        const res = await getCourseList({ 
+          "start_dt": this.startDate,
+          "end_dt": this.endDate,
+          "studentCode": "202408392",
+          "timezone": this.timezone
+        });
+        console.log('课程列表:', res);
+        // 处理返回的数据
+        if(res.code==0){
+          this.courses = res.data;
+        }
+      } catch (error) {
+        console.error('显示加载提示失败:', error);
+      } finally {
+        // 隐藏加载提示
+        uni.hideLoading();
+        this.loading = false;
+      }
+    },
   },
   onLoad() {
     this.setDefaultWeek(); // 初始化默认本周日期
+    this.fetchData(); // 获取数据列表
     this.initCalendar();   // 初始化日历
   }
 };
@@ -421,6 +484,12 @@ export default {
   height: 40px;
 }
 
+.who-icon {
+  width: 14px;
+  height: 14px;
+  margin-right: 10rpx;
+}
+
 .course-info {
   flex: 1;
   padding-left: 10px;
@@ -436,7 +505,7 @@ export default {
 .course-teacher {
   font-size: 12px;
   color: #666;
-  margin-top: 10rpx;
+  margin: 14rpx;
 }
 
 .course-status {
@@ -589,7 +658,7 @@ export default {
 }
 
 /* 分割线 */
-.divider {
+.viewider {
   width: 1rpx;
   height: 40rpx;
   background-color: #FFFFFF;
@@ -607,9 +676,24 @@ export default {
   box-shadow: 0 -2rpx 10rpx rgba(0, 0, 0, 0.1);
 }
 .calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   text-align: center;
   font-weight: bold;
-  padding: 20rpx 0;
+  padding: 20rpx 30rpx;
+}
+
+.datechoose-text {
+  width: 670rpx;
+  font-weight: bold;
+  font-size: 32rpx; /* 调整字体大小 */
+  color: #333;
+}
+.close-btn {
+  font-size: 50rpx; /* 调整关闭按钮大小 */
+  color: #999;
+  cursor: pointer;
 }
 .calendar-row {
   display: flex;
@@ -639,5 +723,77 @@ export default {
   background-color: #007aff;
   color: #fff;
 }
+.week-days {
+  display: flex;
+  text-align: center;
+  font-size: 24rpx;
+  color: #333;
+}
 
+.week-day {
+  flex: 1;
+}
+
+
+.month-switch {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.circle-arrow {
+  width: 30px;
+  height: 30px;
+  background-color: rgba(100, 149, 237, 0.2);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+/* 箭头样式 */
+.arrow {
+  width: 5px;
+  height: 5px;
+  border-right: 2px solid #1E90FF;
+  border-bottom: 2px solid #1E90FF;
+  /* -webkit-transform: rotate(-45deg); */
+  transform: rotate(-45deg);
+  position: absolute;
+}
+.circle-arrow2 {
+  width: 40px;
+  height: 30px;
+  background-color: rgba(100, 149, 237, 0.2);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  border-radius: 5rpx;
+  padding: 5rpx 15rpx;
+  margin-bottom: 10rpx;
+}
+
+/* 箭头样式 */
+.arrow-left {
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid #1E90FF;
+  border-bottom: 2px solid #1E90FF;
+  transform: rotate(135deg);
+  position: absolute;
+}
+.arrow-right {
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid #1E90FF;
+  border-bottom: 2px solid #1E90FF;
+  transform: rotate(-45deg);
+  position: absolute;
+}
+.other-month {
+  color: #ccc;
+}
 </style>

@@ -68,6 +68,8 @@
                 </view>
                 </block>
             </view>
+
+           
         </view>
 
         <view v-else class="content">
@@ -94,12 +96,12 @@
             <view class="upload-btn" >点击上传</view>
             <text class="upload-tips">最多可上传5个附件，每个附件大小不超过3M</text>
             <!-- 上传文件进度 -->
-            <block v-for="(file, index) in uploadFiles" :key="index">
+            <block v-for="(upload, index) in uploadFiles" :key="index">
                <!-- 上传状态：成功 -->
               <view v-if="file.status === 'success'" class="file-info">
                 <text class="file-name success">{{ file.name }}</text>
                 <text class="file-size">{{ file.size }}kb</text>
-                <view class="delete-icon" @click="deleteFile(index)">×</view>
+                <button class="delete-btn" @click="deleteFile(index)">×</button>
               </view>
 
               <!-- 上传状态：进行中 -->
@@ -108,16 +110,22 @@
                 <view class="progress-bar">
                   <view class="progress" :style="{ width: file.progress + '%' }"></view>
                 </view>
-                <text class="file-size">{{ file.progress }}%</text>
-                <view class="cancel-btn" @click="cancelUpload(index)">×</view>
+                <text class="file-progress">{{ file.size }}kb {{ file.progress }}%</text>
+                <button class="cancel-btn" @click="cancelUpload(index)">×</button>
+                <progress  :percent="upload.progress" />
               </view>
 
               <!-- 上传状态：失败 -->
               <view v-else-if="file.status === 'error'" class="file-info">
                 <text class="file-name error">{{ file.name }}</text>
-                <view class="retry-btn" @click="retryUpload(index)">⟲</view>
+                <button class="retry-btn" @click="retryUpload(index)">⟲</button>
               </view>
-              <progress class = "upload-progress" :percent="file.progress" v-if="file.status === 'uploading'"/>
+              <view class="upload-progress">
+                <view class="filename">{{ upload.name }} 
+                    <image src="/static/delete-icon.png" class="delete-icon" @click="removeFile(index)" />
+                </view>
+                <progress  :percent="upload.progress" />
+              </view>
             </block>
         </view>
     </view>
@@ -168,39 +176,29 @@ export default {
     },
      // 上传文件并显示进度
     uploadFile(file) {
-       console.log("file", file);
       // 监听上传进度
-      let ffname = file.path.split('/').pop()
-      if (ffname.length > 20) {
-        ffname = ffname.slice(0, 20) +"."+ ffname.split('.').pop();
-      }
       let uploadItem = {
-        name: ffname, //file.path.split('/').pop(),
-        size: Math.floor(file.size/1000),
-        status: 'uploading',
+        name: file.name,
         progress: 0
       };
       this.uploadFiles.push(uploadItem);
       console.log("uploadItem", uploadItem);
       const uploadTask = uni.uploadFile({
-        url: 'https://www.futurekey.com/classroom/upload', // 替换为实际接口
+        url: 'https://demo/classroom/upload', // 替换为实际接口
         filePath: file.path,
         name: 'file',
         success: async (response) => {
           let res = JSON.parse(response.data);
           console.log("res", res);
           if(res.code==0){
-            let fpath = res.data.filePath.split('-').pop();
+            let fpath = res.data.filePath;
              console.log("fpath", fpath);
-            if (fpath.length > 20) {
-              uploadItem.name = fpath.slice(0, 20) +"."+ fpath.split('.').pop();
+            if (fpath.length > 30) {
+              uploadItem.name = fpath.slice(0, 30) +"."+ fpath.split('.').pop();
             }
-              console.log("uploadItem.name", uploadItem.name);
-            uploadItem.status = 'success';
             console.log("uploadItem", uploadItem);
             uni.showToast({ title: '上传成功', icon: 'success' });
           }else{
-            uploadItem.status = 'error';
             uni.showToast({ title: '上传失败', icon: 'none' });
           }
         }
@@ -231,24 +229,24 @@ export default {
     },
      // 删除文件
     deleteFile(index) {
-      this.uploadFiles.splice(index, 1);
+      this.files.splice(index, 1);
     },
     // 取消上传
     cancelUpload(index) {
-      this.uploadFiles[index].status = 'error';
+      this.files[index].status = 'error';
     },
     // 重试上传
     retryUpload(index) {
-      this.uploadFiles[index].status = 'uploading';
-      this.uploadFiles[index].progress = 0;
+      this.files[index].status = 'uploading';
+      this.files[index].progress = 0;
 
       // 模拟重新上传
       const interval = setInterval(() => {
-        if (this.uploadFiles[index].progress < 100) {
-          this.uploadFiles[index].progress += 10;
+        if (this.files[index].progress < 100) {
+          this.files[index].progress += 10;
         } else {
           clearInterval(interval);
-          this.uploadFiles[index].status = 'success';
+          this.files[index].status = 'success';
         }
       }, 200);
     },
@@ -405,6 +403,11 @@ export default {
   margin-right: 10rpx;
 }
 
+.file-name {
+  color: #007aff;
+  text-decoration: underline;
+}
+
 /* 上传区域 */
 .upload-section {
   border: 2rpx dashed gray;
@@ -442,54 +445,14 @@ export default {
 }
 
 .upload-progress {
-  margin: 10rpx;
-  padding: 10rpx;
-  background: #2F82FF1A;
+    margin: 10rpx;
+    padding: 10rpx;
+    background: #2F82FF1A;
 }
 .delete-icon {
-  color: #ff4d4f;
-  font-size: 40rpx;
-  width: 24rpx;
-  margin-left: 10rpx;
-  cursor: pointer;
-}
-
-.cancel-btn {
-  color: #999;
-}
-
-.retry-btn {
-  color: orange;
-}
-
-.file-info {
-  background: #2F82FF1A;
-  display: flex;
-  align-items: center;
-  margin-top: 10rpx;
-}
-
-.file-name.success {
-  width: 470rpx;
-  text-align: left;
-  color: #2D2D2D;
-  padding-left: 20rpx;
-}
-
-.file-name.uploading {
-  width: 470rpx;
-  text-align: left;
-  color: blue;
-  padding-left: 20rpx;
-}
-
-.file-name.error {
-  color: orange;
-}
-
-.file-size {
-  font-size: 14px;
-  margin-left: 10px;
-  color: #999;
+    width: 24rpx;
+    height: 24rpx;
+    margin-left: 10rpx;
+    cursor: pointer;
 }
 </style>
