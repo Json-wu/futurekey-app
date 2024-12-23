@@ -126,7 +126,7 @@
 import aboutUsPopup from '@/components/AboutUsPopup.vue';
 import CalendarPopup from '@/components/CalendarPopup.vue';
 
-import { getCourseList } from '../../utils/api';
+import { getCourseList, getStudentList } from '../../utils/api';
 
 export default {
   components: {
@@ -135,6 +135,7 @@ export default {
   },
   data() {
     return {
+      studentCode: "202408392",
       showAbout: false, // 控制弹窗显示/隐藏
       aboutUsData: {
         website: { text: "官方网站", url: "https://www.futurekey.com", title: "www.futurekey.com" },
@@ -156,8 +157,6 @@ export default {
       selectedTimeZoneIndex: 0, // 当前选中时区索引
       timezone: "Asia/Shanghai",
       students: [
-        { name: "王一言" },
-        { name: "王二言" },
       ],
        timezones: [
         { name: "Shanghai Time", value: "Asia/Shanghai" },
@@ -186,12 +185,18 @@ export default {
       this.showAbout = true;
     },
     onStudentChange(event) {
-      this.selectedStudentIndex = event.detail.value;
+       this.selectedStudentIndex = event.detail.value;
+       this.studentCode = this.students[this.selectedStudentIndex].code;
+       this.$global.studentCode = this.studentCode;
+       console.log('选中的学生代码:', this.studentCode, this.$global.studentCode);
+       this.fetchData();
     },
     onTimeZoneChange(event){
       this.selectedTimeZoneIndex = event.detail.value;
       this.selectedTimeZone = this.timezones[this.selectedTimeZoneIndex]; // 根据索引获取对应的时区对象
       this.timezone = this.selectedTimeZone.value;
+      this.$global.timezone = this.timezone;
+      this.fetchData(); // 获取数据列表
       console.log('选中的时区:', this.timezone); // 输出选中的时区值
     },
     getState(state) {
@@ -331,11 +336,11 @@ export default {
         });
         this.loading = true;
 
-        console.log('开始时间', this.startDate, this.endDate, this.timezone);
+        console.log('开始时间', this.startDate, this.endDate, this.timezone, this.studentCode);
         const res = await getCourseList({ 
           "start_dt": this.startDate,
           "end_dt": this.endDate,
-          "studentCode": "202408392",
+          "studentCode": this.studentCode,
           "timezone": this.timezone
         });
         console.log('课程列表:', res);
@@ -351,10 +356,31 @@ export default {
         this.loading = false;
       }
     },
+    async init(){
+       this.setDefaultWeek(); // 初始化默认本周日期
+      const res = await getStudentList(this.$global.phone);
+      if(res.code==0){
+        this.students = res.data;
+        this.studentCode = res.data[0].code;
+        this.$global.studentCode = this.studentCode;
+        this.fetchData(); // 获取数据列表
+      }else{
+        uni.showToast({
+          title: '暂无学生信息',
+          icon: 'none'
+        });
+      }
+    }
   },
   onLoad() {
-    this.setDefaultWeek(); // 初始化默认本周日期
-    this.fetchData(); // 获取数据列表
+    const userTimezone = uni.getStorageSync('userTimezone');
+    if(!userTimezone){
+      uni.setStorageSync('userTimezone', this.timezones[0].value);
+    }
+    this.timezone = uni.getStorageSync('userTimezone');
+    this.$global.timezone = this.timezone;
+    this.init();
+    
     this.initCalendar();   // 初始化日历
   }
 };

@@ -16,19 +16,19 @@
     <view class="course-info">
       <view class="info-row">
         <text class="label">课程名称</text>
-        <text class="text">英语基础语法</text>
+        <text class="text">{{courseData.title}}</text>
       </view>
       <view class="info-row">
         <text class="label">上课时间</text>
-        <text class="text">14:00~15:00</text>
+        <text class="text">{{courseData.time}}</text>
       </view>
       <view class="info-row">
         <text class="label">英语级别</text>
-        <text class="text">A01</text>
+        <text class="text">{{courseData.class_level}}</text>
       </view>
       <view class="info-row">
         <text class="label">课程进度</text>
-        <text class="text">Unit 3</text>
+        <text class="text">{{courseData.process}}</text>
       </view>
     </view>
 
@@ -54,16 +54,16 @@
         <view v-if="currentTab === 'before'" class="content">
             <!-- 作业文本 -->
             <view class="task-content">
-                <text class="text">{{ beforeHomework }}</text>
+                <text class="text">{{ courseData.preview }}</text>
             </view>
 
             <!-- 附件 -->
             <view class="attachment-list">
-                <block v-for="(file, index) in beforeFiles" :key="index">
+                <block v-for="(file, index) in courseData.previewFiles" :key="index">
                 <view class="file-item">
                     <image src="/static/file-icon.png" class="file-icon" />
-                    <text class="file-name" @click="downloadFile(file.url)">
-                    {{ file.name }}
+                    <text class="file-name" @click="downloadFile(file)">
+                    {{ file }}
                     </text>
                 </view>
                 </block>
@@ -73,16 +73,16 @@
         <view v-else class="content">
             <!-- 作业文本 -->
             <view class="task-content">
-                <text class="text">{{ afterHomework }}</text>
+                <text class="text">{{ courseData.homework }}</text>
             </view>
 
             <!-- 附件 -->
             <view class="attachment-list">
-                <block v-for="(file, index) in afterFiles" :key="index">
+                <block v-for="(file, index) in courseData.homeworkFiles" :key="index">
                 <view class="file-item">
                     <image src="/static/file-icon.png" class="file-icon" />
-                    <text class="file-name" @click="downloadFile(file.url)">
-                    {{ file.name }}
+                    <text class="file-name" @click="downloadFile(file)">
+                    {{ file }}
                     </text>
                 </view>
                 </block>
@@ -98,8 +98,8 @@
                <!-- 上传状态：成功 -->
               <view v-if="file.status === 'success'" class="file-info">
                 <text class="file-name success">{{ file.name }}</text>
-                <text class="file-size">{{ file.size }}kb</text>
-                <view class="delete-icon" @click="deleteFile(index)">×</view>
+                <text class="file-size">{{ file.size}}kb</text>
+                <view class="delete-icon" @click="deleteFile(index, file.filename)">×</view>
               </view>
 
               <!-- 上传状态：进行中 -->
@@ -126,9 +126,13 @@
 </template>
 
 <script>
+ import { getCourseInfo, deleteFile } from '../../utils/api';
+
 export default {
   data() {
     return {
+      courseData: {},
+      currentCourseId: '',
       currentTab: 'before', // 当前选中的Tab
       deadline: '2024.11.24 10:22', // 截止日期
       beforeHomework: '1. Complete 1 post-class reading\n2. Listen and read for 30 minutes',
@@ -139,8 +143,7 @@ export default {
       afterFiles: [
         { name: 'zujianku0929.png', url: '/static/leave.png' }
       ],
-      uploads: [],
-      uploadFiles: [], // 文件上传进度
+      uploadFiles: [],
       files: [
         // 示例数据
         { name: 'zujianku0929.png', size: 103, status: 'success' },
@@ -157,7 +160,7 @@ export default {
     // 下载文件
     downloadFile(url) {
       uni.downloadFile({
-        url: url,
+        url: `https://www.futurekey.com/classroom/download/${url}`,
         success: (res) => {
           uni.showToast({
             title: '下载成功',
@@ -183,19 +186,20 @@ export default {
       this.uploadFiles.push(uploadItem);
       console.log("uploadItem", uploadItem);
       const uploadTask = uni.uploadFile({
-        url: 'https://www.futurekey.com/classroom/upload', // 替换为实际接口
+        url: `https://www.futurekey.com/classroom/uploadCustom?cid=${this.currentCourseId}&code=${this.$global.studentCode}&size=${uploadItem.size}`, // 替换为实际接口
         filePath: file.path,
         name: 'file',
         success: async (response) => {
           let res = JSON.parse(response.data);
           console.log("res", res);
           if(res.code==0){
+            uploadItem.filename = res.data.filePath;
             let fpath = res.data.filePath.split('-').pop();
              console.log("fpath", fpath);
             if (fpath.length > 20) {
               uploadItem.name = fpath.slice(0, 20) +"."+ fpath.split('.').pop();
             }
-              console.log("uploadItem.name", uploadItem.name);
+            console.log("uploadItem.name", uploadItem.name);
             uploadItem.status = 'success';
             console.log("uploadItem", uploadItem);
             uni.showToast({ title: '上传成功', icon: 'success' });
@@ -213,8 +217,10 @@ export default {
     // 选择文件上传
     chooseFile() {
       const that = this;
+      let count = 5 - this.uploadFiles.length;
+      console.log('count', count);
       uni.chooseImage({
-        count: 5,
+        count: count,
         success: (res) => {
           res.tempFiles.forEach(file => {
             console.log(file);
@@ -230,8 +236,17 @@ export default {
       }, 200);
     },
      // 删除文件
-    deleteFile(index) {
+    async deleteFile(index, filename) {
       this.uploadFiles.splice(index, 1);
+      const res = await deleteFile({
+        code: this.$global.studentCode,
+        filename: filename
+      });
+      console.log('删除文件:', res);
+      // 处理返回的数据
+      if(res.code==0){
+        console.log('删除文件成功')
+      }
     },
     // 取消上传
     cancelUpload(index) {
@@ -256,10 +271,48 @@ export default {
     goBack() {
       uni.navigateBack();
     },
-    // 删除文件
-    removeFile(index) {
-      this.uploadFiles.splice(index, 1);
-    }
+    async fetchData() {
+      try {
+        // 显示加载提示
+        uni.showLoading({
+          title: '加载中...'
+        });
+        this.loading = true;
+
+        const res = await getCourseInfo({
+          id: this.currentCourseId,
+          timezone: this.$global.timezone,
+          code: this.$global.studentCode
+        });
+        console.log('课程信息:', res);
+        // 处理返回的数据
+        if(res.code==0){
+          this.courseData = res.data;
+          this.uploadFiles = res.data.customFiles.map(x=> {
+            if (x.filename.length > 20) {
+              x.name = x.filename.slice(0, 20) +"."+ x.filename.split('.').pop();
+            }
+            x.status = 'success';
+            return x;
+          });
+          console.log("this.uploadFiles", this.uploadFiles);
+        }
+      } catch (error) {
+        console.error('显示加载提示失败:', error);
+      } finally {
+        // 隐藏加载提示
+        uni.hideLoading();
+        this.loading = false;
+      }
+    },
+  },
+  onLoad(options) {
+    // options 是一个对象，包含了所有传递的参数
+    console.log(options); // 输出传递的 id 参数
+    this.currentCourseId = options.id;
+    // 你可以在这里根据 courseId 进行相应的操作
+    console.log(this.currentCourseId, this.$global);
+    this.fetchData();
   }
 };
 </script>
@@ -371,7 +424,8 @@ export default {
 }
 
 .content {
-    padding: 20rpx 40rpx 20rpx 40rpx;
+  padding: 20rpx 40rpx 20rpx 40rpx;
+  min-height: 200rpx;
 }
 /* 作业文本内容 */
 .task-content {
