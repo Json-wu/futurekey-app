@@ -1,4 +1,7 @@
 <template>
+<view>
+   <!-- 遮罩层 -->
+  <view class="mask" v-if="showCalendar" @tap="closeCalendar"></view>
   <view class="calendar-popup" v-if="showCalendar">
     <view class="calendar-header">
       <text class="datechoose-text">请选择日期</text>
@@ -45,6 +48,7 @@
     </view>
     <button class="confirm-btn" @tap="confirmDates">确认</button>
   </view>
+</view>
 </template>
 
 <script>
@@ -109,6 +113,15 @@ export default {
 </script>
 
 <style scoped>
+.mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* 半透明遮罩 */
+  z-index: 1000;
+}
 .calendar-popup {
   position: fixed;
   bottom: 0;
@@ -117,7 +130,8 @@ export default {
   background-color: #fff;
   border-top-left-radius: 20rpx;
   border-top-right-radius: 20rpx;
-  box-shadow: 0 -2rpx 10rpx rgba(0, 0, 0, 0.1);
+  box-shadow: 0 -2rpx 10rpx rgba(0, 0, 0, 0.5);
+  z-index: 1001; /* 保证最上层 */
 }
 .calendar-header {
   display: flex;
