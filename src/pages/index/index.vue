@@ -325,7 +325,7 @@ export default {
     },
     goToDetail(courseId) {
       uni.navigateTo({
-        url: `/pages/courseDetail/index?id=${courseId}`
+        url: `/pages/detail/index?id=${courseId}`
       });
     },
     async fetchData() {
