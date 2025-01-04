@@ -2,7 +2,7 @@
   <view class="container">
     <!-- 自定义顶部导航栏 -->
     <view class="custom-header">
-      <image src="/static/logo.png" class="header-logo" @click="showAboutUs"/>
+      <image src="@/static/keai-logo.png" class="header-logo" @click="showAboutUs"/>
       <view class="centered-picker-container">
         <picker @change="onStudentChange" :value="selectedStudentIndex" :range="students" range-key="name">
           <view class="student-select">{{ students[selectedStudentIndex].name }} ▼</view>
@@ -205,12 +205,15 @@ export default {
     // 设置默认本周的开始和结束日期
     setDefaultWeek() {
       const today = new Date();
+      // 获取上月第一天和最后一天
+      const firstDayOfMonth = new Date('2024-10-01');//new Date(today.getFullYear(), today.getMonth(), 1);
+      const lastDayOfMonth = new Date('2024-10-31');//new Date(today.getFullYear(), today.getMonth() + 1, 0);
       const dayOfWeek = today.getDay() || 7; // 将周日转为 7
       const monday = new Date(today.getTime() - (dayOfWeek - 1) * 86400000); // 本周一
       const sunday = new Date(today.getTime() + (7 - dayOfWeek) * 86400000); // 本周日
 
-      this.startDate = this.formatDate(monday);
-      this.endDate = this.formatDate(sunday);
+      this.startDate = this.formatDate(firstDayOfMonth);
+      this.endDate = this.formatDate(lastDayOfMonth);
 
       this.tempStartDate = this.startDate;
       this.tempEndDate = this.endDate;

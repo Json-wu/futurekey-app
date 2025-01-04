@@ -13,7 +13,7 @@
     <view class="login-container">
       <!-- 手机号展示 -->
       <view class="phone-number">
-        135****9843
+        517***98
       </view>
 
       <!-- 登录按钮 -->
@@ -24,7 +24,12 @@
 
       <!-- 协议 -->
       <view class="agreement-section">
-        <checkbox @change="toggleAgreement" :checked="isAgreed" />
+       <!-- 复选框组件 -->
+        <checkbox-group @change="toggleAgreement">
+          <label class="checkbox-container">
+            <checkbox value="agree" :checked="isAgreed" />
+          </label>
+        </checkbox-group>
          <view>
             同意<text class="highlight" @click="showAgreement">《账号服务与隐私协议》</text>并授权科爱信获取本机号码
         </view>
@@ -62,7 +67,8 @@ export default {
   methods: {
     // 切换协议复选框状态
     toggleAgreement(e) {
-      this.isAgreed = e.detail.value.length > 0;
+       this.isAgreed = e.detail.value.includes('agree');
+      console.log('是否同意协议:', this.isAgreed);
     },
 
     // 点击登录按钮
@@ -83,6 +89,11 @@ export default {
         uni.showToast({
           title: "登录成功！",
           icon: "success",
+        });
+        this.$global.phone = "51741898";
+        // 跳转至首页index
+        uni.navigateTo({
+          url: "/pages/index/index",
         });
       }, 1500);
     },

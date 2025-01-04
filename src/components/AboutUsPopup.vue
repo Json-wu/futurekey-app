@@ -176,7 +176,7 @@ export default {
   background-color: #ffffff;
   width: 80%;
   border-radius: 10px;
-  padding: 20rpx;
+  padding: 0 20rpx 20rpx 20rpx;
   box-shadow: 0 10rpx 30rpx rgba(0, 0, 0, 0.1);
 }
 .popup-header {
@@ -233,7 +233,6 @@ export default {
   align-items: center;
   text-align: center;
   font-weight: bold;
-  padding: 10rpx 30rpx;
 }
 
 .datechoose-text {

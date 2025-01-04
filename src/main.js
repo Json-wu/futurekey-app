@@ -7,7 +7,7 @@ Vue.config.productionTip = false;
 Vue.prototype.$global = {
   timezone: null,
   studentCode: null,
-  phone: '51741898'
+  phone: ''
 };
 
 App.mpType = 'app'
