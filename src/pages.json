@@ -1,6 +1,12 @@
 {
 	"pages": [
 		{
+			"path": "pages/leave/index",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		},
+		{
 			"path": "pages/index/index",
 			"style": {
 				"navigationStyle": "custom"
@@ -12,9 +18,6 @@
 				"navigationStyle": "custom",
 				"enablePullDownRefresh": true,
 				"onReachBottomDistance": 50
-			},
-			"share": {
-				"menus": ["shareAppMessage", "shareTimeline"]
 			}
 		},
 		{
@@ -35,18 +38,17 @@
 			"style": {
 				"navigationStyle": "custom"
 			}
-		},
-		{
-			"path": "pages/leave/index",
-			"style": {
-				"navigationStyle": "custom"
-			}
 		}
 	],
+	"window": {
+		"navigationBarTitleText": "Demo"
+	},
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
 		"navigationBarTitleText": "uni-app",
 		"navigationBarBackgroundColor": "#F8F8F8",
 		"backgroundColor": "#F8F8F8"
-	}
+	},
+	"enableShareAppMessage": true,
+	"enableShareTimeline": true
 }

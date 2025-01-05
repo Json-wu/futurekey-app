@@ -1,6 +1,6 @@
 <template>
   <view class="container">
-     <!-- 自定义导航栏 -->
+    <!-- 自定义导航栏 -->
     <view class="custom-nav">
       <view class="nav-left" @click="goBack">
         <image src="@/static/back-icon.png" class="back-icon"></image>
@@ -8,127 +8,120 @@
       <view class="nav-center">
         <text>课程详情</text>
       </view>
-       <!-- 占位元素：确保与系统按钮对齐 -->
+      <!-- 占位元素：确保与系统按钮对齐 -->
       <view class="header-placeholder"></view>
     </view>
 
     <!-- 顶部课程信息 -->
     <view class="course-info">
-      <view class="info-row">
+      <view class="coursediv">
         <text class="label">课程名称</text>
-        <text class="text">{{courseData.title}}</text>
+        <text class="courseContent">{{ courseData.title }}</text>
       </view>
-      <view class="info-row">
+      <view class="coursediv">
         <text class="label">上课时间</text>
-        <text class="text">{{courseData.time}}</text>
+        <text class="courseContent">{{ courseData.time }}</text>
       </view>
-      <view class="info-row">
+      <view class="coursediv">
         <text class="label">英语级别</text>
-        <text class="text">{{courseData.class_level}}</text>
+        <text class="courseContent">{{ courseData.class_level }}</text>
       </view>
-      <view class="info-row">
+      <view class="coursediv">
         <text class="label">课程进度</text>
-        <text class="text">{{courseData.process}}</text>
+        <text class="courseContent">{{ courseData.process }}</text>
       </view>
     </view>
 
     <!-- 选项卡 -->
     <view class="tab-container">
-       <!-- Tab 切换栏 -->
-        <view class="tab-bar">
-        <view 
-            :class="['tab-item', currentTab === 'before' ? 'active' : '']" 
-            @click="switchTab('before')"
-        >
-            课前
+      <!-- Tab 切换栏 -->
+      <view class="tab-bar">
+        <view :class="['tab-item', currentTab === 'before' ? 'active' : '']" @click="switchTab('before')">
+          课前
         </view>
-        <view 
-            :class="['tab-item', currentTab === 'after' ? 'active' : '']" 
-            @click="switchTab('after')"
-        >
-            课后
+        <view :class="['tab-item', currentTab === 'after' ? 'active' : '']" @click="switchTab('after')">
+          课后
         </view>
+      </view>
+
+      <!-- 内容区 -->
+      <view v-if="currentTab === 'before'" class="content">
+        <!-- 作业文本 -->
+        <view class="task-content">
+          <text class="courseContent">{{ courseData.preview }}</text>
         </view>
 
-        <!-- 内容区 -->
-        <view v-if="currentTab === 'before'" class="content">
-            <!-- 作业文本 -->
-            <view class="task-content">
-                <text class="text">{{ courseData.preview }}</text>
+        <!-- 附件 -->
+        <view class="attachment-list">
+          <block v-for="(file, index) in courseData.previewFiles" :key="index">
+            <view class="file-item">
+              <image src="@/static/file-icon.png" class="file-icon" />
+              <text class="file-name" @click="downloadFile(file)">
+                {{ file }}
+              </text>
             </view>
+          </block>
+        </view>
+      </view>
 
-            <!-- 附件 -->
-            <view class="attachment-list">
-                <block v-for="(file, index) in courseData.previewFiles" :key="index">
-                <view class="file-item">
-                    <image src="@/static/file-icon.png" class="file-icon" />
-                    <text class="file-name" @click="downloadFile(file)">
-                    {{ file }}
-                    </text>
-                </view>
-                </block>
-            </view>
+      <view v-else class="content">
+        <!-- 作业文本 -->
+        <view class="task-content">
+          <text class="courseContent">{{ courseData.homework }}</text>
         </view>
 
-        <view v-else class="content">
-            <!-- 作业文本 -->
-            <view class="task-content">
-                <text class="text">{{ courseData.homework }}</text>
+        <!-- 附件 -->
+        <view class="attachment-list">
+          <block v-for="(file, index) in courseData.homeworkFiles" :key="index">
+            <view class="file-item">
+              <image src="@/static/file-icon.png" class="file-icon" />
+              <text class="file-name" @click="downloadFile(file)">
+                {{ file }}
+              </text>
             </view>
+          </block>
+        </view>
+      </view>
+      <!-- 上传文件按钮 -->
+      <view class="fileSection">
+        <image src="@/static/upload-icon.png" class="upload-icon" @click="chooseFile"></image>
+        <view class="upload-btn">点击上传</view>
+        <text class="upload-tips">最多可上传5个附件，每个附件大小不超过3M</text>
+        <!-- 上传文件进度 -->
+        <block v-for="(file, index) in uploadFiles" :key="index">
+          <!-- 上传状态：成功 -->
+          <view v-if="file.status === 'success'" class="file-info">
+            <image class="icon-del" :src="file.icon_file" @click="downloadFile(file.filename)"></image>
+            <text class="file-name success" @click="downloadFile(file.filename)">{{ file.name }}</text>
+            <image class="icon-del" :src="file.icon_del" @click="deleteFile(index, file.filename)"></image>
+          </view>
 
-            <!-- 附件 -->
-            <view class="attachment-list">
-                <block v-for="(file, index) in courseData.homeworkFiles" :key="index">
-                <view class="file-item">
-                    <image src="@/static/file-icon.png" class="file-icon" />
-                    <text class="file-name" @click="downloadFile(file)">
-                    {{ file }}
-                    </text>
-                </view>
-                </block>
+          <!-- 上传状态：进行中 -->
+          <view v-else-if="file.status === 'uploading'" class="file-info">
+            <image class="icon-del" :src="file.icon_file"></image>
+            <text class="file-name uploading">{{ file.name }}</text>
+            <view class="progress-bar">
+              <view class="progress" :style="{ width: file.progress + '%' }"></view>
             </view>
-        </view>
-        <!-- 上传文件按钮 -->
-        <view class="upload-section" >
-            <image src="@/static/upload-icon.png" class="upload-icon" @click="chooseFile"></image>
-            <view class="upload-btn" >点击上传</view>
-            <text class="upload-tips">最多可上传5个附件，每个附件大小不超过3M</text>
-            <!-- 上传文件进度 -->
-            <block v-for="(file, index) in uploadFiles" :key="index">
-               <!-- 上传状态：成功 -->
-              <view v-if="file.status === 'success'" class="file-info">
-                <image class="icon-del" :src="file.icon_file" @click="downloadFile(file.filename)"></image>
-                <text class="file-name success" @click="downloadFile(file.filename)">{{ file.name }}</text>
-                <image class="icon-del" :src="file.icon_del" @click="deleteFile(index, file.filename)"></image>
-              </view>
+            <text class="file-size">{{ file.progress }}%</text>
 
-              <!-- 上传状态：进行中 -->
-              <view v-else-if="file.status === 'uploading'" class="file-info">
-                <image class="icon-del" :src="file.icon_file"></image>
-                <text class="file-name uploading">{{ file.name }}</text>
-                <view class="progress-bar">
-                  <view class="progress" :style="{ width: file.progress + '%' }"></view>
-                </view>
-                <text class="file-size">{{ file.progress }}%</text>
-                
-              </view>
+          </view>
 
-              <!-- 上传状态：失败 -->
-              <view v-else-if="file.status === 'error'" class="file-info">
-                <image class="icon-del" src="file.icon_file"></image>
-                <text class="file-name error">{{ file.name }}</text>
-                <image class="icon-del" :src="file.icon_del" @click="cancelUpload(index)"></image>
-              </view>
-              <progress class = "upload-progress" :percent="file.progress" v-if="file.status === 'uploading'"/>
-            </block>
-        </view>
-    </view>
+          <!-- 上传状态：失败 -->
+          <view v-else-if="file.status === 'error'" class="file-info">
+            <image class="icon-del" src="file.icon_file"></image>
+            <text class="file-name error">{{ file.name }}</text>
+            <image class="icon-del" :src="file.icon_del" @click="cancelUpload(index)"></image>
+          </view>
+          <progress class="upload-progress" :percent="file.progress" v-if="file.status === 'uploading'" />
+        </block>
+      </view>
     </view>
   </view>
 </template>
 
 <script>
- import { getCourseInfo, deleteFile } from '../../utils/api';
+import { getCourseInfo, deleteFile } from '../../utils/api';
 
 export default {
   data() {
@@ -155,21 +148,21 @@ export default {
     };
   },
   methods: {
-     // 切换Tab
+    // 切换Tab
     switchTab(tab) {
       this.currentTab = tab;
     },
-     // 上传文件并显示进度
+    // 上传文件并显示进度
     uploadFile(file) {
-       console.log("file", file);
+      console.log("file", file);
       // 监听上传进度
       let ffname = file.path.split('/').pop()
       if (ffname.length > 30) {
-        ffname = ffname.slice(0, 30) +"."+ ffname.split('.').pop();
+        ffname = ffname.slice(0, 30) + "." + ffname.split('.').pop();
       }
       let uploadItem = {
-        name: ffname, 
-        size: Math.floor(file.size/1000),
+        name: ffname,
+        size: Math.floor(file.size / 1000),
         status: 'uploading',
         progress: 0,
         icon_del: "/static/icons/del.png",
@@ -184,13 +177,13 @@ export default {
         success: async (response) => {
           let res = JSON.parse(response.data);
           console.log("res", res);
-          if(res.code==0){
+          if (res.code == 0) {
             uploadItem.filename = res.data.filePath;
             uploadItem.name = uploadItem.filename;
             uploadItem.status = 'success';
             console.log("uploadItem", uploadItem);
             uni.showToast({ title: '上传成功', icon: 'success' });
-          }else{
+          } else {
             uploadItem.status = 'error';
             uni.showToast({ title: '上传失败', icon: 'none' });
             // 移除这个文件
@@ -208,7 +201,7 @@ export default {
       const that = this;
       let count = 5 - this.uploadFiles.length;
       console.log('count', count);
-      if(count<=0){
+      if (count <= 0) {
         return uni.showToast({
           title: "最多上传5个文件",
           icon: "none",
@@ -230,7 +223,7 @@ export default {
         if (file.progress >= 100) clearInterval(interval);
       }, 200);
     },
-     // 删除文件
+    // 删除文件
     async deleteFile(index, filename) {
       this.uploadFiles.splice(index, 1);
       const res = await deleteFile({
@@ -239,7 +232,7 @@ export default {
       });
       console.log('删除文件:', res);
       // 处理返回的数据
-      if(res.code==0){
+      if (res.code == 0) {
         console.log('删除文件成功')
       }
     },
@@ -280,17 +273,17 @@ export default {
         });
         console.log('课程信息:', res);
         // 处理返回的数据
-        if(res.code==0){
+        if (res.code == 0) {
           this.courseData = res.data;
-          this.uploadFiles = res.data.customFiles.map(x=> {
-           // if (x.filename.length > 20) {
+          this.uploadFiles = res.data.customFiles.map(x => {
+            // if (x.filename.length > 20) {
             //  x.name = x.filename.slice(0, 20) +"."+ x.filename.split('.').pop();
             //}
             x.name = x.filename;
             x.status = 'success';
             x.size = 0;
-            x.icon_del= "/static/icons/del-his.png";
-            x.icon_file= "/static/file-his.png";
+            x.icon_del = "/static/icons/del-his.png";
+            x.icon_file = "/static/file-his.png";
             return x;
           });
           console.log("this.uploadFiles", this.uploadFiles);
@@ -319,13 +312,17 @@ export default {
           // 文件已缓存，直接打开
           console.log('文件已缓存，路径：', res.data);
           this.openFile(res.data, fileType);
-          uni.hideLoading(); // 隐藏加载提示
         },
         fail: () => {
           // 文件未缓存，执行下载操作
           console.log('文件未缓存，开始下载...');
           this.downloadAndSaveFile(url, fileKey, fileType);
-        }
+        },
+        complete: () => {
+          // 下载完成，执行回调函数
+          console.log('下载完成，执行回调函数...');
+          uni.hideLoading();
+        },
       });
     },
 
@@ -361,9 +358,6 @@ export default {
                   title: '文件保存失败',
                   icon: 'none'
                 });
-              },
-              complete: () => {
-                uni.hideLoading(); // 隐藏加载提示
               }
             });
           } else {
@@ -372,7 +366,6 @@ export default {
               title: '下载失败',
               icon: 'none'
             });
-            uni.hideLoading(); // 隐藏加载提示
           }
         },
         fail: (err) => {
@@ -381,7 +374,6 @@ export default {
             title: '下载失败',
             icon: 'none'
           });
-          uni.hideLoading(); // 隐藏加载提示
         }
       });
     },
@@ -443,11 +435,13 @@ export default {
 
 <style>
 .container {
-  background: linear-gradient(to bottom, #2F51FF, #F7F9FC);;
+  background: linear-gradient(to bottom, #2F51FF, #F7F9FC);
+  ;
   height: 100vh;
   flex-direction: column;
   overflow-y: hidden;
 }
+
 .custom-nav {
   display: flex;
   align-items: center;
@@ -470,11 +464,11 @@ export default {
 }
 
 .nav-center {
-    flex: 1;
-    text-align: center;
-    font-size: 30rpx;
-    font-weight: bold;
-    margin-right: 110rpx;
+  flex: 1;
+  text-align: center;
+  font-size: 30rpx;
+  font-weight: bold;
+  margin-right: 110rpx;
 }
 
 .course-info {
@@ -483,40 +477,40 @@ export default {
   border-radius: 10rpx;
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
 }
-.info-row {
-    border-radius: 6px;
-    padding: 6px 16px 6px 16px;
-    gap: 28px;
-    opacity: 0px;
-    background-color: #fff;
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10rpx;
-}
-.label {
-    font-family: PingFang SC;
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 20px;
-    text-align: left;
-    text-underline-position: from-font;
-    text-decoration-skip-ink: none;
-    color: #00000083;
+
+.coursediv {
+  border-radius: 6px;
+  padding: 6px 16px 6px 16px;
+  gap: 28px;
+  background-color: #fff;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10rpx;
 }
 
-.text{
-    width: 253px;
-    height: 20px;
-    font-family: PingFang SC;
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 20px;
-    text-underline-position: from-font;
-    text-decoration-skip-ink: none;
-    gap: 0px;
-    opacity: 0px;
-    text-align: left;
-    color: #2D2D2D3;
+.label {
+  font-family: PingFang SC;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  text-align: left;
+  text-underline-position: from-font;
+  text-decoration-skip-ink: none;
+  color: #00000083;
+}
+
+.courseContent {
+  width: 253px;
+  height: 20px;
+  font-family: PingFang SC;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  text-underline-position: from-font;
+  text-decoration-skip-ink: none;
+  gap: 0px;
+  text-align: left;
+  color: #2D2D2D;
 }
 
 .tab-container {
@@ -525,10 +519,12 @@ export default {
   border-radius: 10rpx;
   overflow: hidden;
 }
+
 .tab-bar {
   display: flex;
   border-bottom: 2rpx solid #f0f0f0;
 }
+
 .tab-item {
   flex: 1;
   text-align: center;
@@ -536,10 +532,12 @@ export default {
   color: #007aff;
   background-color: #FFFFFF;
 }
+
 .active {
   background-color: #007aff;
   color: #FFFFFF;
 }
+
 .red-dot {
   display: inline-block;
   width: 10rpx;
@@ -553,6 +551,7 @@ export default {
   padding: 20rpx 40rpx 20rpx 40rpx;
   min-height: 200rpx;
 }
+
 /* 作业文本内容 */
 .task-content {
   min-height: 200rpx;
@@ -562,11 +561,6 @@ export default {
 .title {
   font-size: 28rpx;
   font-weight: bold;
-}
-
-.text {
-  font-size: 26rpx;
-  line-height: 40rpx;
 }
 
 /* 文件列表 */
@@ -589,27 +583,26 @@ export default {
 }
 
 /* 上传区域 */
-.upload-section {
+.fileSection {
   border: 2rpx dashed gray;
   width: 340px;
   min-height: 180px;
   gap: 0px;
-  opacity: 0px;
   text-align: center;
   margin: 20rpx auto;
   padding-top: 70rpx;
 }
 
 .upload-icon {
-    width:100rpx;
-    height:100rpx;
+  width: 100rpx;
+  height: 100rpx;
 }
 
 .upload-btn {
-    font-weight: bold;
-    color: #007aff;
-    padding: 10rpx 0;
-    margin: 10rpx 0;
+  font-weight: bold;
+  color: #007aff;
+  padding: 10rpx 0;
+  margin: 10rpx 0;
 }
 
 .upload-tips {
@@ -618,10 +611,10 @@ export default {
 }
 
 .filename {
-    text-align: left;
-    font-size: 28rpx;
-    white-space: normal;
-    margin-bottom: 10rpx;
+  text-align: left;
+  font-size: 28rpx;
+  white-space: normal;
+  margin-bottom: 10rpx;
 }
 
 .upload-progress {
@@ -629,6 +622,7 @@ export default {
   padding: 10rpx;
   background: #2F82FF1A;
 }
+
 .delete-icon {
   color: #ff4d4f;
   font-size: 40rpx;

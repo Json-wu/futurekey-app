@@ -24,25 +24,21 @@
 
       <!-- 协议 -->
       <view class="agreement-section">
-       <!-- 复选框组件 -->
+        <!-- 复选框组件 -->
         <checkbox-group @change="toggleAgreement">
           <label class="checkbox-container">
             <checkbox value="agree" :checked="isAgreed" />
           </label>
         </checkbox-group>
-         <view>
-            同意<text class="highlight" @click="showAgreement">《账号服务与隐私协议》</text>并授权科爱信获取本机号码
+        <view>
+          同意<text class="highlight" @click="showAgreement">《账号服务与隐私协议》</text>并授权科爱信获取本机号码
         </view>
       </view>
     </view>
 
     <!-- 用户协议组件 -->
-    <AgreementPopup
-      :show="isAgreementVisible"
-      title="用户协议"
-      :content="agreementContent"
-      @close="isAgreementVisible = false"
-    />
+    <AgreementPopup :show="isAgreementVisible" title="用户协议" :content="agreementContent"
+      @close="isAgreementVisible = false" />
   </view>
 </template>
 
@@ -67,7 +63,7 @@ export default {
   methods: {
     // 切换协议复选框状态
     toggleAgreement(e) {
-       this.isAgreed = e.detail.value.includes('agree');
+      this.isAgreed = e.detail.value.includes('agree');
       console.log('是否同意协议:', this.isAgreed);
     },
 
@@ -124,6 +120,7 @@ export default {
   margin-bottom: 40rpx;
   width: 100%;
 }
+
 .logo-image {
   margin-left: 20rpx;
   width: 139rpx;
@@ -134,6 +131,7 @@ export default {
   margin-bottom: 40rpx;
   margin-top: 40rpx;
 }
+
 .illustration-image {
   width: 609rpx;
   height: 520rpx;
@@ -161,6 +159,7 @@ export default {
   margin-bottom: 30rpx;
   margin-top: 60rpx;
 }
+
 .login-button {
   width: 80%;
   height: 80rpx;
@@ -175,6 +174,7 @@ export default {
   align-items: center;
   box-shadow: 0 10rpx 20rpx rgba(0, 0, 0, 0.1);
 }
+
 .login-tip {
   font-size: 24rpx;
   color: #fff;
@@ -182,7 +182,7 @@ export default {
 }
 
 .agreement-section {
- width: 80%;
+  width: 80%;
   display: flex;
   flex-direction: row;
   font-size: 24rpx;
@@ -191,14 +191,14 @@ export default {
   text-align: left;
   margin-left: 11%;
 }
+
 .checkbox {
   margin-right: 10rpx;
 }
+
 .highlight {
   color: #fecd00;
-  text-decoration: underline;
   margin: 0 5rpx;
   cursor: pointer;
 }
-
 </style>

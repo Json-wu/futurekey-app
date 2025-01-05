@@ -14,14 +14,14 @@
       <view class="header-placeholder"></view>
     </view>
 
-   <view class="date-filter">
+    <view class="date-filter">
       <!-- 日期选择器 -->
       <view class="date-range" @tap="openCalendar">
         <text class="date-text">{{ startDate || '请选择' }}</text>
         <text class="separator">-</text>
         <text class="date-text">{{ endDate || '请选择' }}</text>
       </view>
-      
+
       <!-- 筛选按钮 -->
       <view class="filter-button">
         <picker @change="onTimeZoneChange" :value="selectedTimeZoneIndex" :range="timezones" range-key="name">
@@ -30,17 +30,16 @@
       </view>
     </view>
 
-    
-
     <!-- 滚动课程列表 -->
     <scroll-view class="course-list" scroll-y>
-      <view class="month-title">{{currentYear}}年{{currentMonth}}月</view>
-      <view v-if="courses.length==0" class="course-card">
+      <view class="month-title">{{ currentYear }}年{{ currentMonth }}月</view>
+      <view v-if="courses.length == 0" class="course-card">
         <text>暂无课程</text>
       </view>
-      <view v-else class="course-card" v-for="(course, index) in courses" :key="index" >
+      <view v-else class="course-card" v-for="(course, index) in courses" :key="index">
         <view :class="course.css">
-          <image :src="course.class_category=='writing'? '../../static/write.png' : '../../static/default.png'" class="course-icon"></image>
+          <image :src="course.class_category == 'writing' ? '../../static/write.png' : '../../static/default.png'"
+            class="course-icon"></image>
         </view>
         <view class="course-info">
           <view class="course-title">{{ course.title }}</view>
@@ -53,46 +52,30 @@
             {{ course.student }}
           </view>
         </view>
-        <view class="course-status">
-          <view class="status-container">
-            <!-- 状态图标 -->
-            <view class="status-icon" :class="course.state==1 ? 'status-attended' : (course.state==2 ? 'status-leave' : 'status-pending' )"></view>
-              <!-- 状态文本 -->
-              <text class="status-text">{{ getState(course.state) }}</text>
-          </view>
-          <view class="course-arrow" @tap="goToDetail(course.id)"> 
-            <!-- 圆形背景 + 箭头 -->
-            <view class="circle-arrow">
-              <view class="arrow"></view>
-            </view>
-          </view>
+        <view class="checkbox-container">
+          <checkbox :checked="course.isSelected" @tap="toggleCheck(course.id)"></checkbox>
         </view>
       </view>
     </scroll-view>
 
-   <!-- 引入 CalendarPopup 组件 -->
-    <CalendarPopup
-      :showCalendar="showCalendar"
-      :currentYear="currentYear"
-      :currentMonth="currentMonth"
-      :startDate="startDate"
-      :endDate="endDate"
-      :tempStartDate="tempStartDate"
-      :tempEndDate="tempEndDate"
-      :weekDays="weekDays"
-      :calendar="calendar"
-      :currentStep="currentStep"
-      @update:showCalendar="val => showCalendar = val"
-      @update:currentYear="val => currentYear = val"
-      @update:currentMonth="val => currentMonth = val"
-      @update:startDate="val => startDate = val"
-      @update:endDate="val => endDate = val"
-      @update:tempStartDate="val => tempStartDate = val"
-      @update:tempEndDate="val => tempEndDate = val"
-      @update:currentStep="val => currentStep = val"
-      @initCalendar="initCalendar"
-      @fetchData="fetchData"
-    />
+     <!-- 底部固定栏 -->
+     <view class="bottom-bar">
+      <view class="allcheck">
+          <checkbox :checked="checkall" @tap="toggleCheckAll()">全选</checkbox>
+        </view>
+      <button class="btn cancel" @tap="deselectAll()">取消</button>
+      <button class="btn confirm" @tap="confirmSelection()">确定</button>
+    </view>
+
+    <!-- 引入 CalendarPopup 组件 -->
+    <CalendarPopup :showCalendar="showCalendar" :currentYear="currentYear" :currentMonth="currentMonth"
+      :startDate="startDate" :endDate="endDate" :tempStartDate="tempStartDate" :tempEndDate="tempEndDate"
+      :weekDays="weekDays" :calendar="calendar" :currentStep="currentStep"
+      @update:showCalendar="val => showCalendar = val" @update:currentYear="val => currentYear = val"
+      @update:currentMonth="val => currentMonth = val" @update:startDate="val => startDate = val"
+      @update:endDate="val => endDate = val" @update:tempStartDate="val => tempStartDate = val"
+      @update:tempEndDate="val => tempEndDate = val" @update:currentStep="val => currentStep = val"
+      @initCalendar="initCalendar" @fetchData="fetchData" />
   </view>
 </template>
 
@@ -107,6 +90,7 @@ export default {
   },
   data() {
     return {
+      checkall: false,
       loading: true,
       studentCode: "202408392",
       currentYear: 0, // 当前年份
@@ -124,7 +108,7 @@ export default {
       timezone: "Asia/Shanghai",
       students: [
       ],
-       timezones: [
+      timezones: [
         { name: "Shanghai Time", value: "Asia/Shanghai" },
         { name: "Pacific Time", value: "America/Los_Angeles" },
         { name: "Mountain Time", value: "America/Denver" },
@@ -134,14 +118,14 @@ export default {
       ],
       dateRange: "2024-01-09 - 2024-01-26", // 日期范围
       courses: [],
-      states:{
+      states: {
         0: "待出席",
         1: "已出席",
         2: "已请假"
       },
     };
   },
-   created() {
+  created() {
     const now = new Date();
     this.currentYear = now.getFullYear();
     this.currentMonth = now.getMonth() + 1;
@@ -151,13 +135,13 @@ export default {
       uni.navigateBack();
     },
     onStudentChange(event) {
-       this.selectedStudentIndex = event.detail.value;
-       this.studentCode = this.students[this.selectedStudentIndex].code;
-       this.$global.studentCode = this.studentCode;
-       console.log('选中的学生代码:', this.studentCode, this.$global.studentCode);
-       this.fetchData();
+      this.selectedStudentIndex = event.detail.value;
+      this.studentCode = this.students[this.selectedStudentIndex].code;
+      this.$global.studentCode = this.studentCode;
+      console.log('选中的学生代码:', this.studentCode, this.$global.studentCode);
+      this.fetchData();
     },
-    onTimeZoneChange(event){
+    onTimeZoneChange(event) {
       this.selectedTimeZoneIndex = event.detail.value;
       this.selectedTimeZone = this.timezones[this.selectedTimeZoneIndex]; // 根据索引获取对应的时区对象
       this.timezone = this.selectedTimeZone.value;
@@ -236,18 +220,18 @@ export default {
     // 生成日历数据，补齐完整的周数据
     initCalendar() {
       let year = this.currentYear;
-      let month =  this.currentMonth;
+      let month = this.currentMonth;
       const daysInMonth = new Date(year, month, 0).getDate(); // 当月天数
       const firstDay = new Date(year, month, 1).getDay(); // 当月1号是星期几 (0-6, 0代表周日)
-      
+
       // 上个月的相关数据
       const prevMonthYear = month === 1 ? year - 1 : year; // 上个月的年份
-      const prevMonth = month === 1 ? 12 : month-1; // 上个月的月份
+      const prevMonth = month === 1 ? 12 : month - 1; // 上个月的月份
       const prevMonthDays = new Date(prevMonthYear, prevMonth, 0).getDate(); // 上个月的总天数
 
       // 下个月的相关数据
       const nextMonthYear = month === 12 ? year + 1 : year; // 下个月的年份
-      const nextMonth = month === 12 ? 1 : month+1; // 下个月的月份
+      const nextMonth = month === 12 ? 1 : month + 1; // 下个月的月份
 
       let calendar = [];
       let week = [];
@@ -306,7 +290,7 @@ export default {
         this.loading = true;
 
         console.log('开始时间', this.startDate, this.endDate, this.timezone, this.studentCode);
-        const res = await getCourseList({ 
+        const res = await getCourseList({
           "start_dt": this.startDate,
           "end_dt": this.endDate,
           "studentCode": this.studentCode,
@@ -314,7 +298,7 @@ export default {
         });
         console.log('课程列表:', res);
         // 处理返回的数据
-        if(res.code==0){
+        if (res.code == 0) {
           this.courses = res.data;
         }
       } catch (error) {
@@ -325,31 +309,65 @@ export default {
         this.loading = false;
       }
     },
-    async init(){
-       this.setDefaultWeek(); // 初始化默认本周日期
+    async init() {
+      this.setDefaultWeek(); // 初始化默认本周日期
       const res = await getStudentList(this.$global.phone);
-      if(res.code==0){
+      if (res.code == 0) {
         this.students = res.data;
         this.studentCode = res.data[0].code;
         this.$global.studentCode = this.studentCode;
         this.fetchData(); // 获取数据列表
-      }else{
+      } else {
         uni.showToast({
           title: '暂无学生信息',
           icon: 'none'
         });
       }
+    },
+    toggleCheck(id) {
+      let course = this.courses.find(item => item.id === id);
+      course.isSelected = !course.isSelected;
+      console.log('toggleCheck', course.isSelected);
+      if(!this.courses.find(x=>!x.isSelected)){
+        this.checkall = true;
+      }else{
+        this.checkall = false;
+      }
+    },
+    toggleCheckAll(bl) {
+      console.log('selectAll',this.checkall);
+      this.checkall = !bl;
+      this.courses.forEach(course => {
+        course.isSelected = this.checkall;
+        console.log(course);
+      });
+    },
+    deselectAll() {
+      this.checkall = false;
+      console.log('deselectAll',false);
+      this.courses.forEach(x => {
+        if(x.isSelected){
+          x.isSelected = this.checkall;
+        }
+        console.log(x);
+      });
+    },
+    confirmSelection() {
+      console.log('confirmSelection');
+      const selectedCourses = this.courses.filter(course => course.isSelected);
+      console.log('Selected courses:', selectedCourses);
+      // 在这里处理选中的课程，例如批量请假操作
     }
   },
   onLoad() {
     const userTimezone = uni.getStorageSync('userTimezone');
-    if(!userTimezone){
+    if (!userTimezone) {
       uni.setStorageSync('userTimezone', this.timezones[0].value);
     }
     this.timezone = uni.getStorageSync('userTimezone');
     this.$global.timezone = this.timezone;
     this.init();
-    
+
     this.initCalendar();   // 初始化日历
   }
 };
@@ -358,13 +376,12 @@ export default {
 <style scoped>
 /* 页面背景 */
 .container {
-  background: linear-gradient(to bottom, #2F51FF, #F7F9FC);;
+  background: linear-gradient(to bottom, #2F51FF, #F7F9FC);
   height: 100vh;
   flex-direction: column;
 }
 
 /* 顶部导航栏 */
-/* 自定义导航栏样式 */
 .custom-header {
   display: flex;
   align-items: center;
@@ -380,13 +397,6 @@ export default {
   margin-left: 20rpx;
 }
 
-.header-logo {
-  width: 55px;
-  height: 32px;
-  margin-top: 6px;
-  margin-left: 10px;
-}
-
 .centered-picker-container {
   display: flex;
   justify-content: center;
@@ -396,9 +406,9 @@ export default {
 }
 
 .header-placeholder {
-  width: 50px; /* 根据实际占位元素大小调整 */
+  width: 50px;
+  /* 根据实际占位元素大小调整 */
 }
-
 
 .student-select {
   flex: 1;
@@ -409,7 +419,6 @@ export default {
 }
 
 /* 日期选择器 */
-/* 顶部筛选栏样式 */
 .date-filter {
   display: flex;
   align-items: center;
@@ -421,7 +430,6 @@ export default {
   margin: 10rpx auto;
 }
 
-/* 日期选择器区域 */
 .date-range {
   display: flex;
   align-items: center;
@@ -452,23 +460,18 @@ export default {
   margin-left: 20rpx;
 }
 
-.icon {
-  font-size: 20rpx;
-  margin-left: 5rpx;
-}
-
-
 /* 课程列表 */
 .course-list {
   flex: 1;
-  margin-bottom: 60px; /* 留出底部按钮位置 */
+  margin-bottom: 60px;
+  /* 留出底部按钮位置 */
 }
 
 .month-title {
-    font-size: 14px;
-    color: #FFFFFF;
-    margin-top: 10px;
-    text-align: center;
+  font-size: 14px;
+  color: #FFFFFF;
+  margin-top: 10px;
+  text-align: center;
 }
 
 .course-card {
@@ -510,293 +513,79 @@ export default {
   margin: 14rpx;
 }
 
-.course-status {
-  font-size: 22rpx;
-  align-items: center;
-  margin-right: 10px;
-}
-
-/* 状态容器 */
-.status-container {
+.checkbox-container {
   display: flex;
   align-items: center;
-  margin-top: 20rpx;
 }
 
-/* 状态图标基础样式 */
-.status-icon {
-  width: 20rpx;
-  height: 20rpx;
-  border-radius: 50%;
-  margin-right: 8rpx;
+.checkbox {
+  width: 24rpx;
+  height: 24rpx;
+  border: 2rpx solid #ccc;
+  border-radius: 50%; /* 圆形 */
+  margin-right: 10rpx;
+  position: relative;
 }
 
-/* 待出席状态 - 灰色 */
-.status-pending {
-  background-color: #9c9898; /* 灰色 */
+.checkbox.checked {
+  background-color: #007aff;
+  border-color: #007aff;
 }
 
-/* 已出席状态 - 蓝色 */
-.status-attended {
-  background-color: #4A90E2; /* 蓝色 */
+.checkbox.checked::after {
+  content: '';
+  width: 12rpx;
+  height: 12rpx;
+  background-color: #fff;
+  border-radius: 50%; /* 圆形 */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
-/* 已请假状态 - 绿色 */
-.status-leave {
-  background-color: #00C878; /* 绿色 */
-}
-
-
-.course-arrow {
-  margin-top: 40rpx;
-  margin-left: 20px;
-  font-size: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  cursor: pointer;
-}
-
-.arrow-icon{
-  height:24px;
-  width:24px;
-}
-
-.status-pending {
-  color: #ff9900;
-}
-
-.status-attended {
-  color: #4caf50;
-}
-
-.status-leave {
-  color: #2196f3;
-}
-
-/* 底部按钮 */
-.footer {
-  display: flex;
+/* 底部固定栏 */
+.bottom-bar {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  background-color: #fff;
-  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.1);
-  padding: 10px;
+  display: flex;
   justify-content: space-around;
+  background-color: #fff;
+  padding: 30rpx 0 50rpx 0;
+  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.1);
 }
 
-.footer-btn {
+.allcheck {
   flex: 1;
-  margin: 0 5px;
-  height: 40px;
-  border-radius: 20px;
+  width: 200rpx;
+  margin-left: 20rpx;
+  line-height: 70rpx;
+}
+
+.btn {
+  flex: 1;
+  margin: 0 5rpx;
+  height: 80rpx;
+  border-radius: 20rpx;
   font-size: 14px;
   font-weight: bold;
-  color: #fff;
   text-align: center;
-  line-height: 40px;
-}
-
-.stat-btn {
-  background: #4c9aff;
-}
-
-.leave-btn {
-  background: #4caf50;
-}
-
-
-/* 整个底部容器 */
-.bottom-container {
-  position: fixed;
-  bottom: 34rpx; /* 距离底部 */
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: center;
   align-items: center;
-  z-index: 100;
+  vertical-align: middle;
+  line-height: 40rpx;
+  padding: 20rpx;
 }
 
-/* 按钮区域 */
-.bottom-buttons {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  width: 320rpx;
-  height: 90rpx;
-  background: linear-gradient(139.01deg, #6DB6E7 -2.19%, #2F51FF 97.65%);
-  border-radius: 40rpx;
-  box-shadow: 0px 0px 12px 0px rgb(47 81 255 / 80%);
-  padding: 0 16rpx 0 16rpx;
-  gap: 8px;
+.confirm {
+  color: #fff;
+  background-color: #007aff;
 }
 
-/* 每个按钮 */
-.button-item {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  flex: 1;
-}
-
-/* 按钮图标 */
-.icon {
-  width: 36rpx;
-  height: 36rpx;
-  margin-bottom: 6rpx;
-}
-
-/* 按钮文本 */
-.button-text {
-  font-size: 24rpx;
-  color: #FFFFFF;
-}
-
-/* 分割线 */
-.viewider {
-  width: 1rpx;
-  height: 40rpx;
-  background-color: #FFFFFF;
-  opacity: 0.5;
-}
-
-.calendar-popup {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
+.cancel {
+  color: #007aff;
   background-color: #fff;
-  border-top-left-radius: 20rpx;
-  border-top-right-radius: 20rpx;
-  box-shadow: 0 -2rpx 10rpx rgba(0, 0, 0, 0.1);
-}
-.calendar-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  text-align: center;
-  font-weight: bold;
-  padding: 20rpx 30rpx;
-}
-
-.datechoose-text {
-  width: 670rpx;
-  font-weight: bold;
-  font-size: 32rpx; /* 调整字体大小 */
-  color: #333;
-}
-.close-btn {
-  font-size: 50rpx; /* 调整关闭按钮大小 */
-  color: #999;
-  cursor: pointer;
-}
-.calendar-row {
-  display: flex;
-}
-.calendar-day {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 60rpx;
-  height: 60rpx;
-  margin: 10rpx 26rpx 10rpx 26rpx;
-  border-radius: 50%;
-  text-align: center;
-  background-color: transparent;
-  color: #333;
-  font-size: 28rpx;
-}
-.calendar-day.selected {
-  background-color: #007aff;
-  color: #fff;
-}
-.calendar-day.in-range {
-  background-color: #d9ecff;
-}
-.confirm-btn {
-  margin: 20rpx;
-  background-color: #007aff;
-  color: #fff;
-}
-.week-days {
-  display: flex;
-  text-align: center;
-  font-size: 24rpx;
-  color: #333;
-}
-
-.week-day {
-  flex: 1;
-}
-
-
-.month-switch {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.circle-arrow {
-  width: 30px;
-  height: 30px;
-  background-color: rgba(100, 149, 237, 0.2);
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-}
-
-/* 箭头样式 */
-.arrow {
-  width: 5px;
-  height: 5px;
-  border-right: 2px solid #1E90FF;
-  border-bottom: 2px solid #1E90FF;
-  /* -webkit-transform: rotate(-45deg); */
-  transform: rotate(-45deg);
-  position: absolute;
-}
-.circle-arrow2 {
-  width: 40px;
-  height: 30px;
-  background-color: rgba(100, 149, 237, 0.2);
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-  border-radius: 5rpx;
-  padding: 5rpx 15rpx;
-  margin-bottom: 10rpx;
-}
-
-/* 箭头样式 */
-.arrow-left {
-  width: 10px;
-  height: 10px;
-  border-right: 2px solid #1E90FF;
-  border-bottom: 2px solid #1E90FF;
-  transform: rotate(135deg);
-  position: absolute;
-}
-.arrow-right {
-  width: 10px;
-  height: 10px;
-  border-right: 2px solid #1E90FF;
-  border-bottom: 2px solid #1E90FF;
-  transform: rotate(-45deg);
-  position: absolute;
-}
-.other-month {
-  color: #ccc;
+  border: #007aff 1px solid;
 }
 </style>
