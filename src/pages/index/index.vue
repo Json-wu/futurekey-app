@@ -18,8 +18,14 @@
 
       <!-- 登录按钮 -->
       <view class="login-section">
-        <button class="login-button" @click="onLogin">本机号码一键登录</button>
-        <view class="login-tip">未注册的手机号将自动注册并登录</view>
+        <!-- 登录按钮 -->
+        <button v-if="!isAgreed" class="login-button" @tap="handleAgree">
+          手机号一键登录
+        </button>
+        <button v-if="isAgreed" class="login-button" open-type="getPhoneNumber" @getphonenumber="getPhoneNumber">
+          手机号一键登录
+        </button>
+        <view class="login-tip">请使用家长手机号登录</view>
       </view>
 
       <!-- 协议 -->
@@ -61,47 +67,141 @@ export default {
     };
   },
   methods: {
+    // 显示用户协议
+    showAgreement() {
+      this.isAgreementVisible = true;
+    },
     // 切换协议复选框状态
     toggleAgreement(e) {
       this.isAgreed = e.detail.value.includes('agree');
       console.log('是否同意协议:', this.isAgreed);
     },
+    // 获取手机号
+    getPhoneNumber(e) {
+      this.$global.phone = "51741898";
+      // 跳转至首页index
+      uni.navigateTo({
+        url: "/pages/home/index",
+      });
+      return;
+      console.log(e.detail.errMsg);
+      if (e.detail.errMsg === "getPhoneNumber:ok") {
+        const { encryptedData, iv } = e.detail;
 
+        // 调用登录接口，获取临时登录凭证 code
+        uni.login({
+          success: (res) => {
+            console.log('临时登录凭证:', res.code);
+            if (res.code) {
+              // 调用后端接口解密手机号
+              uni.request({
+                url: 'https://www.futurekey.com/classroom/wechat/decryptPhone', // 替换为后端接口
+                method: 'POST',
+                data: {
+                  code: res.code,
+                  encryptedData,
+                  iv,
+                },
+                success: (response) => {
+                  if (response.data.success) {
+                    console.log('用户手机号:', response.data.phoneNumber);
+                    uni.showToast({
+                      title: '登录成功',
+                      icon: 'success'
+                    });
+                    this.$global.phone = response.data.phoneNumber;
+                    // 跳转至首页index
+                    uni.navigateTo({
+                      url: "/pages/home/index",
+                    });
+                  } else {
+                    uni.showToast({
+                      title: '获取手机号失败',
+                      icon: 'none'
+                    });
+                  }
+                },
+                fail: (err) => {
+                  console.error('请求失败:', err);
+                  uni.showToast({
+                    title: '服务器错误',
+                    icon: 'none'
+                  });
+                },
+              });
+            }
+          },
+        });
+      } else {
+        uni.showToast({
+          title: '用户拒绝授权',
+          icon: 'none',
+        });
+      }
+    },
+    onlogin() {
+      // 调用登录接口，获取临时登录凭证 code
+      uni.login({
+        success: (res) => {
+          console.log('临时登录凭证:', res.code);
+          if (res.code) {
+            // 调用后端接口解密手机号
+            uni.request({
+              url: 'https://www.futurekey.com/classroom/wechat/decryptPhone', // 替换为后端接口
+              method: 'POST',
+              data: {
+                code: res.code,
+                encryptedData,
+                iv,
+              },
+              success: (response) => {
+                if (response.data.success) {
+                  console.log('用户手机号:', response.data.phoneNumber);
+                  uni.showToast({
+                    title: '登录成功',
+                    icon: 'success'
+                  });
+                  this.$global.phone = response.data.phoneNumber;
+                  // 跳转至首页index
+                  uni.navigateTo({
+                    url: "/pages/home/index",
+                  });
+                } else {
+                  uni.showToast({
+                    title: '获取手机号失败',
+                    icon: 'none'
+                  });
+                }
+              },
+              fail: (err) => {
+                console.error('请求失败:', err);
+                uni.showToast({
+                  title: '服务器错误',
+                  icon: 'none'
+                });
+              },
+            });
+          }
+        },
+      });
+    },
     // 点击登录按钮
-    onLogin() {
+    handleAgree() {
       if (!this.isAgreed) {
         uni.showToast({
-          title: "请同意协议后继续",
           icon: "none",
+          title: '请阅读并同意平台服务协议及隐私协议',
+          duration: 2000
         });
-        return;
+        return false;
       }
-      uni.showToast({
-        title: "正在登录...",
-        icon: "loading",
-      });
-      // 登录逻辑
-      setTimeout(() => {
-        uni.showToast({
-          title: "登录成功！",
-          icon: "success",
-        });
-        this.$global.phone = "51741898";
-        // 跳转至首页index
-        uni.navigateTo({
-          url: "/pages/home/index",
-        });
-      }, 1500);
-    },
-
-    // 显示用户协议
-    showAgreement() {
-      this.isAgreementVisible = true;
     },
   },
+  onload() {
+
+  }
 };
 </script>
-
 
 <style scoped>
 .container {

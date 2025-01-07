@@ -93,6 +93,7 @@
           <view v-if="file.status === 'success'" class="file-info">
             <image class="icon-del" :src="file.icon_file" @click="downloadFile(file.filename)"></image>
             <text class="file-name success" @click="downloadFile(file.filename)">{{ file.name }}</text>
+            <text class="file-size">{{ file.size }}kb</text>
             <image class="icon-del" :src="file.icon_del" @click="deleteFile(index, file.filename)"></image>
           </view>
 
@@ -100,11 +101,11 @@
           <view v-else-if="file.status === 'uploading'" class="file-info">
             <image class="icon-del" :src="file.icon_file"></image>
             <text class="file-name uploading">{{ file.name }}</text>
+            <text class="file-size">{{ file.size }}kb</text>
             <view class="progress-bar">
               <view class="progress" :style="{ width: file.progress + '%' }"></view>
             </view>
-            <text class="file-size">{{ file.progress }}%</text>
-
+            <image class="icon-del" :src="file.icon_del" @click="cancelUpload(index)"></image>
           </view>
 
           <!-- 上传状态：失败 -->
@@ -129,21 +130,15 @@ export default {
       courseData: {},
       currentCourseId: '',
       currentTab: 'before', // 当前选中的Tab
-      deadline: '2024.11.24 10:22', // 截止日期
-      beforeHomework: '1. Complete 1 post-class reading\n2. Listen and read for 30 minutes',
-      afterHomework: '1. Submit your notes\n2. Review the recorded class content',
+      deadline: '', // 截止日期
+      beforeHomework: '',
+      afterHomework: '',
       beforeFiles: [
-        { name: 'zujianku0929.png', url: '/static/leave.png' }
       ],
       afterFiles: [
-        { name: 'zujianku0929.png', url: '/static/leave.png' }
       ],
       uploadFiles: [],
       files: [
-        // 示例数据
-        { name: 'zujianku0929.png', size: 103, status: 'success' },
-        { name: 'zujianku0929.png', size: 365, progress: 100, status: 'uploading' },
-        { name: 'zujianku0929.png', size: 365, status: 'error' },
       ],
     };
   },
@@ -281,7 +276,7 @@ export default {
             //}
             x.name = x.filename;
             x.status = 'success';
-            x.size = 0;
+            x.size = x.size;
             x.icon_del = "/static/icons/del-his.png";
             x.icon_file = "/static/file-his.png";
             return x;
@@ -653,14 +648,12 @@ export default {
   width: 470rpx;
   text-align: left;
   color: #2D2D2D;
-  padding-left: 10rpx;
 }
 
 .file-name.uploading {
   width: 470rpx;
   text-align: left;
   color: blue;
-  padding-left: 20rpx;
 }
 
 .file-name.error {
@@ -668,12 +661,13 @@ export default {
 }
 
 .file-size {
-  margin-left: 26px;
+  width: 90rpx;
+  text-align: right;
   color: #999;
 }
 
 .icon-del {
-  margin-left: 20rpx;
+  margin-left: 8rpx;
   width: 32rpx;
   height: 32rpx;
 }

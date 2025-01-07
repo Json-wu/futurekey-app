@@ -30,49 +30,6 @@
       </view>
     </view>
 
-
-
-    <!-- 滚动课程列表 -->
-    <scroll-view class="course-list" scroll-y>
-      <view class="month-title">{{ currentYear }}年{{ currentMonth }}月</view>
-      <view v-if="courses.length == 0" class="course-card">
-        <text>暂无课程</text>
-      </view>
-      <view v-else class="course-card" v-for="(course, index) in courses" :key="index">
-        <view :class="course.css">
-          <image :src="course.class_category == 'writing' ? '../../static/write.png' : '../../static/default.png'"
-            class="course-icon"></image>
-        </view>
-        <view class="course-info">
-          <view class="course-title">{{ course.title }}</view>
-          <view class="course-time">
-            <image src='../../static/icons/time.png' class="who-icon"></image>
-            {{ course.time }}
-          </view>
-          <view class="course-teacher">
-            <image src='../../static/icons/who.png' class="who-icon"></image>
-            {{ course.student }}
-          </view>
-        </view>
-        <view class="course-status">
-          <view class="status-container">
-            <!-- 状态图标 -->
-            <view class="status-icon"
-              :class="course.state == 1 ? 'status-attended' : (course.state == 2 ? 'status-leave' : 'status-pending')">
-            </view>
-            <!-- 状态文本 -->
-            <text class="status-text">{{ getState(course.state) }}</text>
-          </view>
-          <view class="course-arrow" @tap="goToDetail(course.id)">
-            <!-- 圆形背景 + 箭头 -->
-            <view class="circle-arrow">
-              <view class="arrow"></view>
-            </view>
-          </view>
-        </view>
-      </view>
-    </scroll-view>
-
     <!-- 引入 CalendarPopup 组件 -->
     <CalendarPopup :showCalendar="showCalendar" :currentYear="currentYear" :currentMonth="currentMonth"
       :startDate="startDate" :endDate="endDate" :tempStartDate="tempStartDate" :tempEndDate="tempEndDate"

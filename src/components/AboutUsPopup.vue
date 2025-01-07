@@ -31,26 +31,26 @@
       <view class="popup-footer">
         <text class="share-text">觉得不错？分享到：</text>
         <view class="share-container">
-          <button class="share-item" open-type="share">
+          <button class="custom-button" open-type="share">
             <image src="/static/icons/wechat.png" class="icon-share"></image>
             <text class="label">微信好友</text>
           </button>
-          <button class="share-item" open-type="shareTimeline">
+          <button class="custom-button" open-type="shareTimeline">
             <image src="/static/icons/friends.png" class="icon-share"></image>
             <text class="label">朋友圈</text>
           </button>
-          <button class="share-item" @tap="shareToWeibo()">
+          <uni-button class="share-item" @tap="shareToWeibo()">
             <image src="/static/icons/weibo.png" class="icon-share"></image>
             <text class="label">微博</text>
-          </button>
-          <button class="share-item" @tap="shareToQQ()">
+          </uni-button>
+          <uni-button class="share-item" @tap="shareToQQ()">
             <image src="/static/icons/qq.png" class="icon-share"></image>
             <text class="label">QQ</text>
-          </button>
-          <button class="share-item" @tap="copyLink()">
+          </uni-button>
+          <uni-button class="share-item" @tap="copyLink()">
             <image src="/static/icons/link.png" class="icon-share"></image>
             <text class="label">复制链接</text>
-          </button>
+          </uni-button>
         </view>
       </view>
     </view>
@@ -69,7 +69,7 @@ export default {
       type: Object,
       default: () => ({
         website: { text: "官方网站", url: "https://www.futurekey.com", title: "www.futurekey.com" },
-        phone: { text: "客服电话", number: "400-189-0866" },
+        phone: { text: "客服电话", number: "400-189-0866400" },
         agreement: { text: "用户协议", url: "https://futurekey.com/private", title: "《用户隐私协议》" }
       }),
     },
@@ -235,5 +235,12 @@ export default {
 .label {
   font-size: 24rpx;
   color: #333;
+}
+.custom-button {
+  background-color: transparent !important; /* 移除背景色 */
+  border: none !important; /* 移除边框 */
+  box-shadow: none !important; /* 移除阴影 */
+  padding: 0; /* 去除默认内边距 */
+  margin: 0; /* 去除默认外边距 */
 }
 </style>

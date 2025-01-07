@@ -63,8 +63,34 @@
       <view class="allcheck">
           <checkbox :checked="checkall" @tap="toggleCheckAll()">全选</checkbox>
         </view>
-      <button class="btn cancel" @tap="deselectAll()">取消</button>
-      <button class="btn confirm" @tap="confirmSelection()">确定</button>
+      <button class="btn cancel" @tap="goBack()">取消</button>
+      <button class="btn confirm" @tap="commit()">确定</button>
+    </view>
+
+      <!-- Modal -->
+    <view v-if="isShow" class="modal">
+      <view class="modal-content">
+        <view class="calendar-header">
+          <text class="datechoose-text">请假申请</text>
+          <view class="close-btn" @tap="closeModal">×</view>
+        </view>
+        
+        <!-- Leave Reason Selection -->
+        <picker mode="selector" :range="leaveReasons" @change="onReasonChange">
+          <view class="picker">
+            请假原因: {{ leaveReasons[selectedReason] }}
+          </view>
+        </picker>
+        
+        <!-- Remarks Input -->
+        <input type="text" placeholder="请输入备注（最多20字）" maxlength="20" v-model="remarks" />
+
+        <!-- Action Buttons -->
+        <view class="calendar-header">
+          <button @click="confirmLeave">确认</button>
+          <button @click="closeModal">取消</button>
+        </view>
+      </view>
     </view>
 
     <!-- 引入 CalendarPopup 组件 -->
@@ -123,6 +149,10 @@ export default {
         1: "已出席",
         2: "已请假"
       },
+      isShow: false, // Controls modal visibility
+      leaveReasons: ['事假', '病假', '其他'], // Leave reasons
+      selectedReason: 0, // Index of selected leave reason
+      remarks: '' // Remarks input
     };
   },
   created() {
@@ -131,6 +161,26 @@ export default {
     this.currentMonth = now.getMonth() + 1;
   },
   methods: {
+    openModal() {
+      this.isShow = true; // Show the modal
+    },
+    closeModal() {
+      this.isShow = false; // Hide the modal
+    },
+    onReasonChange(e) {
+      this.selectedReason = e.detail.value; // Update selected reason
+    },
+    confirmLeave() {
+      // Handle leave confirmation logic here
+      console.log('Selected Reason:', this.leaveReasons[this.selectedReason]);
+      console.log('Remarks:', this.remarks);
+      this.closeModal();
+      uni.showToast({
+        title: '请假已提交',
+        icon: 'success',
+        duration: 2000
+      });
+    },
     goBack() {
       uni.navigateBack();
     },
@@ -334,29 +384,57 @@ export default {
         this.checkall = false;
       }
     },
-    toggleCheckAll(bl) {
+    toggleCheckAll() {
       console.log('selectAll',this.checkall);
-      this.checkall = !bl;
+      this.checkall = !this.checkall;
       this.courses.forEach(course => {
         course.isSelected = this.checkall;
         console.log(course);
       });
     },
-    deselectAll() {
-      this.checkall = false;
-      console.log('deselectAll',false);
-      this.courses.forEach(x => {
-        if(x.isSelected){
-          x.isSelected = this.checkall;
-        }
-        console.log(x);
-      });
-    },
-    confirmSelection() {
-      console.log('confirmSelection');
+    commit() {
       const selectedCourses = this.courses.filter(course => course.isSelected);
       console.log('Selected courses:', selectedCourses);
-      // 在这里处理选中的课程，例如批量请假操作
+      
+      if(selectedCourses.length == 0){
+        uni.showToast({
+          title: '请选择课程',
+          icon: 'none',
+          duration: 2000
+        });
+      }else{ 
+        this.openModal();
+        return; 
+        // 在这里处理选中的课程，例如批量请假操作
+        //  弹出框，输入请假理由，用户填写请假理由，长度20个字
+
+        uni.showModal({
+          title: '请假理由',
+          content: '请输入请假理由',
+          showCancel: true,
+          confirmText: '提交',
+          confirmColor: '#007AFF',
+          inputPlaceholder: '请输入请假理由',
+          inputMaxLength: 20,
+          inputType: 'text',
+          success: (res) => {
+            if (res.confirm) {
+              // 用户点击了提交按钮，执行请假操作
+              uni.showToast({
+                title: '请假成功',
+                icon: 'success',
+                duration: 2000
+              });
+            } else {
+              uni.showToast({
+                title: '取消请假',
+                icon: 'none',
+                duration: 2000
+              });
+            }
+          }
+        });
+      }
     }
   },
   onLoad() {
@@ -587,5 +665,53 @@ export default {
   color: #007aff;
   background-color: #fff;
   border: #007aff 1px solid;
+}
+
+.modal {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 20rpx;
+  border-radius: 5px;
+  width: 80%;
+}
+
+
+.calendar-header {
+  margin-top: 10rpx;
+  margin-bottom: 20rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-align: center;
+  font-weight: bold;
+}
+
+.datechoose-text {
+  width: 670rpx;
+  font-weight: bold;
+  font-size: 32rpx;
+  color: #333;
+}
+
+.close-btn {
+  font-size: 50rpx;
+  color: #999;
+  cursor: pointer;
+}
+
+.picker {
+  margin: 10px 0;
 }
 </style>

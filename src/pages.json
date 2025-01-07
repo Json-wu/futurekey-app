@@ -1,12 +1,6 @@
 {
 	"pages": [
 		{
-			"path": "pages/leave/index",
-			"style": {
-				"navigationStyle": "custom"
-			}
-		},
-		{
 			"path": "pages/index/index",
 			"style": {
 				"navigationStyle": "custom"
@@ -35,6 +29,12 @@
 		},
 		{
 			"path": "pages/statistics/index",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/leave/index",
 			"style": {
 				"navigationStyle": "custom"
 			}

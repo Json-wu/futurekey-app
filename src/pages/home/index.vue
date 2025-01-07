@@ -359,11 +359,13 @@ export default {
       }
     },
     showStatistics() {
+      console.log('跳转到统计页面');
       uni.navigateTo({
         url: '/pages/statistics/index'
       });
     },
     showLeave() {
+      console.log('跳转到请假页面');
       uni.navigateTo({
         url: '/pages/leave/index'
       });
