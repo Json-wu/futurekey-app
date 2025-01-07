@@ -76,19 +76,20 @@
         </view>
         
         <!-- Leave Reason Selection -->
-        <picker mode="selector" :range="leaveReasons" @change="onReasonChange">
-          <view class="picker">
-            请假原因: {{ leaveReasons[selectedReason] }}
-          </view>
-        </picker>
-        
-        <!-- Remarks Input -->
-        <input type="text" placeholder="请输入备注（最多20字）" maxlength="20" v-model="remarks" />
-
+        <view class="leave-reason-selection">
+          <picker mode="selector" :range="leaveReasons" @change="onReasonChange">
+            <view class="picker">
+              请假原因: {{ leaveReasons[selectedReason] }}▼
+            </view>
+          </picker>
+          
+          <!-- Remarks Input -->
+          <input type="text" placeholder="请输入备注" maxlength="20" v-model="remarks" />
+        </view>
         <!-- Action Buttons -->
         <view class="calendar-header">
-          <button @click="confirmLeave">确认</button>
-          <button @click="closeModal">取消</button>
+          <button class="btn cancel" @tap="closeModal">取消</button>
+          <button class="btn confirm" @tap="confirmLeave">确定</button>
         </view>
       </view>
     </view>
@@ -134,14 +135,7 @@ export default {
       timezone: "Asia/Shanghai",
       students: [
       ],
-      timezones: [
-        { name: "Shanghai Time", value: "Asia/Shanghai" },
-        { name: "Pacific Time", value: "America/Los_Angeles" },
-        { name: "Mountain Time", value: "America/Denver" },
-        { name: "Central Time", value: "America/Chicago" },
-        { name: "Eastern Time", value: "America/New_York" },
-        { name: "Madrid Time", value: "Europe/Madrid" },
-      ],
+      timezones: [],
       dateRange: "2024-01-09 - 2024-01-26", // 日期范围
       courses: [],
       states: {
@@ -159,6 +153,10 @@ export default {
     const now = new Date();
     this.currentYear = now.getFullYear();
     this.currentMonth = now.getMonth() + 1;
+    console.log('created', uni.getStorageSync("timezoneIndex"));
+    this.timezones = this.$global.timezones;
+    this.selectedTimeZoneIndex = uni.getStorageSync("timezoneIndex") || 0;
+    this.timezone = this.timezones[this.selectedTimeZoneIndex].value;
   },
   methods: {
     openModal() {
@@ -195,7 +193,7 @@ export default {
       this.selectedTimeZoneIndex = event.detail.value;
       this.selectedTimeZone = this.timezones[this.selectedTimeZoneIndex]; // 根据索引获取对应的时区对象
       this.timezone = this.selectedTimeZone.value;
-      this.$global.timezone = this.timezone;
+      uni.setStorageSync('timezoneIndex', this.selectedTimeZoneIndex);
       this.fetchData(); // 获取数据列表
       console.log('选中的时区:', this.timezone); // 输出选中的时区值
     },
@@ -438,14 +436,7 @@ export default {
     }
   },
   onLoad() {
-    const userTimezone = uni.getStorageSync('userTimezone');
-    if (!userTimezone) {
-      uni.setStorageSync('userTimezone', this.timezones[0].value);
-    }
-    this.timezone = uni.getStorageSync('userTimezone');
-    this.$global.timezone = this.timezone;
     this.init();
-
     this.initCalendar();   // 初始化日历
   }
 };
@@ -514,20 +505,21 @@ export default {
   background-color: #f5f5f5;
   border-radius: 8px;
   padding: 8px;
-  width: 58%;
+  width: 70%;
 }
 
 .date-text {
   font-size: 28rpx;
   color: #4c4949;
-  margin-left: 14rpx;
+  margin-left: 30rpx;
   margin-right: 10rpx;
 }
 
 .separator {
   font-size: 28rpx;
   color: #4c4949;
-  margin-left: 10px;
+  margin-left: 20px;
+  margin-right: 20rpx;
 }
 
 /* 筛选按钮区域 */
@@ -687,10 +679,15 @@ export default {
   width: 80%;
 }
 
+.leave-reason-selection {
+  display: flex;
+  flex-direction: column;
+  margin: 20rpx;
+  padding: 10rpx;
+}
 
 .calendar-header {
-  margin-top: 10rpx;
-  margin-bottom: 20rpx;
+  margin: 30rpx;
   display: flex;
   justify-content: space-between;
   align-items: center;

@@ -35,22 +35,22 @@
             <image src="/static/icons/wechat.png" class="icon-share"></image>
             <text class="label">微信好友</text>
           </button>
-          <button class="custom-button" open-type="shareTimeline">
+          <button class="custom-button" @click="shareWxQ">
             <image src="/static/icons/friends.png" class="icon-share"></image>
             <text class="label">朋友圈</text>
           </button>
-          <uni-button class="share-item" @tap="shareToWeibo()">
+          <button class="custom-button" @tap="shareToWeibo()">
             <image src="/static/icons/weibo.png" class="icon-share"></image>
             <text class="label">微博</text>
-          </uni-button>
-          <uni-button class="share-item" @tap="shareToQQ()">
+          </button>
+          <button class="custom-button" @tap="shareToQQ()">
             <image src="/static/icons/qq.png" class="icon-share"></image>
             <text class="label">QQ</text>
-          </uni-button>
-          <uni-button class="share-item" @tap="copyLink()">
+          </button>
+          <button class="custom-button" @tap="copyLink()">
             <image src="/static/icons/link.png" class="icon-share"></image>
             <text class="label">复制链接</text>
-          </uni-button>
+          </button>
         </view>
       </view>
     </view>
@@ -79,6 +79,20 @@ export default {
     },
   },
   methods: {
+    shareWxQ() {  
+        uni.share({  
+            provider: "weixin",  
+            scene: "WXSceneTimeline",  
+            type: 2,  
+            imageUrl: 'https://ask.dcloud.net.cn/uploads/nav_menu/10.jpg',  
+            success: function(res) {  
+                console.log("success:" + JSON.stringify(res));  
+            },  
+            fail: function(err) {  
+                console.log("fail:" + JSON.stringify(err));  
+            }  
+        });  
+    },  
     closeAbout() {
       this.$emit('update:showAbout', false);
     },
@@ -112,6 +126,13 @@ export default {
     shareToWeibo() {
       uni.showToast({ title: '微博分享暂不支持', icon: 'none' });
     }
+  },
+  onShareTimeline() {
+    return {
+      title: '分享到朋友圈的标题', // 分享的标题
+      query: 'key=value', // 分享的参数
+      imageUrl: '/static/icons/share-image.png' // 分享的图片路径
+    };
   }
 };
 </script>
@@ -207,6 +228,7 @@ export default {
   justify-content: space-around;
   align-items: center;
   padding: 10rpx 0;
+  margin-top: 10rpx;
 }
 
 .share-item {
@@ -216,15 +238,13 @@ export default {
   align-items: center;
   width: 120rpx;
   padding: 0;
-  border: none !important;
-  background-color: transparent !important;
-  box-shadow: none !important; /* 去除可能的阴影 */
 }
 
 .icon-link {
   width: 40rpx;
   height: 40rpx;
   margin-right: 10rpx;
+  margin-left: 10rpx;
 }
 
 .icon-share {
@@ -236,11 +256,38 @@ export default {
   font-size: 24rpx;
   color: #333;
 }
-.custom-button {
-  background-color: transparent !important; /* 移除背景色 */
-  border: none !important; /* 移除边框 */
-  box-shadow: none !important; /* 移除阴影 */
-  padding: 0; /* 去除默认内边距 */
-  margin: 0; /* 去除默认外边距 */
+
+button.custom-button {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 120rpx;
+  padding: 0;
+  background-color: #ffffff;
+}
+
+button.custom-button::after {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 120rpx;
+  padding: 0;
+  border: none !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
+button.custom-button::before {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 120rpx;
+  padding: 0;
+  border: none !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
 }
 </style>

@@ -70,14 +70,7 @@ export default {
       timezone: "Asia/Shanghai",
       students: [
       ],
-      timezones: [
-        { name: "Shanghai Time", value: "Asia/Shanghai" },
-        { name: "Pacific Time", value: "America/Los_Angeles" },
-        { name: "Mountain Time", value: "America/Denver" },
-        { name: "Central Time", value: "America/Chicago" },
-        { name: "Eastern Time", value: "America/New_York" },
-        { name: "Madrid Time", value: "Europe/Madrid" },
-      ],
+      timezones: [],
       dateRange: "2024-01-09 - 2024-01-26", // 日期范围
       courses: [],
       states: {
@@ -91,6 +84,10 @@ export default {
     const now = new Date();
     this.currentYear = now.getFullYear();
     this.currentMonth = now.getMonth() + 1;
+    console.log('created', uni.getStorageSync("timezoneIndex"));
+    this.timezones = this.$global.timezones;
+    this.selectedTimeZoneIndex = uni.getStorageSync("timezoneIndex") || 0;
+    this.timezone = this.timezones[this.selectedTimeZoneIndex].value;
   },
   methods: {
     goBack() {
@@ -107,7 +104,7 @@ export default {
       this.selectedTimeZoneIndex = event.detail.value;
       this.selectedTimeZone = this.timezones[this.selectedTimeZoneIndex]; // 根据索引获取对应的时区对象
       this.timezone = this.selectedTimeZone.value;
-      this.$global.timezone = this.timezone;
+      uni.setStorageSync('timezoneIndex', this.selectedTimeZoneIndex);
       this.fetchData(); // 获取数据列表
       console.log('选中的时区:', this.timezone); // 输出选中的时区值
     },
@@ -288,14 +285,8 @@ export default {
     }
   },
   onLoad() {
-    const userTimezone = uni.getStorageSync('userTimezone');
-    if (!userTimezone) {
-      uni.setStorageSync('userTimezone', this.timezones[0].value);
-    }
-    this.timezone = uni.getStorageSync('userTimezone');
-    this.$global.timezone = this.timezone;
+    console.log('onLoad');
     this.init();
-
     this.initCalendar();   // 初始化日历
   }
 };
@@ -376,20 +367,21 @@ export default {
   background-color: #f5f5f5;
   border-radius: 8px;
   padding: 8px;
-  width: 58%;
+  width: 70%;
 }
 
 .date-text {
   font-size: 28rpx;
   color: #4c4949;
-  margin-left: 14rpx;
+  margin-left: 30rpx;
   margin-right: 10rpx;
 }
 
 .separator {
   font-size: 28rpx;
   color: #4c4949;
-  margin-left: 10px;
+  margin-left: 20px;
+  margin-right: 20rpx;
 }
 
 /* 筛选按钮区域 */

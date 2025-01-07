@@ -37,7 +37,7 @@
           </label>
         </checkbox-group>
         <view>
-          同意<text class="highlight" @click="showAgreement">《账号服务与隐私协议》</text>并授权科爱信获取本机号码
+          同意<text class="highlight" @click="showAgreement">《用户隐私协议》</text>并授权科爱信获取本机号码
         </view>
       </view>
     </view>
