@@ -78,21 +78,7 @@ export default {
       default: "https://futurekey.com"
     },
   },
-  methods: {
-    shareWxQ() {  
-        uni.share({  
-            provider: "weixin",  
-            scene: "WXSceneTimeline",  
-            type: 2,  
-            imageUrl: 'https://ask.dcloud.net.cn/uploads/nav_menu/10.jpg',  
-            success: function(res) {  
-                console.log("success:" + JSON.stringify(res));  
-            },  
-            fail: function(err) {  
-                console.log("fail:" + JSON.stringify(err));  
-            }  
-        });  
-    },  
+  methods: { 
     closeAbout() {
       this.$emit('update:showAbout', false);
     },
@@ -125,14 +111,10 @@ export default {
     },
     shareToWeibo() {
       uni.showToast({ title: '微博分享暂不支持', icon: 'none' });
+    },
+    shareWxQ() {
+      uni.showToast({ title: '请点击右上角的分享按钮', icon: 'none' });
     }
-  },
-  onShareTimeline() {
-    return {
-      title: '分享到朋友圈的标题', // 分享的标题
-      query: 'key=value', // 分享的参数
-      imageUrl: '/static/icons/share-image.png' // 分享的图片路径
-    };
   }
 };
 </script>

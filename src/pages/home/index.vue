@@ -373,11 +373,18 @@ export default {
     this.init();
     this.initCalendar();   // 初始化日历
   },
+  onShareAppMessage() {
+      return {
+          title: this.$global.share.title,
+          path: this.$global.share.path,
+          imageUrl: this.$global.share.imageUrl
+      };
+  },
   onShareTimeline() {
     return {
-      title: '分享到朋友圈的标题', // 分享的标题
-      query: 'key=value', // 分享的参数
-      imageUrl: '/static/icons/share-image.png' // 分享的图片路径
+      title: this.$global.share.title, // 分享的标题
+      query: this.$global.share.path, // 分享的参数
+      imageUrl: this.$global.share.imageUrl, // 分享的图片路径
     };
   }
 };

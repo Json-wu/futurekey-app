@@ -16,7 +16,12 @@ Vue.prototype.$global = {
     { name: "芝加哥", value: "America/Chicago" },
     { name: "纽约", value: "America/New_York" },
     { name: "马德里", value: "Europe/Madrid" }
-  ]
+  ],
+  share: {
+    title: '科爱小信',
+    path: '/pages/index/index', // 分享路径
+    imageUrl: '/static/illustration.png' // 分享图片URL
+  }
 };
 
 App.mpType = 'app'
