@@ -20,7 +20,7 @@
           <text class="title">{{ data.phone.number }}</text>
         </view>
         <!-- 用户协议 -->
-        <view class="item" @click="openLink(data.agreement.url)">
+        <view class="item" @click="useragree()">
           <image src="/static/icons/agreement.png" class="icon-link" />
           <text class="text">{{ data.agreement.text }}</text>
           <text class="title">{{ data.agreement.title }}</text>
@@ -86,6 +86,11 @@ export default {
     openLink(url) {
       uni.navigateTo({
         url: `/pages/webview/index?url=${encodeURIComponent(url)}`,
+      });
+    },
+    useragree(){
+      uni.navigateTo({
+        url: `/pages/useragree/index`,
       });
     },
     // 拨打电话
