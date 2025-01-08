@@ -7,7 +7,9 @@ Vue.mixin(share)
 Vue.config.productionTip = false;
 
 Vue.prototype.$global = {
+  studentList: [],
   studentCode: null,
+  selectIndex: 0,
   phone: '51741898',
   timezones:[
     { name: "上海", value: "Asia/Shanghai" },
@@ -21,7 +23,7 @@ Vue.prototype.$global = {
     title: '科爱小信',
     path: '/pages/index/index', // 分享路径
     imageUrl: '/static/illustration.png' // 分享图片URL
-  }
+  },
 };
 
 App.mpType = 'app'

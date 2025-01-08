@@ -43,7 +43,7 @@
     </view>
 
     <!-- 用户协议组件 -->
-    <AgreementPopup :show="isAgreementVisible" title="用户协议" :content="agreementContent"
+    <AgreementPopup :show="isAgreementVisible" title="用户隐私协议" :content="agreementContent"
       @close="isAgreementVisible = false" />
   </view>
 </template>
@@ -59,11 +59,6 @@ export default {
     return {
       isAgreed: false, // 是否同意协议
       isAgreementVisible: false, // 用户协议显示状态
-      agreementContent: [
-        "本网站及其对应的客户端、自媒体平台、其他主要运营网站等（以下简称“FUTUREKEY”）为K-12学生提供教育服务。本版权及免责声明旨在保障FUTUREKEY的正常运营，保护用户的合法权益，其初衷是为了给用户提供不间断的优质服务。FUTUREKEY始终尊重他人的知识产权，并保护自己的知识产权。因此，建议您在接受FUTUREKEY服务前，仔细阅读本声明。",
-        "FUTUREKEY运营方根据合理信赖的原则要求并认为用户对FUTUREKEY中传输的所有文章、文档、音频、视频、图片、课程、软件、源代码等内容（以下统称“作品”）拥有所有权及知识产权或者事先取得原作者发表、传播该作品所需的所有授权，并注明原作者名称及作品来源；对于因用户缺乏完整的所有权、知识产权或合法授权而产生的任何侵权或违法行为，用户应当承担该侵权或违法行为的法律责任，FUTUREKEY运营方不承担任何法律责任。",
-        "用户上传至FUTUREKEY的作品仅代表作者或用户的观点和立场，与FUTUREKEY无关。因用户的行为或用户上传、存储、发布、传播的任何作品、信息和内容所引起的任何纠纷，或由此产生的任何直接、间接、意外和特殊的损害，均由用户自行承担，FUTUREKEY运营者不承担任何责任；如因用户的行为造成的任何损失或不利影响，FUTUREKEY运营者保留追究相关用户法律责任的权利。"
-      ],
     };
   },
   methods: {

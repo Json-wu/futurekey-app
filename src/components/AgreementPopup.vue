@@ -475,14 +475,7 @@ export default {
     title: {
       type: String,
       default: "用户隐私协议", // 标题
-    },
-    content: {
-      type: Array,
-      default: () => [
-        "欢迎您使用XXX服务，本协议是为保护双方的合法权益......",
-        "请您仔细阅读以下内容，继续使用服务即表示同意以下条款......",
-      ],
-    },
+    }
   },
   data() {
     return {

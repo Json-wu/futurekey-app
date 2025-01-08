@@ -23,11 +23,11 @@
       </view>
 
       <!-- 筛选按钮 -->
-      <view class="filter-button">
+      <!-- <view class="filter-button">
         <picker @change="onTimeZoneChange" :value="selectedTimeZoneIndex" :range="timezones" range-key="name">
           <view class="timezone-select">{{ timezones[selectedTimeZoneIndex].name }} ▼</view>
         </picker>
-      </view>
+      </view> -->
     </view>
 
     <!-- 引入 CalendarPopup 组件 -->
@@ -84,8 +84,14 @@ export default {
     const now = new Date();
     this.currentYear = now.getFullYear();
     this.currentMonth = now.getMonth() + 1;
-    console.log('created', uni.getStorageSync("timezoneIndex"));
+    console.log('created', this.$global.timezones);
+    console.log('created', this.$global.studentList);
+    console.log('created', this.$global.studentCode);
+    console.log('created', this.$global.selectIndex);
     this.timezones = this.$global.timezones;
+    this.students = this.$global.studentList;
+    this.studentCode = this.$global.studentCode;
+    this.selectedStudentIndex = this.$global.selectIndex;
     this.selectedTimeZoneIndex = uni.getStorageSync("timezoneIndex") || 0;
     this.timezone = this.timezones[this.selectedTimeZoneIndex].value;
   },
@@ -121,8 +127,10 @@ export default {
       const monday = new Date(today.getTime() - (dayOfWeek - 1) * 86400000); // 本周一
       const sunday = new Date(today.getTime() + (7 - dayOfWeek) * 86400000); // 本周日
 
-      this.startDate = this.formatDate(firstDayOfMonth);
-      this.endDate = this.formatDate(lastDayOfMonth);
+      this.startDate = this.formatDate(monday);
+      this.endDate = this.formatDate(sunday);
+      this.currentYear = today.getFullYear();
+      this.currentMonth = today.getMonth() + 1;
 
       this.tempStartDate = this.startDate;
       this.tempEndDate = this.endDate;
@@ -293,6 +301,10 @@ export default {
 </script>
 
 <style scoped>
+.nav-left {
+  padding-right: 20rpx;
+  padding-left: 20rpx;
+}
 /* 页面背景 */
 .container {
   background: linear-gradient(to bottom, #2F51FF, #F7F9FC);
@@ -367,14 +379,15 @@ export default {
   background-color: #f5f5f5;
   border-radius: 8px;
   padding: 8px;
-  width: 70%;
+  width: 96%;
+  justify-content: space-between;
+  padding-left: 80rpx;
+  padding-right: 80rpx;
 }
 
 .date-text {
   font-size: 28rpx;
   color: #4c4949;
-  margin-left: 30rpx;
-  margin-right: 10rpx;
 }
 
 .separator {

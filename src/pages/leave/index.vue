@@ -5,10 +5,9 @@
       <view class="nav-left" @click="goBack">
         <image src="@/static/back-icon.png" class="back-icon"></image>
       </view>
-      <view class="centered-picker-container">
-        <picker @change="onStudentChange" :value="selectedStudentIndex" :range="students" range-key="name">
-          <view class="student-select">{{ students[selectedStudentIndex].name }} ▼</view>
-        </picker>
+      <view class="centered-picker-container" @tap="showModal">
+        <view class="studentname" v-if="students.length==1">{{ students[0].name }}</view>
+        <view class="student-select">{{ students[selectedStudentIndex].name }} ▼</view>
       </view>
       <!-- 占位元素：确保与系统按钮对齐 -->
       <view class="header-placeholder"></view>
@@ -18,16 +17,16 @@
       <!-- 日期选择器 -->
       <view class="date-range" @tap="openCalendar">
         <text class="date-text">{{ startDate || '请选择' }}</text>
-        <text class="separator">-</text>
+        <text class="separator">一</text>
         <text class="date-text">{{ endDate || '请选择' }}</text>
       </view>
 
       <!-- 筛选按钮 -->
-      <view class="filter-button">
+      <!-- <view class="filter-button">
         <picker @change="onTimeZoneChange" :value="selectedTimeZoneIndex" :range="timezones" range-key="name">
           <view class="timezone-select">{{ timezones[selectedTimeZoneIndex].name }} ▼</view>
         </picker>
-      </view>
+      </view> -->
     </view>
 
     <!-- 滚动课程列表 -->
@@ -53,7 +52,7 @@
           </view>
         </view>
         <view class="checkbox-container">
-          <checkbox :checked="course.isSelected" @tap="toggleCheck(course.id)"></checkbox>
+          <checkbox :disabled="course.state !==0"  :checked="course.isSelected" @tap="toggleCheck(course.id)"></checkbox>
         </view>
       </view>
     </scroll-view>
@@ -79,7 +78,7 @@
         <view class="leave-reason-selection">
           <picker mode="selector" :range="leaveReasons" @change="onReasonChange">
             <view class="picker">
-              请假原因: {{ leaveReasons[selectedReason] }}▼
+              请假原因：  {{ leaveReasons[selectedReason] }} ▼
             </view>
           </picker>
           
@@ -103,20 +102,32 @@
       @update:endDate="val => endDate = val" @update:tempStartDate="val => tempStartDate = val"
       @update:tempEndDate="val => tempEndDate = val" @update:currentStep="val => currentStep = val"
       @initCalendar="initCalendar" @fetchData="fetchData" />
+
+      <!-- 引用 StudentPopup 组件 -->
+      <StudentPopup
+          :isVisible="isVisible"
+          :studentList="students"
+          :selectedStudentCode="studentCode"
+          @updateStudent="handleUpdateStudent"
+          @update:isVisible="val => isVisible = val"
+          @logout="handleLogout"
+        />
   </view>
 </template>
 
 <script>
 import CalendarPopup from '@/components/CalendarPopup.vue';
-
+import studentPopup from '@/components/StudentPopup.vue';
 import { getCourseList, getStudentList } from '../../utils/api';
 
 export default {
   components: {
-    CalendarPopup
+    CalendarPopup,
+    studentPopup
   },
   data() {
     return {
+      isVisible: false,
       checkall: false,
       loading: true,
       studentCode: "202408392",
@@ -153,12 +164,24 @@ export default {
     const now = new Date();
     this.currentYear = now.getFullYear();
     this.currentMonth = now.getMonth() + 1;
-    console.log('created', uni.getStorageSync("timezoneIndex"));
+    console.log('created', this.$global.timezones);
+    console.log('created', this.$global.studentList);
+    console.log('created', this.$global.studentCode);
+    console.log('created', this.$global.selectIndex);
     this.timezones = this.$global.timezones;
+    this.students = this.$global.studentList;
+    this.studentCode = this.$global.studentCode;
+    this.selectedStudentIndex = this.$global.selectIndex;
     this.selectedTimeZoneIndex = uni.getStorageSync("timezoneIndex") || 0;
     this.timezone = this.timezones[this.selectedTimeZoneIndex].value;
   },
   methods: {
+    showModal() {
+      this.isVisible = true;
+    },
+    hideModal() {
+      this.isVisible = false;
+    },
     openModal() {
       this.isShow = true; // Show the modal
     },
@@ -210,8 +233,10 @@ export default {
       const monday = new Date(today.getTime() - (dayOfWeek - 1) * 86400000); // 本周一
       const sunday = new Date(today.getTime() + (7 - dayOfWeek) * 86400000); // 本周日
 
-      this.startDate = this.formatDate(firstDayOfMonth);
-      this.endDate = this.formatDate(lastDayOfMonth);
+      this.startDate = this.formatDate(monday);
+      this.endDate = this.formatDate(sunday);
+      this.currentYear = today.getFullYear();
+      this.currentMonth = today.getMonth() + 1;
 
       this.tempStartDate = this.startDate;
       this.tempEndDate = this.endDate;
@@ -359,18 +384,7 @@ export default {
     },
     async init() {
       this.setDefaultWeek(); // 初始化默认本周日期
-      const res = await getStudentList(this.$global.phone);
-      if (res.code == 0) {
-        this.students = res.data;
-        this.studentCode = res.data[0].code;
-        this.$global.studentCode = this.studentCode;
-        this.fetchData(); // 获取数据列表
-      } else {
-        uni.showToast({
-          title: '暂无学生信息',
-          icon: 'none'
-        });
-      }
+      this.fetchData(); // 获取数据列表
     },
     toggleCheck(id) {
       let course = this.courses.find(item => item.id === id);
@@ -433,7 +447,33 @@ export default {
           }
         });
       }
-    }
+    },
+    handleUpdateStudent(index) {
+      this.selectedStudentIndex = index;
+      this.$global.selectIndex = index;
+      this.studentCode = this.students[this.selectedStudentIndex].code;
+      this.$global.studentCode = this.studentCode;
+      console.log('选中的学生代码:', this.studentCode, this.$global.studentCode);
+      this.fetchData();
+      this.hideModal();
+    },
+    handleLogout() {
+      console.log("退出登录");
+      this.$global.studentCode = null;
+      this.$global.phone = null;
+      this.$global.isLogin = false;
+      this.$global.studentList=[];
+      uni.removeStorage('timezoneIndex');
+      uni.removeStorage('studentCode');
+      uni.removeStorage('phone');
+      uni.removeStorage('isLogin');
+      uni.removeStorage('studentList');
+
+      uni.navigateTo({
+        url: '/pages/index/index',
+      });
+      this.hideModal();
+    },
   },
   onLoad() {
     this.init();
@@ -443,6 +483,10 @@ export default {
 </script>
 
 <style scoped>
+.nav-left {
+  padding-right: 20rpx;
+  padding-left: 20rpx;
+}
 /* 页面背景 */
 .container {
   background: linear-gradient(to bottom, #2F51FF, #F7F9FC);
@@ -505,14 +549,15 @@ export default {
   background-color: #f5f5f5;
   border-radius: 8px;
   padding: 8px;
-  width: 70%;
+  width: 96%;
+  justify-content: space-between;
+  padding-left: 80rpx;
+  padding-right: 80rpx;
 }
 
 .date-text {
   font-size: 28rpx;
   color: #4c4949;
-  margin-left: 30rpx;
-  margin-right: 10rpx;
 }
 
 .separator {
@@ -533,7 +578,7 @@ export default {
 /* 课程列表 */
 .course-list {
   flex: 1;
-  margin-bottom: 60px;
+  margin-bottom: 200px;
   /* 留出底部按钮位置 */
 }
 

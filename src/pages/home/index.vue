@@ -3,11 +3,12 @@
     <!-- 自定义顶部导航栏 -->
     <view class="custom-header">
       <image src="@/static/keai-logo.png" class="header-logo" @click="showAboutUs" />
-      <view class="centered-picker-container">
+      <view class="centered-picker-container" @tap="showModal">
         <view class="studentname" v-if="students.length==1">{{ students[0].name }}</view>
-        <picker v-else @change="onStudentChange" :value="selectedStudentIndex" :range="students" range-key="name">
+        <view class="student-select">{{ students[selectedStudentIndex].name }} ▼</view>
+        <!-- <picker v-else @change="onStudentChange" :value="selectedStudentIndex" :range="students" range-key="name">
           <view class="student-select">{{ students[selectedStudentIndex].name }} ▼</view>
-        </picker>
+        </picker> -->
       </view>
       <!-- 占位元素：确保与系统按钮对齐 -->
       <view class="header-placeholder"></view>
@@ -17,7 +18,7 @@
       <!-- 日期选择器 -->
       <view class="date-range" @tap="openCalendar">
         <text class="date-text">{{ startDate || '请选择' }}</text>
-        <text class="separator">-</text>
+        <text class="separator">一</text>
         <text class="date-text">{{ endDate || '请选择' }}</text>
       </view>
 
@@ -103,22 +104,35 @@
 
     <!-- 引用 AboutUsPopup 组件 -->
     <AboutUsPopup :showAbout="showAbout" @update:showAbout="val => showAbout = val" />
+
+    <!-- 引用 StudentPopup 组件 -->
+    <StudentPopup
+      :isVisible="isVisible"
+      :studentList="students"
+      :selectedStudentCode="studentCode"
+      @updateStudent="handleUpdateStudent"
+      @update:isVisible="val => isVisible = val"
+      @logout="handleLogout"
+    />
   </view>
 </template>
 
 <script>
 import aboutUsPopup from '@/components/AboutUsPopup.vue';
-import CalendarPopup from '@/components/CalendarPopup.vue';
+import calendarPopup from '@/components/CalendarPopup.vue';
+import studentPopup from '@/components/StudentPopup.vue';
 
 import { getCourseList, getStudentList } from '../../utils/api';
 
 export default {
   components: {
     aboutUsPopup,
-    CalendarPopup
+    calendarPopup,
+    studentPopup
   },
   data() {
     return {
+      isVisible: false,
       loading: true,
       studentCode: "202408392",
       showAbout: false, // 控制弹窗显示/隐藏
@@ -142,6 +156,7 @@ export default {
       selectedTimeZoneIndex: 0, // 当前选中时区索引
       timezone: "Asia/Shanghai",
       students: [
+        {name:'',code:''}
       ],
       timezones: [],
       dateRange: "2024-01-09 - 2024-01-26", // 日期范围
@@ -163,6 +178,38 @@ export default {
     this.timezone = this.timezones[this.selectedTimeZoneIndex].value;
   },
   methods: {
+    showModal() {
+      this.isVisible = true;
+    },
+    hideModal() {
+      this.isVisible = false;
+    },
+    handleUpdateStudent(index) {
+      this.selectedStudentIndex = index;
+      this.$global.selectIndex = index;
+      this.studentCode = this.students[this.selectedStudentIndex].code;
+      this.$global.studentCode = this.studentCode;
+      console.log('选中的学生代码:', this.studentCode, this.$global.studentCode);
+      this.fetchData();
+      this.hideModal();
+    },
+    handleLogout() {
+      console.log("退出登录");
+      this.$global.studentCode = null;
+      this.$global.phone = null;
+      this.$global.isLogin = false;
+      this.$global.studentList=[];
+      uni.removeStorage('timezoneIndex');
+      uni.removeStorage('studentCode');
+      uni.removeStorage('phone');
+      uni.removeStorage('isLogin');
+      uni.removeStorage('studentList');
+
+      uni.navigateTo({
+        url: '/pages/index/index',
+      });
+      this.hideModal();
+    },
     showAboutUs() {
       this.showAbout = true;
     },
@@ -194,8 +241,10 @@ export default {
       const monday = new Date(today.getTime() - (dayOfWeek - 1) * 86400000); // 本周一
       const sunday = new Date(today.getTime() + (7 - dayOfWeek) * 86400000); // 本周日
 
-      this.startDate = this.formatDate(firstDayOfMonth);
-      this.endDate = this.formatDate(lastDayOfMonth);
+      this.startDate = this.formatDate(monday);
+      this.endDate = this.formatDate(sunday);
+      this.currentYear = today.getFullYear();
+      this.currentMonth = today.getMonth() + 1;
 
       this.tempStartDate = this.startDate;
       this.tempEndDate = this.endDate;
@@ -346,6 +395,7 @@ export default {
       const res = await getStudentList(this.$global.phone);
       if (res.code == 0) {
         this.students = res.data;
+        this.$global.studentList = this.students;
         this.studentCode = res.data[0].code;
         this.$global.studentCode = this.studentCode;
         this.fetchData(); // 获取数据列表
@@ -460,13 +510,14 @@ export default {
   border-radius: 8px;
   padding: 8px;
   width: 70%;
+  justify-content: space-between;
+  padding-left: 30rpx;
+  padding-right: 30rpx;
 }
 
 .date-text {
   font-size: 28rpx;
   color: #4c4949;
-  margin-left: 30rpx;
-  margin-right: 10rpx;
 }
 
 .separator {
