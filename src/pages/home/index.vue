@@ -508,7 +508,7 @@ export default {
   align-items: center;
   background-color: #f5f5f5;
   border-radius: 8px;
-  padding: 8px;
+  padding: 20rpx;
   width: 70%;
   justify-content: space-between;
   padding-left: 30rpx;

@@ -31,62 +31,146 @@
     </view>
 
     <view class="page">
-        <!-- 用户信息 -->
-        <text class="titlecss">学生信息</text>
-        <view class="user-card">
-          <view class="user-info">
+      <!-- 用户信息 -->
+      <view class="user-card">
+        <view class="user-info">
+          <view class="user-name">
+            <view class="icon1"></view>
             <view class="name">王一言</view>
-            <view class="edit-icon">✏️</view>
           </view>
-          <view class="user-details">
-            <view>🎂 年龄：2015/8周岁</view>
-          <view>📍 英语等级：L2</view>
+          <view class="edit-icon">
+            <image
+              class="edit-icon"
+              src="/static/icons/edit.png"
+              mode="scaleToFill"
+            />
+          </view>
+        </view>
+        <view class="user-details">
+          <view class="user-name">
+            🎂 年龄
+          </view>
+          <view>
+            2015/8周岁
+          </view>
+        </view>
+        <view class="user-details">
+          <view class="user-name">
+            📍 英语等级
+          </view>
+          <view>
+            L2
+          </view>
         </view>
       </view>
 
       <!-- 统计结果 -->
-      <text class="titlecss">统计信息</text>
+      <view class="titlecss">
+        <text>统计结果</text>
+      </view>
+      
       <view class="stat-section">
         <view class="stat-item">
-          <text>课程总时长</text>
+          <text class="label">课程总时长</text>
           <text class="stat-value">48.16 h</text>
         </view>
         <view class="stat-item">
-          <text>课程总节数</text>
+          <text class="label">课程总节数</text>
           <text class="stat-value">28</text>
         </view>
         <view class="stat-item">
-          <text>下次续订日期</text>
+          <text class="label">下次续订日期</text>
           <text class="stat-value">2024-12-25</text>
         </view>
         <view class="stat-item">
-          <text>教务顾问</text>
+          <text class="label">教务顾问</text>
           <text class="stat-value">王美丽</text>
         </view>
       </view>
 
       <!-- 课程列表 -->
-      <text class="titlecss">课程历史</text>
-      <view class="course-section">
-        <view class="course-header">
-          <text>课程</text>
-          <text>日期</text>
-          <text>教师</text>
-          <text>出勤</text>
-        </view>
-        <view class="course-list">
-          <view class="course-item" v-for="(item, index) in courseList" :key="index">
-            <text>{{ item.name }}</text>
-            <text>{{ item.date }}</text>
-            <text>{{ item.teacher }}</text>
-            <text>{{ item.attendance }}</text>
+      <!-- <view class="titlecss">
+        <text>课程历史</text>
+      </view> -->
+      <view class="course-history">
+        <scroll-view class="contentdiv" scroll-x="true">
+          <view class="table">
+            <!-- 表头 -->
+            <view class="table-row table-header">
+              <view class="table-cell">课程</view>
+              <view class="table-cell">日期</view>
+              <view class="table-cell">教师</view>
+              <view class="table-cell">出勤</view>
+              <view class="table-cell">出勤</view>
+              <view class="table-cell">出勤</view>
+            </view>
+
+            <!-- 表格内容 -->
+            <view class="table-row" v-for="(item, index) in visibleRows" :key="index">
+              <view class="table-cell">{{ item.name }}</view>
+              <view class="table-cell">{{ item.date }}</view>
+              <view class="table-cell">{{ item.teacher }}</view>
+              <view class="table-cell">{{ item.attendance }}</view>
+              <view class="table-cell">{{ item.attendance }}</view>
+              <view class="table-cell">{{ item.attendance }}</view>
+            </view>
           </view>
-        </view>
+        </scroll-view>  
         <view class="course-footer">
-          <button class="expand-btn">展开</button>
-          <button class="download-btn">下载 PDF</button>
+          <view class="expand-btn" @tap="toggleExpand">
+            <text class="expend"> {{ isExpanded ? '收起' : '展开' }}</text>
+            <image
+              class="icon-down"
+              :src="getIcon()"
+              mode="scaleToFill"
+            />
+          </view>
+          <view class="download-pdf">下载 PDF</view>
         </view>
       </view>
+
+      <!-- 历史订单 -->
+      <view class="titlecss">
+        <text>历史订单</text>
+      </view>
+
+      <view class="order-history">
+        <scroll-view class="contentdiv" scroll-x="true">
+          <view class="table">
+            <!-- 表头 -->
+            <view class="table-row table-header">
+              <view class="table-cell">课程</view>
+              <view class="table-cell">日期</view>
+              <view class="table-cell">教师</view>
+              <view class="table-cell">出勤</view>
+              <view class="table-cell">出勤</view>
+              <view class="table-cell">出勤</view>
+            </view>
+
+            <!-- 表格内容 -->
+            <view class="table-row" v-for="(item, index) in visibleRowsOrder" :key="index">
+              <view class="table-cell">{{ item.name }}</view>
+              <view class="table-cell">{{ item.date }}</view>
+              <view class="table-cell">{{ item.teacher }}</view>
+              <view class="table-cell">{{ item.attendance }}</view>
+              <view class="table-cell">{{ item.attendance }}</view>
+              <view class="table-cell">{{ item.attendance }}</view>
+            </view>
+          </view>
+        </scroll-view>  
+        <view class="course-footer">
+          <view class="expand-btn" @tap="toggleExpandOrder">
+            <text class="expend"> {{ isExpandedOrder ? '收起' : '展开' }}</text>
+            <image
+              class="icon-down"
+              :src="getIcon()"
+              mode="scaleToFill"
+            />
+          </view>
+          <view class="download-pdf">下载 PDF</view>
+        </view>
+      </view>
+     
     </view>
 
     <!-- 引入 CalendarPopup 组件 -->
@@ -112,6 +196,8 @@ export default {
   },
   data() {
     return {
+      isExpanded: false, // 是否展开
+      isExpandedOrder: false, // 是否展开
       loading: true,
       studentCode: "202408392",
       currentYear: 0, // 当前年份
@@ -142,8 +228,27 @@ export default {
         { name: "写作基础课", date: "2024-8-10 14:00~14:27", teacher: "John Wilson", attendance: "出勤" },
         { name: "写作基础课", date: "2024-8-10 14:00~14:27", teacher: "John Wilson", attendance: "出勤" },
         { name: "写作基础课", date: "2024-8-10 14:00~14:27", teacher: "John Wilson", attendance: "出勤" },
+        { name: "写作基础课", date: "2024-8-10 14:00~14:27", teacher: "John Wilson", attendance: "出勤" },
+        { name: "写作基础课", date: "2024-8-10 14:00~14:27", teacher: "John Wilson", attendance: "出勤" },
+      ],
+      // 示例订单数据
+      orderList: [
+        { name: "写作基础课", date: "2024-8-10 14:00~14:27", teacher: "John Wilson", attendance: "出勤" },
+        { name: "写作基础课", date: "2024-8-10 14:00~14:27", teacher: "John Wilson", attendance: "出勤" },
+        { name: "写作基础课", date: "2024-8-10 14:00~14:27", teacher: "John Wilson", attendance: "出勤" },
+        { name: "写作基础课", date: "2024-8-10 14:00~14:27", teacher: "John Wilson", attendance: "出勤" },
+        { name: "写作基础课", date: "2024-8-10 14:00~14:27", teacher: "John Wilson", attendance: "出勤" },
       ],
     };
+  },
+  computed: {
+    // 计算属性，根据 isExpanded 状态控制显示的行数
+    visibleRows() {
+      return this.isExpanded ? this.courseList : this.courseList.slice(0, 3);
+    },
+    visibleRowsOrder() {
+      return this.isExpandedOrder ? this.orderList : this.orderList.slice(0, 3);
+    },
   },
   created() {
     const now = new Date();
@@ -161,6 +266,9 @@ export default {
     this.timezone = this.timezones[this.selectedTimeZoneIndex].value;
   },
   methods: {
+    getIcon(){
+      return this.isExpanded ? "/static/icons/up.png" : "/static/icons/down.png";
+    },
     goBack() {
       uni.navigateBack();
     },
@@ -355,7 +463,17 @@ export default {
           icon: 'none'
         });
       }
-    }
+    },
+    // 切换展开状态
+    toggleExpand() {
+      this.isExpanded = !this.isExpanded;
+      console.log(this.isExpanded);
+    },   
+     // 切换展开状态
+    toggleExpandOrder() {
+      this.isExpandedOrder = !this.isExpandedOrder;
+      console.log(this.isExpandedOrder);
+    },   
   },
   onLoad() {
     console.log('onLoad');
@@ -372,9 +490,7 @@ export default {
 }
 /* 页面背景 */
 .container {
-  background: linear-gradient(to bottom, #2F51FF, #F7F9FC);
-  ;
-  height: 100vh;
+  background: linear-gradient(to bottom, #2F51FF, #c4cdd9);
   flex-direction: column;
 }
 
@@ -443,7 +559,7 @@ export default {
   align-items: center;
   background-color: #f5f5f5;
   border-radius: 8px;
-  padding: 8px;
+  padding: 20rpx;
   width: 96%;
   justify-content: space-between;
   padding-left: 80rpx;
@@ -479,7 +595,7 @@ export default {
 /* 课程列表 */
 .course-list {
   flex: 1;
-  margin-bottom: 60px;
+  margin-bottom: 40rpx;
   /* 留出底部按钮位置 */
 }
 
@@ -508,38 +624,6 @@ export default {
   width: 14px;
   height: 14px;
   margin-right: 10rpx;
-}
-
-.course-info {
-  flex: 1;
-  padding-left: 10px;
-}
-
-.course-title {
-  font-size: 14px;
-  font-weight: bold;
-  color: #333;
-  max-width: 420rpx;
-}
-
-.course-time,
-.course-teacher {
-  font-size: 12px;
-  color: #666;
-  margin: 14rpx;
-}
-
-.course-status {
-  font-size: 22rpx;
-  align-items: center;
-  margin-right: 10px;
-}
-
-/* 状态容器 */
-.status-container {
-  display: flex;
-  align-items: center;
-  margin-top: 20rpx;
 }
 
 /* 状态图标基础样式 */
@@ -846,6 +930,12 @@ export default {
   padding: 24rpx;
   margin-bottom: 16rpx;
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+  color: rgba(0, 0, 0, 0.65);
+  font-family: "PingFang SC";
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 18px; 
 }
 
 .user-info {
@@ -858,47 +948,60 @@ export default {
 .name {
   font-size: 32rpx;
   font-weight: bold;
+  color: #2F51FF;
+  margin-left: 10rpx;
 }
 
-.edit-icon {
-  font-size: 28rpx;
-  color: #007aff;
-}
-
-.user-details {
-  font-size: 26rpx;
-  color: #666;
-}
-
-.stat-section {
-  background-color: #fff;
-  border-radius: 8rpx;
-  padding: 24rpx;
-  margin-bottom: 16rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
-}
-
-.stat-item {
+.user-name {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12rpx 0;
-  font-size: 28rpx;
+  margin-bottom: 16rpx;
+}
+
+.edit-icon {
+  width: 42px;
+  height: 18px;
+}
+
+.user-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  align-self: stretch;
+}
+
+.stat-section {
+  margin-bottom: 20rpx;
+  border-radius: 10rpx;
+}
+
+.stat-item {
+  border-radius: 6px;
+  padding: 8px 16px 8px 16px;
+  gap: 28px;
+  background-color: #fff;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 14rpx;
 }
 
 .stat-value {
-  font-weight: bold;
-  color: #333;
+  font-size: 14px;
+  line-height: 20px;
+  text-align: right;
 }
 
 .course-section {
+  margin-top: 30rpx;
   background-color: #fff;
   border-radius: 8rpx;
   padding: 24rpx;
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
 }
 
-.course-header,
 .course-item {
   display: flex;
   justify-content: space-between;
@@ -910,24 +1013,129 @@ export default {
   font-weight: bold;
   border-bottom: 1rpx solid #e5e5e5;
   margin-bottom: 12rpx;
+  display: flex;
+  justify-content: space-between;
+  background-color: #f5f5f5;
+  padding: 10px;
 }
 
 .course-footer {
   display: flex;
+  padding: 20rpx;
   justify-content: space-between;
-  margin-top: 16rpx;
 }
 
-.expand-btn,
-.download-btn {
+.expand-btn{
+  padding-top: 16rpx;
+}
+.download-pdf {
   background-color: #007aff;
   color: #fff;
   border: none;
-  border-radius: 4rpx;
-  padding: 12rpx 16rpx;
-  font-size: 28rpx;
+  border-radius: 4%;
+  font-size: 16px;
+  padding: 6px 14px;
 }
 .titlecss {
   text-align: center;
+  color: #FFFFFF;
+  margin: 20rpx auto 20rpx auto;
+}
+.icon1 {
+  width: 4px;
+  height: 20px;
+  border-radius: 4%;
+  background: #2F51FF;
+}
+.label {
+  width: 200rpx;
+  font-size: 14px;
+  line-height: 20px;
+  text-align: left;
+  color: #00000083;
+}
+
+.course-history {
+  background: #FFFFFF;
+  border-radius: 10px;
+}
+.order-history {
+  background: #FFFFFF;
+  border-radius: 10px;
+}
+.contentdiv {
+  height: auto;
+  width: 100%; /* 必须定义容器宽度 */
+  /* overflow-x: scroll;  */
+  white-space: nowrap; /* 防止子元素换行 */
+  font-size: 28rpx;
+  color: #555;
+  line-height: 1.6;
+}
+
+/* 设置滚动条样式（仅部分支持） */
+.contentdiv::-webkit-scrollbar {
+  width: 4px;
+}
+
+.contentdiv::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  /* 滑块颜色 */
+  border-radius: 4px;
+}
+
+.contentdiv::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  /* 滑块轨道颜色 */
+}
+
+.expend {
+  color: #2F51FF;
+  text-align: center;
+  font-family: "PingFang SC";
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 18px; /* 128.571% */
+  margin-right: 4rpx;
+}
+.icon-down{
+  width: 14px;
+  height: 14px;
+}
+
+.table {
+  display: flex;
+  flex-direction: column;
+  width: 1000rpx;
+}
+
+.table-row {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1rpx solid #e5e5e5;
+}
+
+.table-header {
+  border-radius: 10px;
+  font-weight: bold;
+  border-bottom: 1rpx solid #e5e5e5;
+  margin-bottom: 12rpx;
+  display: flex;
+  justify-content: space-between;
+  padding: 8px;
+  background: rgba(47, 81, 255, 0.05);
+}
+
+.table-cell {
+  flex: 1;
+  padding: 4px;
+  text-align: center;
+  white-space: normal;
+}
+.order-history {
+  text-align: center;
+  color: #353333;
+  padding: 30rpx;
 }
 </style>

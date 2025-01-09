@@ -475,7 +475,7 @@ export default {
 
 .coursediv {
   border-radius: 6px;
-  padding: 6px 16px 6px 16px;
+  padding: 10px 16px 10px 16px;
   gap: 28px;
   background-color: #fff;
   display: flex;
