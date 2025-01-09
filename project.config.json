@@ -1,5 +1,6 @@
 {
-  "appid": "wx8f5240d873ca7411",
+  "appid": "wxbc94d9f9b66c1591",
+  "appName": "科爱信-开心英语",
   "compileType": "miniprogram",
   "libVersion": "3.7.2",
   "packOptions": {
@@ -24,11 +25,5 @@
   "editorSetting": {
     "tabIndent": "insertSpaces",
     "tabSize": 2
-  },
-  "appName": "科爱信",
-  "shareTitle": "科爱信 - 一款教育管理平台",
-  "shareSummary": "欢迎使用科爱信平台，方便您的教育管理。",
-  "sharePath": "/pages/index/index", 
-  "shareImageUrl": "/static/logo.png", 
-  "externalLink": "https://www.futurekey.com"
+  }
 }

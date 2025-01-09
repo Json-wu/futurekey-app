@@ -30,6 +30,65 @@
       </view> -->
     </view>
 
+    <view class="page">
+        <!-- 用户信息 -->
+        <text class="titlecss">学生信息</text>
+        <view class="user-card">
+          <view class="user-info">
+            <view class="name">王一言</view>
+            <view class="edit-icon">✏️</view>
+          </view>
+          <view class="user-details">
+            <view>🎂 年龄：2015/8周岁</view>
+          <view>📍 英语等级：L2</view>
+        </view>
+      </view>
+
+      <!-- 统计结果 -->
+      <text class="titlecss">统计信息</text>
+      <view class="stat-section">
+        <view class="stat-item">
+          <text>课程总时长</text>
+          <text class="stat-value">48.16 h</text>
+        </view>
+        <view class="stat-item">
+          <text>课程总节数</text>
+          <text class="stat-value">28</text>
+        </view>
+        <view class="stat-item">
+          <text>下次续订日期</text>
+          <text class="stat-value">2024-12-25</text>
+        </view>
+        <view class="stat-item">
+          <text>教务顾问</text>
+          <text class="stat-value">王美丽</text>
+        </view>
+      </view>
+
+      <!-- 课程列表 -->
+      <text class="titlecss">课程历史</text>
+      <view class="course-section">
+        <view class="course-header">
+          <text>课程</text>
+          <text>日期</text>
+          <text>教师</text>
+          <text>出勤</text>
+        </view>
+        <view class="course-list">
+          <view class="course-item" v-for="(item, index) in courseList" :key="index">
+            <text>{{ item.name }}</text>
+            <text>{{ item.date }}</text>
+            <text>{{ item.teacher }}</text>
+            <text>{{ item.attendance }}</text>
+          </view>
+        </view>
+        <view class="course-footer">
+          <button class="expand-btn">展开</button>
+          <button class="download-btn">下载 PDF</button>
+        </view>
+      </view>
+    </view>
+
     <!-- 引入 CalendarPopup 组件 -->
     <CalendarPopup :showCalendar="showCalendar" :currentYear="currentYear" :currentMonth="currentMonth"
       :startDate="startDate" :endDate="endDate" :tempStartDate="tempStartDate" :tempEndDate="tempEndDate"
@@ -78,6 +137,12 @@ export default {
         1: "已出席",
         2: "已请假"
       },
+      // 示例课程数据
+      courseList: [
+        { name: "写作基础课", date: "2024-8-10 14:00~14:27", teacher: "John Wilson", attendance: "出勤" },
+        { name: "写作基础课", date: "2024-8-10 14:00~14:27", teacher: "John Wilson", attendance: "出勤" },
+        { name: "写作基础课", date: "2024-8-10 14:00~14:27", teacher: "John Wilson", attendance: "出勤" },
+      ],
     };
   },
   created() {
@@ -769,5 +834,100 @@ export default {
 
 .other-month {
   color: #ccc;
+}
+
+.page {
+  padding: 36rpx;
+}
+
+.user-card {
+  background-color: #fff;
+  border-radius: 8rpx;
+  padding: 24rpx;
+  margin-bottom: 16rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+}
+
+.user-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.name {
+  font-size: 32rpx;
+  font-weight: bold;
+}
+
+.edit-icon {
+  font-size: 28rpx;
+  color: #007aff;
+}
+
+.user-details {
+  font-size: 26rpx;
+  color: #666;
+}
+
+.stat-section {
+  background-color: #fff;
+  border-radius: 8rpx;
+  padding: 24rpx;
+  margin-bottom: 16rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12rpx 0;
+  font-size: 28rpx;
+}
+
+.stat-value {
+  font-weight: bold;
+  color: #333;
+}
+
+.course-section {
+  background-color: #fff;
+  border-radius: 8rpx;
+  padding: 24rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+}
+
+.course-header,
+.course-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12rpx 0;
+}
+
+.course-header {
+  font-weight: bold;
+  border-bottom: 1rpx solid #e5e5e5;
+  margin-bottom: 12rpx;
+}
+
+.course-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 16rpx;
+}
+
+.expand-btn,
+.download-btn {
+  background-color: #007aff;
+  color: #fff;
+  border: none;
+  border-radius: 4rpx;
+  padding: 12rpx 16rpx;
+  font-size: 28rpx;
+}
+.titlecss {
+  text-align: center;
 }
 </style>

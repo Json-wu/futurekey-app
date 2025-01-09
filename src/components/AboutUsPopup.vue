@@ -69,7 +69,7 @@ export default {
       type: Object,
       default: () => ({
         website: { text: "官方网站", url: "https://www.futurekey.com", title: "www.futurekey.com" },
-        phone: { text: "客服电话", number: "400-189-0866400" },
+        phone: { text: "客服电话", number: "400-189-0866" },
         agreement: { text: "用户协议", url: "https://futurekey.com/private", title: "《用户隐私协议》" }
       }),
     },

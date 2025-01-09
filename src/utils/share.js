@@ -2,7 +2,7 @@ export default {
     data() {
         return {
             share: {
-                title: '科爱小信',
+                title: '科爱信-开心英语',
                 path: '/pages/index/index', // 分享路径
                 imageUrl: '/static/illustration.png' // 分享图片URL
             }
