@@ -34,4 +34,20 @@ export function deleteFile(params = {}) {
     data: params,
   });
 }
+// 封装获取学生统计的API
+export function getStudentTotal(params = {}) {
+  return request({
+    url: `${BASE_URL}/student/total`,
+    method: 'POST',
+    data: params,
+  });
+}
+// 封装获取学生订单列表接口
+export function getOrderList(params = {}) {
+  return request({
+    url: `${BASE_URL}/student/order`,
+    method: 'POST',
+    data: params,
+  });
+}
 // 其他API接口可以类似地封装在这里

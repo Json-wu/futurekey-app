@@ -5,11 +5,15 @@
       <view class="nav-left" @click="goBack">
         <image src="@/static/back-icon.png" class="back-icon"></image>
       </view>
-      <view class="centered-picker-container">
+      <view class="centered-picker-container" @tap="showModal">
+        <view class="studentname" v-if="students.length==1">{{ students[0].name }}</view>
+        <view class="student-select">{{ students[selectedStudentIndex].name }} ▼</view>
+      </view>
+      <!-- <view class="centered-picker-container">
         <picker @change="onStudentChange" :value="selectedStudentIndex" :range="students" range-key="name">
           <view class="student-select">{{ students[selectedStudentIndex].name }} ▼</view>
         </picker>
-      </view>
+      </view> -->
       <!-- 占位元素：确保与系统按钮对齐 -->
       <view class="header-placeholder"></view>
     </view>
@@ -36,7 +40,7 @@
         <view class="user-info">
           <view class="user-name">
             <view class="icon1"></view>
-            <view class="name">王一言</view>
+            <view class="name">{{ students[selectedStudentIndex].name }}</view>
           </view>
           <view class="edit-icon">
             <image
@@ -72,19 +76,19 @@
       <view class="stat-section">
         <view class="stat-item">
           <text class="label">课程总时长</text>
-          <text class="stat-value">48.16 h</text>
+          <text class="stat-value">{{ totalData.hour }} h</text>
         </view>
         <view class="stat-item">
           <text class="label">课程总节数</text>
-          <text class="stat-value">28</text>
+          <text class="stat-value">{{ totalData.count }}</text>
         </view>
         <view class="stat-item">
           <text class="label">下次续订日期</text>
-          <text class="stat-value">2024-12-25</text>
+          <text class="stat-value">{{ totalData.nextDate }}</text>
         </view>
         <view class="stat-item">
           <text class="label">教务顾问</text>
-          <text class="stat-value">王美丽</text>
+          <text class="stat-value">{{ totalData.consultant }}</text>
         </view>
       </view>
 
@@ -101,18 +105,17 @@
               <view class="table-cell">日期</view>
               <view class="table-cell">教师</view>
               <view class="table-cell">出勤</view>
-              <view class="table-cell">出勤</view>
-              <view class="table-cell">出勤</view>
             </view>
 
             <!-- 表格内容 -->
+            <view v-if="visibleRowsOrder.length == 0" class="table-row">
+              <text class="nonedata">暂无课程</text>
+            </view>
             <view class="table-row" v-for="(item, index) in visibleRows" :key="index">
-              <view class="table-cell">{{ item.name }}</view>
-              <view class="table-cell">{{ item.date }}</view>
+              <view class="table-cell">{{ item.title }}</view>
+              <view class="table-cell">{{ item.time }}</view>
               <view class="table-cell">{{ item.teacher }}</view>
-              <view class="table-cell">{{ item.attendance }}</view>
-              <view class="table-cell">{{ item.attendance }}</view>
-              <view class="table-cell">{{ item.attendance }}</view>
+              <view class="table-cell">{{ formatState(item.state) }}</view>
             </view>
           </view>
         </scroll-view>  
@@ -140,21 +143,20 @@
             <!-- 表头 -->
             <view class="table-row table-header">
               <view class="table-cell">课程</view>
-              <view class="table-cell">日期</view>
-              <view class="table-cell">教师</view>
-              <view class="table-cell">出勤</view>
-              <view class="table-cell">出勤</view>
-              <view class="table-cell">出勤</view>
+              <view class="table-cell">签订日期</view>
+              <view class="table-cell">到期日期</view>
+              <view class="table-cell">金额</view>
             </view>
 
             <!-- 表格内容 -->
+            <view v-if="visibleRowsOrder.length == 0" class="table-row">
+              <text class="nonedata">暂无订单</text>
+            </view>
             <view class="table-row" v-for="(item, index) in visibleRowsOrder" :key="index">
-              <view class="table-cell">{{ item.name }}</view>
-              <view class="table-cell">{{ item.date }}</view>
-              <view class="table-cell">{{ item.teacher }}</view>
-              <view class="table-cell">{{ item.attendance }}</view>
-              <view class="table-cell">{{ item.attendance }}</view>
-              <view class="table-cell">{{ item.attendance }}</view>
+              <view class="table-cell">{{ item.course_type }}</view>
+              <view class="table-cell">{{ item.sign_dt }}</view>
+              <view class="table-cell">{{ item.sign_dt }}</view>
+              <view class="table-cell">{{ item.contract_amount }}</view>
             </view>
           </view>
         </scroll-view>  
@@ -163,7 +165,7 @@
             <text class="expend"> {{ isExpandedOrder ? '收起' : '展开' }}</text>
             <image
               class="icon-down"
-              :src="getIcon()"
+              :src="getIconOrder()"
               mode="scaleToFill"
             />
           </view>
@@ -182,24 +184,38 @@
       @update:endDate="val => endDate = val" @update:tempStartDate="val => tempStartDate = val"
       @update:tempEndDate="val => tempEndDate = val" @update:currentStep="val => currentStep = val"
       @initCalendar="initCalendar" @fetchData="fetchData" />
+
+    <!-- 引用 StudentPopup 组件 -->
+    <StudentPopup
+        :isVisible="isVisible"
+        :studentList="students"
+        :selectedStudentCode="studentCode"
+        @updateStudent="handleUpdateStudent"
+        @update:isVisible="val => isVisible = val"
+        @logout="handleLogout"
+      />
   </view>
 </template>
 
 <script>
-import CalendarPopup from '@/components/CalendarPopup.vue';
+import calendarPopup from '@/components/CalendarPopup.vue';
+import studentPopup from '@/components/StudentPopup.vue';
 
-import { getCourseList, getStudentList } from '../../utils/api';
+import { getStudentTotal, getCourseList, getOrderList } from '../../utils/api';
 
 export default {
   components: {
-    CalendarPopup
+    calendarPopup,
+    studentPopup
   },
   data() {
     return {
+      isVisible: false,
       isExpanded: false, // 是否展开
       isExpandedOrder: false, // 是否展开
       loading: true,
       studentCode: "202408392",
+      studentName: '',
       currentYear: 0, // 当前年份
       currentMonth: 0, // 当前月份
       startDate: '',       // 开始日期
@@ -225,30 +241,33 @@ export default {
       },
       // 示例课程数据
       courseList: [
-        { name: "写作基础课", date: "2024-8-10 14:00~14:27", teacher: "John Wilson", attendance: "出勤" },
-        { name: "写作基础课", date: "2024-8-10 14:00~14:27", teacher: "John Wilson", attendance: "出勤" },
-        { name: "写作基础课", date: "2024-8-10 14:00~14:27", teacher: "John Wilson", attendance: "出勤" },
-        { name: "写作基础课", date: "2024-8-10 14:00~14:27", teacher: "John Wilson", attendance: "出勤" },
-        { name: "写作基础课", date: "2024-8-10 14:00~14:27", teacher: "John Wilson", attendance: "出勤" },
+       
       ],
       // 示例订单数据
       orderList: [
-        { name: "写作基础课", date: "2024-8-10 14:00~14:27", teacher: "John Wilson", attendance: "出勤" },
-        { name: "写作基础课", date: "2024-8-10 14:00~14:27", teacher: "John Wilson", attendance: "出勤" },
-        { name: "写作基础课", date: "2024-8-10 14:00~14:27", teacher: "John Wilson", attendance: "出勤" },
-        { name: "写作基础课", date: "2024-8-10 14:00~14:27", teacher: "John Wilson", attendance: "出勤" },
-        { name: "写作基础课", date: "2024-8-10 14:00~14:27", teacher: "John Wilson", attendance: "出勤" },
+       
       ],
+      totalData: {
+        hour: 0,
+        count: 0,
+        nextDate: '-',
+        consultant: '无'
+      },
     };
   },
   computed: {
     // 计算属性，根据 isExpanded 状态控制显示的行数
     visibleRows() {
-      return this.isExpanded ? this.courseList : this.courseList.slice(0, 3);
+      return this.isExpanded && this.courseList.length>3 ? this.courseList : this.courseList.slice(0, 3);
     },
     visibleRowsOrder() {
-      return this.isExpandedOrder ? this.orderList : this.orderList.slice(0, 3);
+      return this.isExpandedOrder && this.orderList.length>3 ? this.orderList : this.orderList.slice(0, 3);
     },
+    getStudentName(){
+      console.log('getStudentName',this.$global.studentList);
+      console.log('getStudentName',this.$global.selectIndex);
+      return this.$global.studentList[this.$global.selectIndex].name;
+    }
   },
   created() {
     const now = new Date();
@@ -262,12 +281,62 @@ export default {
     this.students = this.$global.studentList;
     this.studentCode = this.$global.studentCode;
     this.selectedStudentIndex = this.$global.selectIndex;
+    this.studentName = this.students[this.selectedStudentIndex].name;
     this.selectedTimeZoneIndex = uni.getStorageSync("timezoneIndex") || 0;
     this.timezone = this.timezones[this.selectedTimeZoneIndex].value;
   },
   methods: {
+    formatState(state){
+      switch (state) {
+        case 0:
+          return '待出席';
+        case 1:
+          return '已出席';
+        case 2:
+          return '已请假';
+        case 3:
+          return '缺勤';
+        default:
+          return '未知';
+      }
+    },
+    showModal() {
+      this.isVisible = true;
+    },
+    hideModal() {
+      this.isVisible = false;
+    },
+    handleUpdateStudent(index) {
+      this.selectedStudentIndex = index;
+      this.$global.selectIndex = index;
+      this.studentCode = this.students[this.selectedStudentIndex].code;
+      this.studentName = this.students[this.selectedStudentIndex].name;
+      this.$global.studentCode = this.studentCode;
+      console.log('选中的学生代码:', this.studentCode, this.$global.studentCode);
+      this.hideModal();
+    },
+    handleLogout() {
+      console.log("退出登录");
+      this.$global.studentCode = null;
+      this.$global.phone = null;
+      this.$global.isLogin = false;
+      this.$global.studentList=[];
+      uni.removeStorage('timezoneIndex');
+      uni.removeStorage('studentCode');
+      uni.removeStorage('phone');
+      uni.removeStorage('isLogin');
+      uni.removeStorage('studentList');
+
+      uni.navigateTo({
+        url: '/pages/index/index',
+      });
+      this.hideModal();
+    },
     getIcon(){
       return this.isExpanded ? "/static/icons/up.png" : "/static/icons/down.png";
+    },
+    getIconOrder(){
+      return this.isExpandedOrder ? "/static/icons/up.png" : "/static/icons/down.png";
     },
     goBack() {
       uni.navigateBack();
@@ -428,6 +497,24 @@ export default {
           title: '加载中...'
         });
         this.loading = true;
+        await this.getStudentTotal();
+        await this.fetchCourseData();
+        await this.fetchOrderData();
+      } catch (error) {
+        console.error('显示加载提示失败:', error);
+      } finally {
+        // 隐藏加载提示
+        uni.hideLoading();
+        this.loading = false;
+      }
+    },
+    async fetchCourseData() {
+      try {
+        // 显示加载提示
+        uni.showLoading({
+          title: '加载中...'
+        });
+        this.loading = true;
 
         console.log('开始时间', this.startDate, this.endDate, this.timezone, this.studentCode);
         const res = await getCourseList({
@@ -439,7 +526,7 @@ export default {
         console.log('课程列表:', res);
         // 处理返回的数据
         if (res.code == 0) {
-          this.courses = res.data;
+          this.courseList = res.data;
         }
       } catch (error) {
         console.error('显示加载提示失败:', error);
@@ -449,20 +536,46 @@ export default {
         this.loading = false;
       }
     },
+    async getStudentTotal() {
+      try {
+        console.log('getStudentTotal开始时间', this.startDate, this.endDate, this.timezone, this.studentCode);
+        const res = await getStudentTotal({
+          "start_dt": this.startDate,
+          "end_dt": this.endDate,
+          "studentCode": this.studentCode,
+          "timezone": this.timezone
+        });
+        console.log('课程列表:', res);
+        // 处理返回的数据
+        if (res.code == 0) {
+          this.totalData = res.data;
+        }
+      } catch (error) {
+        console.error('显示加载提示失败:', error);
+      }
+    },
+    async fetchOrderData(){
+      try {
+        console.log('开始时间', this.startDate, this.endDate, this.timezone, this.studentCode);
+        const res = await getOrderList({
+          "phone": this.$global.phone,
+          "start_dt": this.startDate,
+          "end_dt": this.endDate,
+          "studentCode": this.studentCode,
+          "timezone": this.timezone
+        });
+        console.log('订单列表:', res);
+        // 处理返回的数据
+        if (res.code == 0) {
+          this.orderList = res.data;
+        }
+      } catch (error) {
+        console.error('订单列表加载提示失败:', error);
+      } 
+    },
     async init() {
       this.setDefaultWeek(); // 初始化默认本周日期
-      const res = await getStudentList(this.$global.phone);
-      if (res.code == 0) {
-        this.students = res.data;
-        this.studentCode = res.data[0].code;
-        this.$global.studentCode = this.studentCode;
-        this.fetchData(); // 获取数据列表
-      } else {
-        uni.showToast({
-          title: '暂无学生信息',
-          icon: 'none'
-        });
-      }
+      this.fetchData();
     },
     // 切换展开状态
     toggleExpand() {
@@ -1137,5 +1250,8 @@ export default {
   text-align: center;
   color: #353333;
   padding: 30rpx;
+}
+.nonedata{
+  margin-left: 60rpx;
 }
 </style>
