@@ -204,10 +204,21 @@ export default {
       }
       uni.chooseImage({
         count: count,
+        size: 3072*1000,
         success: (res) => {
+          const maxSize = 3 * 1024 * 1024; // 3MB in bytes
           res.tempFiles.forEach(file => {
-            console.log(file);
-            this.uploadFile(file);
+            console.log('file', file);
+            if (file.size <= maxSize) {
+              console.log(file);
+              this.uploadFile(file);
+            } else {
+              uni.showToast({
+                title: '文件大小不能超过3MB',
+                icon: 'none',
+                duration: 2000
+              });
+            }
           });
         }
       });

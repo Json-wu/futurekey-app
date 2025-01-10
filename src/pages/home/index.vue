@@ -123,6 +123,7 @@ import calendarPopup from '@/components/CalendarPopup.vue';
 import studentPopup from '@/components/StudentPopup.vue';
 
 import { getCourseList, getStudentList } from '../../utils/api';
+import { onPullDownRefresh } from '@dcloudio/uni-app';
 
 export default {
   components: {
@@ -436,6 +437,12 @@ export default {
       query: this.$global.share.path, // 分享的参数
       imageUrl: this.$global.share.imageUrl, // 分享的图片路径
     };
+  },
+  onPullDownRefresh() {
+    this.fetchData(); // 获取数据列表
+    setTimeout(() => {
+      uni.stopPullDownRefresh();
+    }, 1000);
   }
 };
 </script>
