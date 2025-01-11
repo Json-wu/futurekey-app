@@ -108,10 +108,10 @@
             </view>
 
             <!-- 表格内容 -->
-            <view v-if="visibleRowsOrder.length == 0" class="table-row">
+            <view v-if="visibleRows.length == 0" class="table-row">
               <text class="nonedata">暂无课程</text>
             </view>
-            <view class="table-row" v-for="(item, index) in visibleRows" :key="index">
+            <view v-else class="table-row" v-for="(item, index) in visibleRows" :key="index">
               <view class="table-cell">{{ item.title }}</view>
               <view class="table-cell">{{ item.time }}</view>
               <view class="table-cell">{{ item.teacher }}</view>
@@ -152,7 +152,7 @@
             <view v-if="visibleRowsOrder.length == 0" class="table-row">
               <text class="nonedata">暂无订单</text>
             </view>
-            <view class="table-row" v-for="(item, index) in visibleRowsOrder" :key="index">
+            <view v-else class="table-row" v-for="(item, index) in visibleRowsOrder" :key="index">
               <view class="table-cell">{{ item.course_type }}</view>
               <view class="table-cell">{{ item.sign_dt }}</view>
               <view class="table-cell">{{ item.sign_dt }}</view>
