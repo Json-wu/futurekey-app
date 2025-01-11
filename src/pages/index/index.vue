@@ -13,7 +13,7 @@
     <view class="login-container">
       <!-- 手机号展示 -->
       <view class="phone-number">
-        517***98
+        {{ phone }}
       </view>
 
       <!-- 登录按钮 -->
@@ -57,6 +57,7 @@ export default {
   },
   data() {
     return {
+      phone: '', // 手机号
       isAgreed: false, // 是否同意协议
       isAgreementVisible: false, // 用户协议显示状态
     };
@@ -73,57 +74,48 @@ export default {
     },
     // 获取手机号
     getPhoneNumber(e) {
-      console.log(e.detail.errMsg);
       if (e.detail.errMsg === "getPhoneNumber:ok") {
         const { encryptedData, iv } = e.detail;
 
-        // // 调用登录接口，获取临时登录凭证 code
-        // uni.login({
-        //   success: (res) => {
-        //     console.log('临时登录凭证:', res.code);
-        //     if (res.code) {
-              // 调用后端接口解密手机号
-              uni.request({
-                url: 'https://www.futurekey.com/classroom/wechat/decryptPhone', // 替换为后端接口
-                method: 'POST',
-                data: {
-                  session_key: uni.getStorageSync('session_key'),
-                  encryptedData,
-                  iv,
-                },
-                success: (response) => {
-                  let result = response.data;
-                  console.log('response:', result);
-                  if (result.code==0) {
-                    console.log('用户手机号:', result.data.phone);
-                    uni.showToast({
-                      title: '登录成功',
-                      icon: 'success'
-                    });
-                    this.$global.phone = result.data.phone;
-                    uni.setStorageSync('phone', result.data.phone);
-                    // 跳转至首页index
-                    uni.navigateTo({
-                      url: "/pages/home/index",
-                    });
-                  } else {
-                    uni.showToast({
-                      title: '获取手机号失败',
-                      icon: 'none'
-                    });
-                  }
-                },
-                fail: (err) => {
-                  console.error('请求失败:', err);
-                  uni.showToast({
-                    title: '服务器错误',
-                    icon: 'none'
-                  });
-                },
+        uni.request({
+          url: 'https://www.futurekey.com/classroom/wechat/decryptPhone', // 替换为后端接口
+          method: 'POST',
+          data: {
+            session_key: uni.getStorageSync('session_key'),
+            encryptedData,
+            iv,
+          },
+          success: (response) => {
+            let result = response.data;
+            if (result.code==0) {
+              uni.showToast({
+                title: '登录成功',
+                icon: 'success'
               });
-        //     }
-        //   },
-        // });
+              this.$global.phone = result.data.phone;
+              uni.setStorageSync('phone', result.data.phone);
+              uni.setStorageSync('isLogin', true);
+              uni.setStorageSync('isAgreed', true);
+              uni.removeStorageSync('session_key');
+              // 跳转至首页index
+              uni.navigateTo({
+                url: "/pages/home/index",
+              });
+            } else {
+              uni.showToast({
+                title: '获取手机号失败',
+                icon: 'none'
+              });
+            }
+          },
+          fail: (err) => {
+            console.error('请求失败:', err);
+            uni.showToast({
+              title: '服务器错误',
+              icon: 'none'
+            });
+          },
+        });
       } else {
         uni.showToast({
           title: '用户拒绝授权',
@@ -135,7 +127,6 @@ export default {
       // 调用登录接口，获取临时登录凭证 code
       uni.login({
         success: (res) => {
-          console.log('临时登录凭证:', res.code);
           if (res.code) {
             // 调用后端接口解密手机号
             uni.request({
@@ -146,16 +137,17 @@ export default {
               },
               success: (response) => {
                 let result = response.data;
-                console.log('response:', result);
                 if (result.code == 0) {
                   if(result.data.phone){
-                    console.log('用户手机号:', result.data.phone);
                     uni.showToast({
                       title: '登录成功',
                       icon: 'success'
                     });
                     this.$global.phone = result.data.phone;
                     uni.setStorageSync('phone', result.data.phone);
+                    uni.setStorageSync('isLogin', true);
+                    uni.setStorageSync('isAgreed', true);
+                    uni.removeStorageSync('session_key');
                     // 跳转至首页index
                     uni.navigateTo({
                       url: "/pages/home/index",
@@ -163,6 +155,7 @@ export default {
                   }else{
                     uni.setStorageSync('session_key', result.data.session_key);
                   }
+                  uni.setStorageSync('token', result.data.token);
                 } else {
                   uni.showToast({
                     title: '登录失败',
@@ -203,8 +196,26 @@ export default {
   },
   onLoad() {
     console.log("Page Loaded");
-    this.onlogin();
-  }
+    this.isAgreed = uni.getStorageSync('isAgreed');
+    this.phone = uni.getStorageSync('phone');
+    console.log("phone:", this.phone);
+    this.$global.phone = this.phone;
+    if(this.phone){
+      console.log("用户已登录，直接跳转！！");
+      setTimeout(() => {
+        uni.navigateTo({
+          url: "/pages/home/index",
+        });
+      }, 100);
+    }else{
+      console.log("用户未登录，调用登录接口！！");
+      this.onlogin();
+    }
+  },
+  onShow() {
+    console.log("Page Show");
+
+  },
 };
 </script>
 

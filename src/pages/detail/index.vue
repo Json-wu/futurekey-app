@@ -435,6 +435,12 @@ export default {
     // 你可以在这里根据 courseId 进行相应的操作
     console.log(this.currentCourseId, this.$global);
     this.fetchData();
+  },
+  onPullDownRefresh() {
+    this.fetchData(); // 获取数据列表
+    setTimeout(() => {
+      uni.stopPullDownRefresh();
+    }, 800);
   }
 };
 </script>

@@ -4,11 +4,7 @@
     <view class="custom-header">
       <image src="@/static/keai-logo.png" class="header-logo" @click="showAboutUs" />
       <view class="centered-picker-container" @tap="showModal">
-        <view class="studentname" v-if="students.length==1">{{ students[0].name }}</view>
         <view class="student-select">{{ students[selectedStudentIndex].name }} ▼</view>
-        <!-- <picker v-else @change="onStudentChange" :value="selectedStudentIndex" :range="students" range-key="name">
-          <view class="student-select">{{ students[selectedStudentIndex].name }} ▼</view>
-        </picker> -->
       </view>
       <!-- 占位元素：确保与系统按钮对齐 -->
       <view class="header-placeholder"></view>
@@ -29,8 +25,6 @@
         </picker>
       </view>
     </view>
-
-
 
     <!-- 滚动课程列表 -->
     <scroll-view class="course-list" scroll-y>
@@ -91,7 +85,6 @@
       </view>
     </view>
 
-
     <!-- 引入 CalendarPopup 组件 -->
     <CalendarPopup :showCalendar="showCalendar" :currentYear="currentYear" :currentMonth="currentMonth"
       :startDate="startDate" :endDate="endDate" :tempStartDate="tempStartDate" :tempEndDate="tempEndDate"
@@ -112,7 +105,6 @@
       :selectedStudentCode="studentCode"
       @updateStudent="handleUpdateStudent"
       @update:isVisible="val => isVisible = val"
-      @logout="handleLogout"
     />
   </view>
 </template>
@@ -123,7 +115,6 @@ import calendarPopup from '@/components/CalendarPopup.vue';
 import studentPopup from '@/components/StudentPopup.vue';
 
 import { getCourseList, getStudentList } from '../../utils/api';
-import { onPullDownRefresh } from '@dcloudio/uni-app';
 
 export default {
   components: {
@@ -170,10 +161,11 @@ export default {
     };
   },
   created() {
+    console.log('timezones', this.$global.timezones);
     const now = new Date();
     this.currentYear = now.getFullYear();
     this.currentMonth = now.getMonth() + 1;
-    console.log('created', uni.getStorageSync("timezoneIndex"));
+    console.log('timezoneIndex', uni.getStorageSync("timezoneIndex"));
     this.timezones = this.$global.timezones;
     this.selectedTimeZoneIndex = uni.getStorageSync("timezoneIndex") || 0;
     this.timezone = this.timezones[this.selectedTimeZoneIndex].value;
@@ -194,20 +186,28 @@ export default {
       this.fetchData();
       this.hideModal();
     },
-    handleLogout() {
+    handleLogout2() {
       console.log("退出登录");
       this.$global.studentCode = null;
       this.$global.phone = null;
       this.$global.isLogin = false;
       this.$global.studentList=[];
-      uni.removeStorage('timezoneIndex');
-      uni.removeStorage('studentCode');
-      uni.removeStorage('phone');
-      uni.removeStorage('isLogin');
-      uni.removeStorage('studentList');
+      uni.removeStorageSync('timezoneIndex');
+      uni.removeStorageSync('studentCode');
+      uni.removeStorageSync('phone');
+      uni.removeStorageSync('isLogin');
+      uni.removeStorageSync('studentList');
+      uni.removeStorageSync('isAgreed');
 
       uni.navigateTo({
         url: '/pages/index/index',
+        success() {
+          uni.showToast({
+            title: '退出登录成功',
+            icon: 'success',
+            duration: 2000
+          });
+        },
       });
       this.hideModal();
     },
@@ -382,6 +382,7 @@ export default {
         // 处理返回的数据
         if (res.code == 0) {
           this.courses = res.data;
+          this.$global.studentList = this.students;
         }
       } catch (error) {
         console.error('显示加载提示失败:', error);
@@ -424,6 +425,21 @@ export default {
     this.init();
     this.initCalendar();   // 初始化日历
   },
+  // onShow() {
+  //   console.log('timezones', this.$global.timezones);
+  //   console.log('studentList', this.$global.studentList);
+  //   console.log('studentCode', this.$global.studentCode);
+  //   console.log('selectIndex', this.$global.selectIndex);
+  //   this.timezones = this.$global.timezones;
+  //   this.students = this.$global.studentList;
+  //   this.studentCode = this.$global.studentCode;
+  //   this.selectedStudentIndex = this.$global.selectIndex;
+  //   const currentStudent = this.students[this.selectedStudentIndex];
+  //   this.studentName = currentStudent ? currentStudent.name: '';
+  //   this.selectedTimeZoneIndex = uni.getStorageSync("timezoneIndex") || 0;
+  //   this.timezone = this.timezones[this.selectedTimeZoneIndex].value;
+  //   this.fetchData(); // 获取数据列表
+  // },
   onShareAppMessage() {
       return {
           title: this.$global.share.title,
@@ -442,7 +458,7 @@ export default {
     this.fetchData(); // 获取数据列表
     setTimeout(() => {
       uni.stopPullDownRefresh();
-    }, 1000);
+    }, 800);
   }
 };
 </script>

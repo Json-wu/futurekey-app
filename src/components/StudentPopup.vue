@@ -45,7 +45,59 @@ export default {
         },
         logout() {
             // 退出登录逻辑
-            this.$emit("logout");
+            // this.$emit("logout");
+            console.log("退出登录");
+            const token = uni.getStorageSync('token');
+            console.log("token",token);
+            this.$global.studentCode = null;
+            this.$global.phone = null;
+            this.$global.isLogin = false;
+            this.$global.studentList=[];
+            uni.removeStorageSync('timezoneIndex');
+            uni.removeStorageSync('studentCode');
+            uni.removeStorageSync('phone');
+            uni.removeStorageSync('isLogin');
+            uni.removeStorageSync('studentList');
+            uni.removeStorageSync('isAgreed');
+
+            // 调用后端接口退出
+            uni.request({
+              url: 'https://www.futurekey.com/classroom/wechat/logout',
+              method: 'POST',
+              data: {
+                token: token
+              },
+              success: (response) => {
+                let result = response.data;
+                if (result.code == 0) {
+                    uni.removeStorageSync('token');
+                    uni.navigateTo({
+                        url: '/pages/index/index',
+                        success() {
+                            uni.showToast({
+                                title: '退出登录成功',
+                                icon: 'success',
+                                duration: 2000
+                            });
+                        }
+                    });
+                } else {
+                  uni.showToast({
+                    title: '退出失败',
+                    icon: 'none'
+                  });
+                }
+              },
+              fail: (err) => {
+                console.error('请求失败:', err);
+                uni.showToast({
+                  title: '服务器错误',
+                  icon: 'none'
+                });
+              },
+            });
+            
+            this.closeVisible();
         },
     },
 };

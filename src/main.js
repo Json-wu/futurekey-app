@@ -10,7 +10,7 @@ Vue.prototype.$global = {
   studentList: [],
   studentCode: null,
   selectIndex: 0,
-  phone: '51741898',
+  phone: '',
   timezones:[
     { name: "上海", value: "Asia/Shanghai" },
     { name: "洛杉矶", value: "America/Los_Angeles" },

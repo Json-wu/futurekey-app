@@ -592,6 +592,12 @@ export default {
     console.log('onLoad');
     this.init();
     this.initCalendar();   // 初始化日历
+  },
+  onPullDownRefresh() {
+    this.fetchData(); // 获取数据列表
+    setTimeout(() => {
+      uni.stopPullDownRefresh();
+    }, 800);
   }
 };
 </script>

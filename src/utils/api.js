@@ -50,4 +50,11 @@ export function getOrderList(params = {}) {
     data: params,
   });
 }
-// 其他API接口可以类似地封装在这里
+// 封装用户退出登录接口
+export function logout(params = {}) {
+  return request({
+    url: `${BASE_URL}/wechat/logout`,
+    method: 'POST',
+    data: params,
+  });
+}
