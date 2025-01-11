@@ -73,38 +73,35 @@ export default {
     },
     // 获取手机号
     getPhoneNumber(e) {
-      this.$global.phone = "51741898";
-      // 跳转至首页index
-      uni.navigateTo({
-        url: "/pages/home/index",
-      });
-      return;
       console.log(e.detail.errMsg);
       if (e.detail.errMsg === "getPhoneNumber:ok") {
         const { encryptedData, iv } = e.detail;
 
-        // 调用登录接口，获取临时登录凭证 code
-        uni.login({
-          success: (res) => {
-            console.log('临时登录凭证:', res.code);
-            if (res.code) {
+        // // 调用登录接口，获取临时登录凭证 code
+        // uni.login({
+        //   success: (res) => {
+        //     console.log('临时登录凭证:', res.code);
+        //     if (res.code) {
               // 调用后端接口解密手机号
               uni.request({
                 url: 'https://www.futurekey.com/classroom/wechat/decryptPhone', // 替换为后端接口
                 method: 'POST',
                 data: {
-                  code: res.code,
+                  session_key: uni.getStorageSync('session_key'),
                   encryptedData,
                   iv,
                 },
                 success: (response) => {
-                  if (response.data.success) {
-                    console.log('用户手机号:', response.data.phoneNumber);
+                  let result = response.data;
+                  console.log('response:', result);
+                  if (result.code==0) {
+                    console.log('用户手机号:', result.data.phone);
                     uni.showToast({
                       title: '登录成功',
                       icon: 'success'
                     });
-                    this.$global.phone = response.data.phoneNumber;
+                    this.$global.phone = result.data.phone;
+                    uni.setStorageSync('phone', result.data.phone);
                     // 跳转至首页index
                     uni.navigateTo({
                       url: "/pages/home/index",
@@ -124,9 +121,9 @@ export default {
                   });
                 },
               });
-            }
-          },
-        });
+        //     }
+        //   },
+        // });
       } else {
         uni.showToast({
           title: '用户拒绝授权',
@@ -142,28 +139,33 @@ export default {
           if (res.code) {
             // 调用后端接口解密手机号
             uni.request({
-              url: 'https://www.futurekey.com/classroom/wechat/decryptPhone', // 替换为后端接口
+              url: 'https://www.futurekey.com/classroom/wechat/authCode',
               method: 'POST',
               data: {
                 code: res.code,
-                encryptedData,
-                iv,
               },
               success: (response) => {
-                if (response.data.success) {
-                  console.log('用户手机号:', response.data.phoneNumber);
-                  uni.showToast({
-                    title: '登录成功',
-                    icon: 'success'
-                  });
-                  this.$global.phone = response.data.phoneNumber;
-                  // 跳转至首页index
-                  uni.navigateTo({
-                    url: "/pages/home/index",
-                  });
+                let result = response.data;
+                console.log('response:', result);
+                if (result.code == 0) {
+                  if(result.data.phone){
+                    console.log('用户手机号:', result.data.phone);
+                    uni.showToast({
+                      title: '登录成功',
+                      icon: 'success'
+                    });
+                    this.$global.phone = result.data.phone;
+                    uni.setStorageSync('phone', result.data.phone);
+                    // 跳转至首页index
+                    uni.navigateTo({
+                      url: "/pages/home/index",
+                    });
+                  }else{
+                    uni.setStorageSync('session_key', result.data.session_key);
+                  }
                 } else {
                   uni.showToast({
-                    title: '获取手机号失败',
+                    title: '登录失败',
                     icon: 'none'
                   });
                 }
@@ -177,6 +179,13 @@ export default {
               },
             });
           }
+        },
+        fail: (err) => {
+          console.error('登录失败:', err);
+          uni.showToast({
+            title: '登录失败',
+            icon: 'none'
+          });
         },
       });
     },
@@ -192,8 +201,9 @@ export default {
       }
     },
   },
-  onload() {
-
+  onLoad() {
+    console.log("Page Loaded");
+    this.onlogin();
   }
 };
 </script>
