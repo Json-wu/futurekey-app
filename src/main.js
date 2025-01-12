@@ -24,6 +24,10 @@ Vue.prototype.$global = {
     path: '/pages/index/index', // 分享路径
     imageUrl: '/static/illustration.png' // 分享图片URL
   },
+  currentYear: new Date().getFullYear(),
+  currentMonth: new Date().getMonth() + 1,
+  stratDate: new Date().getFullYear() + '-' + (new Date().getMonth() + 1) + '-01',
+  endDate: new Date().getFullYear() + '-' + (new Date().getMonth() + 1) + '-' + new Date().getDate(),
 };
 
 App.mpType = 'app'

@@ -75,7 +75,7 @@ export default {
     },
     miniProgramLink: {
       type: String,
-      default: "https://futurekey.com"
+      default: "#小程序://开心英语/eG9pSbAumGbhEuk"
     },
   },
   methods: { 
@@ -118,7 +118,7 @@ export default {
       uni.showToast({ title: '微博分享暂不支持', icon: 'none' });
     },
     shareWxQ() {
-      uni.showToast({ title: '请点击右上角的分享按钮', icon: 'none' });
+      uni.showToast({ title: '请点击右上角...', icon: 'none' });
     }
   }
 };

@@ -12,25 +12,21 @@
 
     <view class="login-container">
       <!-- 手机号展示 -->
-      <view class="phone-number">
-        {{ phone }}
-      </view>
+      <view class="phone-number">{{ phone }}</view>
 
       <!-- 登录按钮 -->
       <view class="login-section">
-        <!-- 登录按钮 -->
-        <button v-if="!isAgreed" class="login-button" @tap="handleAgree">
-          手机号一键登录
-        </button>
+        <button v-if="!isAgreed" class="login-button" @tap="handleAgree">手机号一键登录</button>
         <button v-if="isAgreed" class="login-button" open-type="getPhoneNumber" @getphonenumber="getPhoneNumber">
           手机号一键登录
         </button>
-        <view class="login-tip">请使用家长手机号/<text class="greencolor" @click="showWechat()">Wechat ID</text>登录</view>
+        <view class="login-tip">
+          请使用家长手机号/<text class="greencolor" @click="showWechat">Wechat ID</text>登录
+        </view>
       </view>
 
       <!-- 协议 -->
       <view class="agreement-section">
-        <!-- 复选框组件 -->
         <checkbox-group @change="toggleAgreement">
           <label class="checkbox-container">
             <checkbox value="agree" :checked="isAgreed" />
@@ -46,38 +42,40 @@
     <AgreementPopup :show="isAgreementVisible" title="用户隐私协议" :content="agreementContent"
       @close="isAgreementVisible = false" />
 
+    <!-- Wechat ID Modal -->
     <view v-if="isShow" class="modal">
-    <view class="modal-content">
-      <view class="wechatInfo">
-        <view class="viewname">Wechat ID：</view>
-        <view class="viewname">
-          <input type="text" placeholder="长按粘贴Wechat ID" maxlength="20" v-model="wechatID" />
+      <view class="modal-content">
+        <view class="wechatInfo">
+          <view class="viewname">微信号：</view>
+          <view class="viewname">
+            <input type="text" placeholder="长按粘贴Wechat ID" maxlength="20" v-model="wechatID" />
+          </view>
+        </view>
+        <!-- Action Buttons -->
+        <view class="calendar-header">
+          <button class="btn cancel" @tap="closeModal">取消</button>
+          <button class="btn confirm" @tap="save">确定</button>
         </view>
       </view>
-      <!-- Action Buttons -->
-      <view class="calendar-header">
-        <button class="btn cancel" @tap="closeModal">取消</button>
-        <button class="btn confirm" @tap="save">确定</button>
-      </view>
     </view>
-  </view>
   </view>
 </template>
 
 <script>
-import agreementPopup from "@/components/AgreementPopup.vue";
+import AgreementPopup from "@/components/AgreementPopup.vue";
 
 export default {
   components: {
-    agreementPopup,
+    AgreementPopup,
   },
   data() {
     return {
       phone: '', // 手机号
       isAgreed: false, // 是否同意协议
       isAgreementVisible: false, // 用户协议显示状态
-      isShow: false,
-      wechatID: '',
+      isShow: false, // Wechat ID 模态框显示状态
+      wechatID: '', // Wechat ID
+      agreementContent: '', // 用户协议内容
     };
   },
   methods: {
@@ -94,51 +92,7 @@ export default {
     getPhoneNumber(e) {
       if (e.detail.errMsg === "getPhoneNumber:ok") {
         const { encryptedData, iv } = e.detail;
-
-        uni.showLoading({
-          title: '登录中...',
-        });
-        uni.request({
-          url: 'https://www.futurekey.com/classroom/wechat/decryptPhone', // 替换为后端接口
-          method: 'POST',
-          data: {
-            session_key: uni.getStorageSync('session_key'),
-            encryptedData,
-            iv,
-          },
-          success: (response) => {
-            let result = response.data;
-            if (result.code==0) {
-              
-              this.$global.phone = result.data.phone;
-              uni.setStorageSync('phone', result.data.phone);
-              uni.setStorageSync('isLogin', true);
-              uni.setStorageSync('isAgreed', true);
-              uni.removeStorageSync('session_key');
-              // 跳转至首页index
-              uni.navigateTo({
-                url: "/pages/home/index",
-                success: () => {
-                  uni.hideLoading();
-                }
-              });
-            } else {
-              uni.hideLoading();
-              uni.showToast({
-                title: '获取手机号失败，请重试',
-                icon: 'none'
-              });
-            }
-          },
-          fail: (err) => {
-            console.error('请求失败:', err);
-            uni.hideLoading();
-            uni.showToast({
-              title: '网络异常，请联系客服处理',
-              icon: 'none'
-            });
-          },
-        });
+        this.loginWithPhoneNumber(encryptedData, iv);
       } else {
         uni.showToast({
           title: '用户拒绝授权',
@@ -146,54 +100,59 @@ export default {
         });
       }
     },
+    // 使用手机号登录
+    loginWithPhoneNumber(encryptedData, iv) {
+      uni.showLoading({ title: '登录中...' });
+      uni.request({
+        url: 'https://www.futurekey.com/classroom/wechat/decryptPhone',
+        method: 'POST',
+        data: {
+          session_key: uni.getStorageSync('session_key'),
+          encryptedData,
+          iv,
+        },
+        success: (response) => {
+          let result = response.data;
+          if (result.code == 0) {
+            this.handleLoginSuccess(result.data.phone);
+          } else {
+            this.handleLoginFail('获取手机号失败，请重试');
+          }
+        },
+        fail: (err) => {
+          console.error('请求失败:', err);
+          this.handleLoginFail('网络异常，请联系客服处理');
+        },
+      });
+    },
+    // 处理登录成功
+    handleLoginSuccess(phone) {
+      this.$global.phone = phone;
+      uni.setStorageSync('phone', phone);
+      uni.setStorageSync('isLogin', true);
+      uni.setStorageSync('isAgreed', true);
+      uni.removeStorageSync('session_key');
+      uni.navigateTo({
+        url: "/pages/home/index",
+        success: () => {
+          uni.hideLoading();
+        }
+      });
+    },
+    // 处理登录失败
+    handleLoginFail(message) {
+      uni.hideLoading();
+      uni.showToast({
+        title: message,
+        icon: 'none'
+      });
+    },
+    // 调用登录接口
     onlogin() {
-      // 调用登录接口，获取临时登录凭证 code
       uni.login({
         success: (res) => {
           if (res.code) {
-            // 调用后端接口解密手机号
-            uni.request({
-              url: 'https://www.futurekey.com/classroom/wechat/authCode',
-              method: 'POST',
-              data: {
-                code: res.code,
-              },
-              success: (response) => {
-                let result = response.data;
-                if (result.code == 0) {
-                  if(result.data.phone){
-                    uni.showToast({
-                      title: '登录成功',
-                      icon: 'success'
-                    });
-                    this.$global.phone = result.data.phone;
-                    uni.setStorageSync('phone', result.data.phone);
-                    uni.setStorageSync('isLogin', true);
-                    uni.setStorageSync('isAgreed', true);
-                    uni.removeStorageSync('session_key');
-                    // 跳转至首页index
-                    uni.navigateTo({
-                      url: "/pages/home/index",
-                    });
-                  }else{
-                    uni.setStorageSync('session_key', result.data.session_key);
-                  }
-                  uni.setStorageSync('token', result.data.token);
-                } else {
-                  uni.showToast({
-                    title: result.message,
-                    icon: 'none'
-                  });
-                }
-              },
-              fail: (err) => {
-                console.error('请求失败:', err);
-                uni.showToast({
-                  title: '网络异常，请联系客服处理',
-                  icon: 'none'
-                });
-              },
-            });
+            this.authCode(res.code);
           }
         },
         fail: (err) => {
@@ -205,73 +164,16 @@ export default {
         },
       });
     },
-    // 点击登录按钮
-    handleAgree() {
-      if (!this.isAgreed) {
-        uni.showToast({
-          icon: "none",
-          title: '请阅读并同意用户隐私协议，并授权科爱信获取信息',
-          duration: 2000
-        });
-        return false;
-      }
-    },
-    showWechat(){
-      if (!this.isAgreed) {
-        uni.showToast({
-          icon: "none",
-          title: '请阅读并同意用户隐私协议，并授权科爱信获取信息',
-          duration: 2000
-        });
-      }else{
-        this.isShow = true;
-      }
-    },
-    
-    closeModal() {
-      this.isShow = false; // Hide the modal
-    },
-    save() {
-      console.log("wechatID:", this.wechatID);
-      if(!this.wechatID){
-        uni.showToast({
-          title: '请输入Wechat ID',
-          icon: 'none'
-        });
-        return;
-      }
-      this.isShow = false; // Hide the modal
-      uni.showLoading({
-        title: '登录中...',
-      });
+    // 授权码登录
+    authCode(code) {
       uni.request({
-        url: 'https://www.futurekey.com/classroom/wechat/login',
+        url: 'https://www.futurekey.com/classroom/wechat/authCode',
         method: 'POST',
-        data: {
-          wechatID: this.wechatID,
-          token: uni.getStorageSync('token')
-        },
+        data: { code },
         success: (response) => {
           let result = response.data;
           if (result.code == 0) {
-            if(result.data.phone){
-              uni.showToast({
-                title: '登录成功',
-                icon: 'success'
-              });
-              this.$global.phone = result.data.phone;
-              uni.setStorageSync('phone', result.data.phone);
-              uni.setStorageSync('isLogin', true);
-              uni.setStorageSync('isAgreed', true);
-              uni.removeStorageSync('session_key');
-              // 跳转至首页index
-              uni.navigateTo({
-                url: "/pages/home/index",
-              });
-            }else{
-              uni.setStorageSync('session_key', result.data.session_key);
-            }
-            uni.setStorageSync('token', result.data.token);
+            this.handleAuthCodeSuccess(result.data);
           } else {
             uni.showToast({
               title: result.message,
@@ -287,7 +189,84 @@ export default {
           });
         },
       });
-
+    },
+    // 处理授权码登录成功
+    handleAuthCodeSuccess(data) {
+      if (data.phone) {
+        this.handleLoginSuccess(data.phone);
+      } else {
+        uni.setStorageSync('session_key', data.session_key);
+      }
+      uni.setStorageSync('token', data.token);
+    },
+    // 点击登录按钮
+    handleAgree() {
+      if (!this.isAgreed) {
+        uni.showToast({
+          icon: "none",
+          title: '请阅读并同意用户隐私协议，并授权科爱信获取信息',
+          duration: 2000
+        });
+        return false;
+      }
+    },
+    // 显示 Wechat ID 模态框
+    showWechat() {
+      if (!this.isAgreed) {
+        uni.showToast({
+          icon: "none",
+          title: '请阅读并同意用户隐私协议，并授权科爱信获取信息',
+          duration: 2000
+        });
+      } else {
+        this.isShow = true;
+      }
+    },
+    // 关闭模态框
+    closeModal() {
+      this.isShow = false;
+    },
+    // 保存 Wechat ID
+    save() {
+      if (!this.wechatID) {
+        uni.showToast({
+          title: '请输入Wechat ID',
+          icon: 'none'
+        });
+        return;
+      }
+      this.isShow = false;
+      this.loginWithWechatID();
+    },
+    // 使用 Wechat ID 登录
+    loginWithWechatID() {
+      uni.showLoading({ title: '登录中...' });
+      uni.request({
+        url: 'https://www.futurekey.com/classroom/wechat/login',
+        method: 'POST',
+        data: {
+          wechatID: this.wechatID,
+          token: uni.getStorageSync('token')
+        },
+        success: (response) => {
+          let result = response.data;
+          if (result.code == 0) {
+            this.handleLoginSuccess(result.data.phone);
+          } else {
+            uni.showToast({
+              title: result.message,
+              icon: 'none'
+            });
+          }
+        },
+        fail: (err) => {
+          console.error('请求失败:', err);
+          uni.showToast({
+            title: '网络异常，请联系客服处理',
+            icon: 'none'
+          });
+        },
+      });
     },
   },
   onLoad() {
@@ -297,21 +276,20 @@ export default {
     this.wechatID = this.phone;
     console.log("phone:", this.phone);
     this.$global.phone = this.phone;
-    if(this.phone){
+    if (this.phone) {
       console.log("用户已登录，直接跳转！！");
       setTimeout(() => {
         uni.navigateTo({
           url: "/pages/home/index",
         });
       }, 100);
-    }else{
+    } else {
       console.log("用户未登录，调用登录接口！！");
       this.onlogin();
     }
   },
   onShow() {
     console.log("Page Show");
-
   },
 };
 </script>
@@ -414,12 +392,12 @@ export default {
   margin: 0 5rpx;
   cursor: pointer;
 }
+
 .greencolor {
   color: #32CD32;
   margin: 0 5rpx;
   cursor: pointer;
 }
-
 
 .modal {
   display: flex;
@@ -440,6 +418,7 @@ export default {
   border-radius: 5px;
   width: 80%;
 }
+
 .wechatInfo {
   display: flex;
   padding: 40rpx 20rpx;
@@ -461,7 +440,6 @@ input[type="text"] {
   width: 280rpx;
 }
 
-
 .calendar-header {
   margin: 30rpx;
   display: flex;
@@ -470,13 +448,6 @@ input[type="text"] {
   text-align: center;
   font-weight: bold;
 }
-
-.close-btn {
-  font-size: 50rpx;
-  color: #999;
-  cursor: pointer;
-}
-
 
 .btn {
   flex: 1;
