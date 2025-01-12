@@ -17,20 +17,24 @@
 		{
 			"path": "pages/detail/index",
 			"style": {
-				"navigationStyle": "custom"
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": true,
+				"onReachBottomDistance": 50
 			}
 		},
 		{
 			"path": "pages/webview/index",
 			"style": {
-				"navigationBarTitleText": "网页",
+				"navigationBarTitleText": "FutureKey English Class",
 				"enablePullDownRefresh": false
 			}
 		},
 		{
 			"path": "pages/statistics/index",
 			"style": {
-				"navigationStyle": "custom"
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": true,
+				"onReachBottomDistance": 50
 			}
 		},
 		{
@@ -48,7 +52,7 @@
 		}
 	],
 	"window": {
-		"navigationBarTitleText": "Demo"
+		"navigationBarTitleText": ""
 	},
 	"globalStyle": {
 		"navigationBarTextStyle": "black",

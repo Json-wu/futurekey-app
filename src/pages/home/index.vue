@@ -126,14 +126,8 @@ export default {
     return {
       isVisible: false,
       loading: true,
-      studentCode: "202408392",
-      showAbout: false, // 控制弹窗显示/隐藏
-      aboutUsData: {
-        website: { text: "官方网站", url: "https://www.futurekey.com", title: "www.futurekey.com" },
-        phone: { text: "客服电话", number: "400-189-0866" },
-        agreement: { text: "用户协议", url: "https://futurekey.com/private", title: "《用户隐私协议》" },
-      },
-      miniProgramLink: "https://futurekey.com",
+      studentCode: "",
+      showAbout: false, // 控制弹窗显示/隐藏x
       currentYear: 0, // 当前年份
       currentMonth: 0, // 当前月份
       startDate: '',       // 开始日期
@@ -148,10 +142,10 @@ export default {
       selectedTimeZoneIndex: 0, // 当前选中时区索引
       timezone: "Asia/Shanghai",
       students: [
-        {name:'',code:''}
+        {name:'',code:'',value4:''}
       ],
       timezones: [],
-      dateRange: "2024-01-09 - 2024-01-26", // 日期范围
+      dateRange: "", // 日期范围
       courses: [],
       states: {
         0: "待出席",
@@ -186,31 +180,6 @@ export default {
       this.fetchData();
       this.hideModal();
     },
-    handleLogout2() {
-      console.log("退出登录");
-      this.$global.studentCode = null;
-      this.$global.phone = null;
-      this.$global.isLogin = false;
-      this.$global.studentList=[];
-      uni.removeStorageSync('timezoneIndex');
-      uni.removeStorageSync('studentCode');
-      uni.removeStorageSync('phone');
-      uni.removeStorageSync('isLogin');
-      uni.removeStorageSync('studentList');
-      uni.removeStorageSync('isAgreed');
-
-      uni.navigateTo({
-        url: '/pages/index/index',
-        success() {
-          uni.showToast({
-            title: '退出登录成功',
-            icon: 'success',
-            duration: 2000
-          });
-        },
-      });
-      this.hideModal();
-    },
     showAboutUs() {
       this.showAbout = true;
     },
@@ -236,8 +205,6 @@ export default {
     setDefaultWeek() {
       const today = new Date();
       // 获取上月第一天和最后一天
-      const firstDayOfMonth = new Date('2024-10-01');//new Date(today.getFullYear(), today.getMonth(), 1);
-      const lastDayOfMonth = new Date('2024-10-31');//new Date(today.getFullYear(), today.getMonth() + 1, 0);
       const dayOfWeek = today.getDay() || 7; // 将周日转为 7
       const monday = new Date(today.getTime() - (dayOfWeek - 1) * 86400000); // 本周一
       const sunday = new Date(today.getTime() + (7 - dayOfWeek) * 86400000); // 本周日
@@ -400,6 +367,7 @@ export default {
         this.$global.studentList = this.students;
         this.studentCode = res.data[0].code;
         this.$global.studentCode = this.studentCode;
+        this.selectIndex = 0;
         this.fetchData(); // 获取数据列表
       } else {
         uni.showToast({

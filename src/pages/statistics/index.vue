@@ -6,14 +6,8 @@
         <image src="@/static/back-icon.png" class="back-icon"></image>
       </view>
       <view class="centered-picker-container" @tap="showModal">
-        <view class="studentname" v-if="students.length==1">{{ students[0].name }}</view>
         <view class="student-select">{{ students[selectedStudentIndex].name }} ▼</view>
       </view>
-      <!-- <view class="centered-picker-container">
-        <picker @change="onStudentChange" :value="selectedStudentIndex" :range="students" range-key="name">
-          <view class="student-select">{{ students[selectedStudentIndex].name }} ▼</view>
-        </picker>
-      </view> -->
       <!-- 占位元素：确保与系统按钮对齐 -->
       <view class="header-placeholder"></view>
     </view>
@@ -22,16 +16,9 @@
       <!-- 日期选择器 -->
       <view class="date-range" @tap="openCalendar">
         <text class="date-text">{{ startDate || '请选择' }}</text>
-        <text class="separator">-</text>
+        <text class="separator">一</text>
         <text class="date-text">{{ endDate || '请选择' }}</text>
       </view>
-
-      <!-- 筛选按钮 -->
-      <!-- <view class="filter-button">
-        <picker @change="onTimeZoneChange" :value="selectedTimeZoneIndex" :range="timezones" range-key="name">
-          <view class="timezone-select">{{ timezones[selectedTimeZoneIndex].name }} ▼</view>
-        </picker>
-      </view> -->
     </view>
 
     <view class="page">
@@ -42,12 +29,8 @@
             <view class="icon1"></view>
             <view class="name">{{ students[selectedStudentIndex].name }}</view>
           </view>
-          <view class="edit-icon">
-            <image
-              class="edit-icon"
-              src="/static/icons/edit.png"
-              mode="scaleToFill"
-            />
+          <view class="edit-icon" @click="editChild">
+            <image class="edit-icon" src="/static/icons/edit.png" mode="scaleToFill" />
           </view>
         </view>
         <view class="user-details">
@@ -55,7 +38,7 @@
             🎂 年龄
           </view>
           <view>
-            2015/8周岁
+            {{ getBirth() }}周岁
           </view>
         </view>
         <view class="user-details">
@@ -63,7 +46,7 @@
             📍 英语等级
           </view>
           <view>
-            L2
+            {{ studentLevel || '-' }}
           </view>
         </view>
       </view>
@@ -72,7 +55,7 @@
       <view class="titlecss">
         <text>统计结果</text>
       </view>
-      
+
       <view class="stat-section">
         <view class="stat-item">
           <text class="label">课程总时长</text>
@@ -118,17 +101,13 @@
               <view class="table-cell">{{ formatState(item.state) }}</view>
             </view>
           </view>
-        </scroll-view>  
+        </scroll-view>
         <view class="course-footer">
           <view class="expand-btn" @tap="toggleExpand">
             <text class="expend"> {{ isExpanded ? '收起' : '展开' }}</text>
-            <image
-              class="icon-down"
-              :src="getIcon()"
-              mode="scaleToFill"
-            />
+            <image class="icon-down" :src="getIcon()" mode="scaleToFill" />
           </view>
-          <view class="download-pdf">下载 PDF</view>
+          <view class="download-pdf" @click="course_downloadPDF" :disabled="!hasCourses">下载 PDF</view>
         </view>
       </view>
 
@@ -137,7 +116,7 @@
         <text>历史订单</text>
       </view>
 
-      <view class="order-history">
+      <view class="course-history">
         <scroll-view class="contentdiv" scroll-x="true">
           <view class="table">
             <!-- 表头 -->
@@ -159,20 +138,16 @@
               <view class="table-cell">{{ item.contract_amount }}</view>
             </view>
           </view>
-        </scroll-view>  
+        </scroll-view>
         <view class="course-footer">
-          <view class="expand-btn" @tap="toggleExpandOrder">
+          <view class="expand-btn" @tap="toggleExpandOrder" :disabled="visibleRowsOrder.length == 0">
             <text class="expend"> {{ isExpandedOrder ? '收起' : '展开' }}</text>
-            <image
-              class="icon-down"
-              :src="getIconOrder()"
-              mode="scaleToFill"
-            />
+            <image class="icon-down" :src="getIconOrder()" mode="scaleToFill" />
           </view>
-          <view class="download-pdf">下载 PDF</view>
+          <view class="download-pdf" @click="order_downloadPDF" :disabled="!hasOrders">下载 PDF</view>
         </view>
       </view>
-     
+
     </view>
 
     <!-- 引入 CalendarPopup 组件 -->
@@ -186,14 +161,31 @@
       @initCalendar="initCalendar" @fetchData="fetchData" />
 
     <!-- 引用 StudentPopup 组件 -->
-    <StudentPopup
-        :isVisible="isVisible"
-        :studentList="students"
-        :selectedStudentCode="studentCode"
-        @updateStudent="handleUpdateStudent"
-        @update:isVisible="val => isVisible = val"
-        @logout="handleLogout"
-      />
+    <StudentPopup :isVisible="isVisible" :studentList="students" :selectedStudentCode="studentCode"
+      @updateStudent="handleUpdateStudent" @update:isVisible="val => isVisible = val" @logout="handleLogout" />
+    <!-- child Info Modal -->
+    <view v-if="isShow" class="modal">
+      <view class="modal-content">
+        <view class="wechatInfo">
+          <view class="viewname">昵称：</view>
+          <view class="viewname">
+            <input class="picker" type="text" placeholder="修改用户昵称" maxlength="20" v-model="studentName" />
+          </view>
+        </view>
+        <view class="wechatInfo">
+          <view class="viewname">生日：</view>
+          <view class="viewname">
+            <picker mode="date" :value="birth" @change="onBirthChange">
+              <view class="picker" placeholder="修改用户昵称">{{ birth || '--请选择出生年月--' }}</view>
+            </picker>
+          </view>
+        </view>
+        <view class="calendar-header">
+          <button class="btn cancel" @tap="closeModal">取消</button>
+          <button class="btn confirm" @tap="save">确定</button>
+        </view>
+      </view>
+    </view>
   </view>
 </template>
 
@@ -201,7 +193,7 @@
 import calendarPopup from '@/components/CalendarPopup.vue';
 import studentPopup from '@/components/StudentPopup.vue';
 
-import { getStudentTotal, getCourseList, getOrderList } from '../../utils/api';
+import { getStudentTotal, getCourseList, getOrderList, saveInfo, downloadPDF_course, downloadPDF_order } from '../../utils/api';
 
 export default {
   components: {
@@ -210,12 +202,19 @@ export default {
   },
   data() {
     return {
+      hasCourses: false,
+      hasOrders: false,
       isVisible: false,
       isExpanded: false, // 是否展开
       isExpandedOrder: false, // 是否展开
       loading: true,
       studentCode: "202408392",
       studentName: '',
+      studentBirth: '', // 出生年月
+      studentAge: '--',
+      studentLevel: '-',
+      birth: '',
+      isShow: false,
       currentYear: 0, // 当前年份
       currentMonth: 0, // 当前月份
       startDate: '',       // 开始日期
@@ -241,11 +240,11 @@ export default {
       },
       // 示例课程数据
       courseList: [
-       
+
       ],
       // 示例订单数据
       orderList: [
-       
+
       ],
       totalData: {
         hour: 0,
@@ -258,14 +257,31 @@ export default {
   computed: {
     // 计算属性，根据 isExpanded 状态控制显示的行数
     visibleRows() {
-      return this.isExpanded && this.courseList.length>3 ? this.courseList : this.courseList.slice(0, 3);
+      console.log('visibleRows', this.courseList);
+      if (this.courseList.length > 0) {
+        if (this.isExpanded) {
+          return this.courseList;
+        } else {
+          return this.courseList.length > 3 ? this.courseList.slice(0, 3) : this.courseList;
+        }
+      } else {
+        return this.courseList;
+      }
     },
     visibleRowsOrder() {
-      return this.isExpandedOrder && this.orderList.length>3 ? this.orderList : this.orderList.slice(0, 3);
+      if (this.orderList.length > 0) {
+        if (this.isExpandedOrder) {
+          return this.orderList;
+        } else {
+          return this.orderList.length > 3 ? this.orderList.slice(0, 3) : this.orderList;
+        }
+      } else {
+        return this.orderList;
+      }
     },
-    getStudentName(){
-      console.log('getStudentName',this.$global.studentList);
-      console.log('getStudentName',this.$global.selectIndex);
+    getStudentName() {
+      console.log('getStudentName', this.$global.studentList);
+      console.log('getStudentName', this.$global.selectIndex);
       return this.$global.studentList[this.$global.selectIndex].name;
     }
   },
@@ -273,20 +289,67 @@ export default {
     const now = new Date();
     this.currentYear = now.getFullYear();
     this.currentMonth = now.getMonth() + 1;
-    console.log('created', this.$global.timezones);
-    console.log('created', this.$global.studentList);
-    console.log('created', this.$global.studentCode);
-    console.log('created', this.$global.selectIndex);
     this.timezones = this.$global.timezones;
     this.students = this.$global.studentList;
     this.studentCode = this.$global.studentCode;
     this.selectedStudentIndex = this.$global.selectIndex;
     this.studentName = this.students[this.selectedStudentIndex].name;
+    this.studentBirth = this.students[this.selectedStudentIndex].value4;
+    this.birth = this.studentBirth;
+    this.studentLevel = this.students[this.selectedStudentIndex].value5;
     this.selectedTimeZoneIndex = uni.getStorageSync("timezoneIndex") || 0;
     this.timezone = this.timezones[this.selectedTimeZoneIndex].value;
   },
   methods: {
-    formatState(state){
+    getBirth() {
+      if (!this.studentBirth) return '----/--';
+
+      return this.studentBirth.substr(0, 4) + '/' + this.getAge();
+    },
+    editChild() {
+      this.isShow = true;
+    },
+    closeModal() {
+      this.birth = this.studentBirth;
+      this.isShow = false;
+    },
+    async save() {
+      console.log('save', this.studentName, this.birth);
+      try {
+        // 显示加载提示
+        uni.showLoading({
+          title: '保存中...'
+        });
+
+        const res = await saveInfo({
+          "birth": this.birth,
+          "studentCode": this.studentCode
+        });
+        // 处理返回的数据
+        if (res.code == 0) {
+          uni.hideLoading();
+          this.isShow = false;
+          this.studentBirth = this.birth;
+          this.students[this.selectedStudentIndex].value4 = this.birth;
+          uni.showToast({
+            title: '保存成功',
+            icon: 'success',
+            duration: 1000
+          });
+        }
+      } catch (error) {
+        console.error('显示加载提示失败:', error);
+        uni.hideLoading();
+        this.isShow = false;
+        this.birth = this.studentBirth;
+        uni.showToast({
+          title: '保存成功',
+          icon: 'success',
+          duration: 1000
+        });
+      }
+    },
+    formatState(state) {
       switch (state) {
         case 0:
           return '待出席';
@@ -312,6 +375,9 @@ export default {
       this.studentCode = this.students[this.selectedStudentIndex].code;
       this.studentName = this.students[this.selectedStudentIndex].name;
       this.$global.studentCode = this.studentCode;
+      this.studentBirth = this.students[this.selectedStudentIndex].value4;
+      this.birth = this.studentBirth;
+      this.studentLevel = this.students[this.selectedStudentIndex].value5;
       console.log('选中的学生代码:', this.studentCode, this.$global.studentCode);
       this.hideModal();
     },
@@ -320,7 +386,7 @@ export default {
       this.$global.studentCode = null;
       this.$global.phone = null;
       this.$global.isLogin = false;
-      this.$global.studentList=[];
+      this.$global.studentList = [];
       uni.removeStorage('timezoneIndex');
       uni.removeStorage('studentCode');
       uni.removeStorage('phone');
@@ -332,21 +398,28 @@ export default {
       });
       this.hideModal();
     },
-    getIcon(){
+    getIcon() {
       return this.isExpanded ? "/static/icons/up.png" : "/static/icons/down.png";
     },
-    getIconOrder(){
+    getIconOrder() {
       return this.isExpandedOrder ? "/static/icons/up.png" : "/static/icons/down.png";
     },
     goBack() {
       uni.navigateBack();
     },
-    onStudentChange(event) {
-      this.selectedStudentIndex = event.detail.value;
-      this.studentCode = this.students[this.selectedStudentIndex].code;
-      this.$global.studentCode = this.studentCode;
-      console.log('选中的学生代码:', this.studentCode, this.$global.studentCode);
-      this.fetchData();
+    getAge() {
+      if (this.studentBirth == '----') return '--';
+
+      const birthDate = new Date(this.studentBirth);
+      const today = new Date();
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+
+      // 如果当前月份还没到生日月份，或者到了生日月份但还没到生日，则年龄减一
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+      return age;
     },
     onTimeZoneChange(event) {
       this.selectedTimeZoneIndex = event.detail.value;
@@ -527,6 +600,9 @@ export default {
         // 处理返回的数据
         if (res.code == 0) {
           this.courseList = res.data;
+          this.hasCourses = this.courseList.length > 0;
+          console.log('hasCourses:', this.hasCourses);
+
         }
       } catch (error) {
         console.error('显示加载提示失败:', error);
@@ -554,7 +630,7 @@ export default {
         console.error('显示加载提示失败:', error);
       }
     },
-    async fetchOrderData(){
+    async fetchOrderData() {
       try {
         console.log('开始时间', this.startDate, this.endDate, this.timezone, this.studentCode);
         const res = await getOrderList({
@@ -568,25 +644,161 @@ export default {
         // 处理返回的数据
         if (res.code == 0) {
           this.orderList = res.data;
+          this.hasOrders = this.orderList.length > 0;
         }
       } catch (error) {
         console.error('订单列表加载提示失败:', error);
-      } 
+      }
     },
     async init() {
       this.setDefaultWeek(); // 初始化默认本周日期
       this.fetchData();
     },
+    async course_downloadPDF() {
+      try {
+        if (!this.hasCourses) {
+          uni.showToast({
+            title: '暂无课程数据',
+            icon: 'none'
+          });
+          return;
+        }
+        uni.showLoading({
+          title: '下载中...'
+        });
+        const res = await downloadPDF_course({
+          "start_dt": this.startDate,
+          "end_dt": this.endDate,
+          "studentCode": this.studentCode,
+          "studentName": this.studentName,
+          "timezone": this.timezone
+        });
+        console.log('downloadPDF_course:', res);
+        // 处理返回的数据
+        if (res.code == 0) {
+          const downloadUrl = `https://www.futurekey.com/classroom/downloadtemp/${res.filename}`
+          uni.downloadFile({
+            url: downloadUrl, 
+            success: (downloadResult) => {
+              console.log('下载结果:', downloadResult);
+              if (downloadResult.statusCode === 200) {
+                // 打开预览
+                uni.openDocument({
+                  filePath: downloadResult.tempFilePath,
+                  success: () => {
+                    uni.hideLoading();
+                    console.log('打开文档成功');
+                  },
+                  fail: (err) => {
+                    uni.hideLoading();
+                    uni.showToast({
+                      title: '打开文档失败',
+                      icon: 'none'
+                    });
+                    console.error('打开文档失败:', err);
+                  }
+                });
+              } else {
+                uni.hideLoading();
+                uni.showToast({
+                  title: '下载失败',
+                  icon: 'none'
+                });
+              }
+            },
+            fail: (err) => {
+              uni.hideLoading();
+              uni.showToast({
+                title: '下载失败',
+                icon: 'none'
+              });
+              console.error('下载失败:', err);
+            }
+          });
+        }
+      } catch (error) {
+        console.error('下载过程中出错:', error);
+      }
+    },
+    async order_downloadPDF() {
+      try {
+        if (!this.hasOrders) {
+          uni.showToast({
+            title: '暂无订单数据',
+            icon: 'none'
+          });
+          return;
+        }
+        uni.showLoading({
+          title: '下载中...'
+        });
+        const res = await downloadPDF_order({
+          "start_dt": this.startDate,
+          "end_dt": this.endDate,
+          "studentCode": this.studentCode,
+          "studentName": this.studentName,
+          "timezone": this.timezone
+        });
+        console.log('downloadPDF_order:', res);
+        // 处理返回的数据
+        if (res.code == 0) {
+          const downloadUrl = `https://www.futurekey.com/classroom/downloadtemp/${res.filename}`
+          uni.downloadFile({
+            url: downloadUrl, 
+            success: (downloadResult) => {
+              console.log('下载结果:', downloadResult);
+              if (downloadResult.statusCode === 200) {
+                // 打开预览
+                uni.openDocument({
+                  filePath: downloadResult.tempFilePath,
+                  success: () => {
+                    uni.hideLoading();
+                    console.log('打开文档成功');
+                  },
+                  fail: (err) => {
+                    uni.hideLoading();
+                    uni.showToast({
+                      title: '打开文档失败',
+                      icon: 'none'
+                    });
+                    console.error('打开文档失败:', err);
+                  }
+                });
+              } else {
+                uni.hideLoading();
+                uni.showToast({
+                  title: '下载失败',
+                  icon: 'none'
+                });
+              }
+            },
+            fail: (err) => {
+              uni.hideLoading();
+              uni.showToast({
+                title: '下载失败',
+                icon: 'none'
+              });
+              console.error('下载失败:', err);
+            }
+          });
+        }
+      } catch (error) {
+        console.error('下载过程中出错:', error);
+      }
+    },
     // 切换展开状态
     toggleExpand() {
       this.isExpanded = !this.isExpanded;
       console.log(this.isExpanded);
-    },   
-     // 切换展开状态
+    },
+    // 切换展开状态
     toggleExpandOrder() {
       this.isExpandedOrder = !this.isExpandedOrder;
       console.log(this.isExpandedOrder);
-    },   
+    },
+    onBirthChange(event) {
+      this.birth = event.detail.value;
+    }
   },
   onLoad() {
     console.log('onLoad');
@@ -607,10 +819,12 @@ export default {
   padding-right: 20rpx;
   padding-left: 20rpx;
 }
+
 /* 页面背景 */
 .container {
   background: linear-gradient(to bottom, #2F51FF, #c4cdd9);
   flex-direction: column;
+  height: 100vh;
 }
 
 /* 顶部导航栏 */
@@ -1054,7 +1268,7 @@ export default {
   font-size: 14px;
   font-style: normal;
   font-weight: 400;
-  line-height: 18px; 
+  line-height: 18px;
 }
 
 .user-info {
@@ -1144,9 +1358,10 @@ export default {
   justify-content: space-between;
 }
 
-.expand-btn{
+.expand-btn {
   padding-top: 16rpx;
 }
+
 .download-pdf {
   background-color: #007aff;
   color: #fff;
@@ -1155,17 +1370,20 @@ export default {
   font-size: 16px;
   padding: 6px 14px;
 }
+
 .titlecss {
   text-align: center;
   color: #FFFFFF;
   margin: 20rpx auto 20rpx auto;
 }
+
 .icon1 {
   width: 4px;
   height: 20px;
   border-radius: 4%;
   background: #2F51FF;
 }
+
 .label {
   width: 200rpx;
   font-size: 14px;
@@ -1178,15 +1396,19 @@ export default {
   background: #FFFFFF;
   border-radius: 10px;
 }
+
 .order-history {
   background: #FFFFFF;
   border-radius: 10px;
 }
+
 .contentdiv {
   height: auto;
-  width: 100%; /* 必须定义容器宽度 */
+  width: 100%;
+  /* 必须定义容器宽度 */
   /* overflow-x: scroll;  */
-  white-space: nowrap; /* 防止子元素换行 */
+  white-space: nowrap;
+  /* 防止子元素换行 */
   font-size: 28rpx;
   color: #555;
   line-height: 1.6;
@@ -1215,10 +1437,12 @@ export default {
   font-size: 14px;
   font-style: normal;
   font-weight: 500;
-  line-height: 18px; /* 128.571% */
+  line-height: 18px;
+  /* 128.571% */
   margin-right: 4rpx;
 }
-.icon-down{
+
+.icon-down {
   width: 14px;
   height: 14px;
 }
@@ -1252,12 +1476,92 @@ export default {
   text-align: center;
   white-space: normal;
 }
+
 .order-history {
   text-align: center;
   color: #353333;
   padding: 30rpx;
 }
-.nonedata{
+
+.nonedata {
   margin-left: 60rpx;
+}
+
+
+.modal {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 20rpx;
+  border-radius: 5px;
+  width: 80%;
+}
+
+.wechatInfo {
+  display: flex;
+  padding: 20rpx;
+  justify-content: center;
+  align-items: center;
+  margin: 10rpx 0;
+}
+
+.viewname {
+  font-size: 16px;
+  color: #333;
+}
+
+.calendar-header {
+  margin: 30rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-align: center;
+  font-weight: bold;
+}
+
+.btn {
+  flex: 1;
+  margin: 0 5rpx;
+  height: 80rpx;
+  border-radius: 20rpx;
+  font-size: 14px;
+  font-weight: bold;
+  text-align: center;
+  align-items: center;
+  vertical-align: middle;
+  line-height: 40rpx;
+  padding: 20rpx;
+}
+
+.confirm {
+  color: #fff;
+  background-color: #007aff;
+  margin-left: 30rpx;
+}
+
+.cancel {
+  color: #007aff;
+  background-color: #fff;
+  border: #007aff 1px solid;
+}
+
+.picker {
+  width: 280rpx;
+  padding: 20rpx;
+  justify-content: center;
+  align-items: center;
+  border-radius: 10rpx;
+  background-color: #f5f5f5;
 }
 </style>

@@ -51,7 +51,6 @@
             <input type="text" placeholder="长按粘贴Wechat ID" maxlength="20" v-model="wechatID" />
           </view>
         </view>
-        <!-- Action Buttons -->
         <view class="calendar-header">
           <button class="btn cancel" @tap="closeModal">取消</button>
           <button class="btn confirm" @tap="save">确定</button>

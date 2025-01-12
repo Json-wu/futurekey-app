@@ -58,3 +58,27 @@ export function logout(params = {}) {
     data: params,
   });
 }
+// 封装用户保存信息接口
+export function saveInfo(params = {}) {
+  return request({
+    url: `${BASE_URL}/student/save`,
+    method: 'POST',
+    data: params,
+  });
+}
+// 封装课程记录下载pdf接口
+export function downloadPDF_course(params = {}) {
+  return request({
+    url: `${BASE_URL}/course/pdf`,
+    method: 'POST',
+    data: params,
+  });
+}
+// 封装课程记录下载pdf接口
+export function downloadPDF_order(params = {}) {
+  return request({
+    url: `${BASE_URL}/course/orderpdf`,
+    method: 'POST',
+    data: params,
+  });
+}
