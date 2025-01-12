@@ -45,8 +45,11 @@
     <!-- Wechat ID Modal -->
     <view v-if="isShow" class="modal">
       <view class="modal-content">
+        <view class="modal-header">
+          <text class="datechoose-text">微信号登录</text>
+        </view>
         <view class="wechatInfo">
-          <view class="viewname">微信号：</view>
+          <view class="viewname">Wechat ID：</view>
           <view class="viewname">
             <input type="text" placeholder="长按粘贴Wechat ID" maxlength="20" v-model="wechatID" />
           </view>
@@ -472,5 +475,18 @@ input[type="text"] {
   color: #007aff;
   background-color: #fff;
   border: #007aff 1px solid;
+}
+
+.modal-header {
+  font-size: 18px;
+  margin-top: 20rpx;
+  text-align: center;
+  font-weight: bold;
+}
+.datachoose-text {
+  width: 670rpx;
+  font-weight: bold;
+  font-size: 32rpx;
+  color: #333;
 }
 </style>

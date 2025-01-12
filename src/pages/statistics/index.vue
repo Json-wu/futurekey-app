@@ -107,7 +107,7 @@
             <text class="expend"> {{ isExpanded ? '收起' : '展开' }}</text>
             <image class="icon-down" :src="getIcon()" mode="scaleToFill" />
           </view>
-          <view class="download-pdf" @click="course_downloadPDF" :disabled="!hasCourses">下载 PDF</view>
+          <view class="download-pdf" @click="course_downloadPDF">下载 PDF</view>
         </view>
       </view>
 
@@ -144,7 +144,7 @@
             <text class="expend"> {{ isExpandedOrder ? '收起' : '展开' }}</text>
             <image class="icon-down" :src="getIconOrder()" mode="scaleToFill" />
           </view>
-          <view class="download-pdf" @click="order_downloadPDF" :disabled="!hasOrders">下载 PDF</view>
+          <view class="download-pdf" @click="order_downloadPDF">下载 PDF</view>
         </view>
       </view>
 

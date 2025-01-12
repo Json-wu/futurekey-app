@@ -143,6 +143,16 @@ export default {
     };
   },
   methods: {
+    subFilename(fname){
+      console.log('fname',fname);
+      if(fname.split('-').length>1){
+        return fname.split('-').pop();
+      }
+      if (fname.length > 20) {
+        return fname.slice(0, 20) +"."+ fname.split('.').pop();
+      }
+      return fname;
+    },
     // 切换Tab
     switchTab(tab) {
       this.currentTab = tab;
@@ -152,17 +162,16 @@ export default {
       console.log("file", file);
       // 监听上传进度
       let ffname = file.path.split('/').pop()
-      if (ffname.length > 30) {
-        ffname = ffname.slice(0, 30) + "." + ffname.split('.').pop();
-      }
+     
       let uploadItem = {
-        name: ffname,
+        name: this.subFilename(ffname),
         size: Math.floor(file.size / 1000),
         status: 'uploading',
         progress: 0,
         icon_del: "/static/icons/del.png",
         icon_file: "/static/file-icon.png"
       };
+
       this.uploadFiles.push(uploadItem);
       console.log("uploadItem", uploadItem);
       const uTask = uni.uploadFile({
@@ -174,7 +183,7 @@ export default {
           console.log("res", res);
           if (res.code == 0) {
             uploadItem.filename = res.data.filePath;
-            uploadItem.name = uploadItem.filename;
+            uploadItem.name = this.subFilename(uploadItem.filename);
             uploadItem.status = 'success';
             console.log("uploadItem", uploadItem);
             uni.showToast({ title: '上传成功', icon: 'success' });
@@ -284,8 +293,8 @@ export default {
           this.uploadFiles = res.data.customFiles.map(x => {
             // if (x.filename.length > 20) {
             //  x.name = x.filename.slice(0, 20) +"."+ x.filename.split('.').pop();
-            //}
-            x.name = x.filename;
+            // }
+            x.name = this.subFilename(x.filename);
             x.status = 'success';
             x.size = x.size;
             x.icon_del = "/static/icons/del-his.png";
@@ -334,6 +343,10 @@ export default {
 
     // 下载文件并保存到本地缓存
     downloadAndSaveFile(url, fileKey, fileType) {
+      uni.showLoading({
+        title: '下载中...',
+        mask: true,
+      });
       uni.downloadFile({
         url: url, // 文件的下载地址
         success: (res) => {
@@ -360,6 +373,7 @@ export default {
               },
               fail: (err) => {
                 console.error('文件保存失败：', err);
+                uni.hideLoading()
                 uni.showToast({
                   title: '文件保存失败',
                   icon: 'none'
@@ -368,6 +382,7 @@ export default {
             });
           } else {
             console.error('文件下载失败，状态码：', res.statusCode);
+            uni.hideLoading()
             uni.showToast({
               title: '下载失败',
               icon: 'none'
@@ -376,6 +391,7 @@ export default {
         },
         fail: (err) => {
           console.error('文件下载失败：', err);
+          uni.hideLoading()
           uni.showToast({
             title: '下载失败',
             icon: 'none'
@@ -392,9 +408,11 @@ export default {
           filePath: filePath,
           success: () => {
             console.log('文档文件打开成功');
+            uni.hideLoading();
           },
           fail: (err) => {
             console.error('文档文件打开失败：', err);
+            uni.hideLoading();
             uni.showToast({
               title: '文件打开失败',
               icon: 'none'
@@ -406,15 +424,27 @@ export default {
         uni.previewImage({
           urls: [filePath], // 图片路径数组
           current: filePath // 当前图片路径
+        }).then(() => {
+          console.log('图片文件打开成功');
+          uni.hideLoading();
+        }).catch((err) => {
+          console.error('图片文件打开失败：', err);
+          uni.hideLoading();
+          uni.showToast({
+            title: '图片打开失败',
+            icon: 'none'
+          });
         });
       } else if (fileType === 'mp4' || fileType === 'avi' || fileType === 'mov') {
         // 视频文件暂时通过提示方式打开
+        uni.hideLoading();
         uni.showToast({
           title: '请使用视频播放器播放此文件',
           icon: 'none'
         });
       } else {
         console.error('不支持的文件类型：', fileType);
+        uni.hideLoading();
         uni.showToast({
           title: '不支持的文件类型',
           icon: 'none'
@@ -530,6 +560,7 @@ export default {
   background-color: #fff;
   border-radius: 10rpx;
   overflow: hidden;
+  height: 65vh;
 }
 
 .tab-bar {
@@ -566,8 +597,8 @@ export default {
 
 /* 作业文本内容 */
 .task-content {
-  min-height: 200rpx;
   margin: 20rpx 0;
+  min-height: 16vh;
 }
 
 .title {
@@ -596,13 +627,14 @@ export default {
 
 /* 上传区域 */
 .fileSection {
-  border: 2rpx dashed gray;
-  width: 340px;
+  border-radius: 10rpx;
+  border: 2rpx dashed #190ee2;
   min-height: 180px;
   gap: 0px;
   text-align: center;
-  margin: 20rpx auto;
-  padding-top: 70rpx;
+  margin: 20rpx;
+  padding-top: 40rpx;
+  height: 34vh;
 }
 
 .upload-icon {
