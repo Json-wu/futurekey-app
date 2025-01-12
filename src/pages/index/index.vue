@@ -25,7 +25,7 @@
         <button v-if="isAgreed" class="login-button" open-type="getPhoneNumber" @getphonenumber="getPhoneNumber">
           手机号一键登录
         </button>
-        <view class="login-tip">请使用家长手机号登录</view>
+        <view class="login-tip">请使用家长手机号/<text class="greencolor" @click="showWechat()">Wechat ID</text>登录</view>
       </view>
 
       <!-- 协议 -->
@@ -37,7 +37,7 @@
           </label>
         </checkbox-group>
         <view>
-          同意<text class="highlight" @click="showAgreement">《用户隐私协议》</text>并授权科爱信获取本机号码
+          同意<text class="highlight" @click="showAgreement">《用户隐私协议》</text>并授权科爱信获取信息
         </view>
       </view>
     </view>
@@ -45,6 +45,22 @@
     <!-- 用户协议组件 -->
     <AgreementPopup :show="isAgreementVisible" title="用户隐私协议" :content="agreementContent"
       @close="isAgreementVisible = false" />
+
+    <view v-if="isShow" class="modal">
+    <view class="modal-content">
+      <view class="wechatInfo">
+        <view class="viewname">Wechat ID：</view>
+        <view class="viewname">
+          <input type="text" placeholder="长按粘贴Wechat ID" maxlength="20" v-model="wechatID" />
+        </view>
+      </view>
+      <!-- Action Buttons -->
+      <view class="calendar-header">
+        <button class="btn cancel" @tap="closeModal">取消</button>
+        <button class="btn confirm" @tap="save">确定</button>
+      </view>
+    </view>
+  </view>
   </view>
 </template>
 
@@ -60,6 +76,8 @@ export default {
       phone: '', // 手机号
       isAgreed: false, // 是否同意协议
       isAgreementVisible: false, // 用户协议显示状态
+      isShow: false,
+      wechatID: '',
     };
   },
   methods: {
@@ -77,6 +95,9 @@ export default {
       if (e.detail.errMsg === "getPhoneNumber:ok") {
         const { encryptedData, iv } = e.detail;
 
+        uni.showLoading({
+          title: '登录中...',
+        });
         uni.request({
           url: 'https://www.futurekey.com/classroom/wechat/decryptPhone', // 替换为后端接口
           method: 'POST',
@@ -88,10 +109,7 @@ export default {
           success: (response) => {
             let result = response.data;
             if (result.code==0) {
-              uni.showToast({
-                title: '登录成功',
-                icon: 'success'
-              });
+              
               this.$global.phone = result.data.phone;
               uni.setStorageSync('phone', result.data.phone);
               uni.setStorageSync('isLogin', true);
@@ -100,18 +118,23 @@ export default {
               // 跳转至首页index
               uni.navigateTo({
                 url: "/pages/home/index",
+                success: () => {
+                  uni.hideLoading();
+                }
               });
             } else {
+              uni.hideLoading();
               uni.showToast({
-                title: '获取手机号失败',
+                title: '获取手机号失败，请重试',
                 icon: 'none'
               });
             }
           },
           fail: (err) => {
             console.error('请求失败:', err);
+            uni.hideLoading();
             uni.showToast({
-              title: '服务器错误',
+              title: '网络异常，请联系客服处理',
               icon: 'none'
             });
           },
@@ -158,7 +181,7 @@ export default {
                   uni.setStorageSync('token', result.data.token);
                 } else {
                   uni.showToast({
-                    title: '登录失败',
+                    title: result.message,
                     icon: 'none'
                   });
                 }
@@ -166,7 +189,7 @@ export default {
               fail: (err) => {
                 console.error('请求失败:', err);
                 uni.showToast({
-                  title: '服务器错误',
+                  title: '网络异常，请联系客服处理',
                   icon: 'none'
                 });
               },
@@ -187,17 +210,91 @@ export default {
       if (!this.isAgreed) {
         uni.showToast({
           icon: "none",
-          title: '请阅读并同意平台服务协议及隐私协议',
+          title: '请阅读并同意用户隐私协议，并授权科爱信获取信息',
           duration: 2000
         });
         return false;
       }
+    },
+    showWechat(){
+      if (!this.isAgreed) {
+        uni.showToast({
+          icon: "none",
+          title: '请阅读并同意用户隐私协议，并授权科爱信获取信息',
+          duration: 2000
+        });
+      }else{
+        this.isShow = true;
+      }
+    },
+    
+    closeModal() {
+      this.isShow = false; // Hide the modal
+    },
+    save() {
+      console.log("wechatID:", this.wechatID);
+      if(!this.wechatID){
+        uni.showToast({
+          title: '请输入Wechat ID',
+          icon: 'none'
+        });
+        return;
+      }
+      this.isShow = false; // Hide the modal
+      uni.showLoading({
+        title: '登录中...',
+      });
+      uni.request({
+        url: 'https://www.futurekey.com/classroom/wechat/login',
+        method: 'POST',
+        data: {
+          wechatID: this.wechatID,
+          token: uni.getStorageSync('token')
+        },
+        success: (response) => {
+          let result = response.data;
+          if (result.code == 0) {
+            if(result.data.phone){
+              uni.showToast({
+                title: '登录成功',
+                icon: 'success'
+              });
+              this.$global.phone = result.data.phone;
+              uni.setStorageSync('phone', result.data.phone);
+              uni.setStorageSync('isLogin', true);
+              uni.setStorageSync('isAgreed', true);
+              uni.removeStorageSync('session_key');
+              // 跳转至首页index
+              uni.navigateTo({
+                url: "/pages/home/index",
+              });
+            }else{
+              uni.setStorageSync('session_key', result.data.session_key);
+            }
+            uni.setStorageSync('token', result.data.token);
+          } else {
+            uni.showToast({
+              title: result.message,
+              icon: 'none'
+            });
+          }
+        },
+        fail: (err) => {
+          console.error('请求失败:', err);
+          uni.showToast({
+            title: '网络异常，请联系客服处理',
+            icon: 'none'
+          });
+        },
+      });
+
     },
   },
   onLoad() {
     console.log("Page Loaded");
     this.isAgreed = uni.getStorageSync('isAgreed');
     this.phone = uni.getStorageSync('phone');
+    this.wechatID = this.phone;
     console.log("phone:", this.phone);
     this.$global.phone = this.phone;
     if(this.phone){
@@ -316,5 +413,94 @@ export default {
   color: #fecd00;
   margin: 0 5rpx;
   cursor: pointer;
+}
+.greencolor {
+  color: #32CD32;
+  margin: 0 5rpx;
+  cursor: pointer;
+}
+
+
+.modal {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 20rpx;
+  border-radius: 5px;
+  width: 80%;
+}
+.wechatInfo {
+  display: flex;
+  padding: 40rpx 20rpx;
+  justify-content: center;
+  align-items: center;
+  margin: 10rpx 0;
+}
+
+.viewname {
+  font-size: 16px;
+  color: #333;
+}
+
+input[type="text"] {
+  flex: 1;
+  padding: 10rpx;
+  border: 1rpx solid #ccc;
+  border-radius: 4rpx;
+  width: 280rpx;
+}
+
+
+.calendar-header {
+  margin: 30rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-align: center;
+  font-weight: bold;
+}
+
+.close-btn {
+  font-size: 50rpx;
+  color: #999;
+  cursor: pointer;
+}
+
+
+.btn {
+  flex: 1;
+  margin: 0 5rpx;
+  height: 80rpx;
+  border-radius: 20rpx;
+  font-size: 14px;
+  font-weight: bold;
+  text-align: center;
+  align-items: center;
+  vertical-align: middle;
+  line-height: 40rpx;
+  padding: 20rpx;
+}
+
+.confirm {
+  color: #fff;
+  background-color: #007aff;
+  margin-left: 30rpx;
+}
+
+.cancel {
+  color: #007aff;
+  background-color: #fff;
+  border: #007aff 1px solid;
 }
 </style>

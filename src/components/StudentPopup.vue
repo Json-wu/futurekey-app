@@ -44,6 +44,10 @@ export default {
             this.$emit("updateStudent", index);
         },
         logout() {
+            uni.showLoading({
+                title: '退出登录中...',
+                mask: true
+            });
             // 退出登录逻辑
             // this.$emit("logout");
             console.log("退出登录");
@@ -74,6 +78,7 @@ export default {
                     uni.navigateTo({
                         url: '/pages/index/index',
                         success() {
+                            uni.hideLoading();
                             uni.showToast({
                                 title: '退出登录成功',
                                 icon: 'success',
@@ -82,6 +87,7 @@ export default {
                         }
                     });
                 } else {
+                  uni.hideLoading();
                   uni.showToast({
                     title: '退出失败',
                     icon: 'none'
@@ -90,8 +96,9 @@ export default {
               },
               fail: (err) => {
                 console.error('请求失败:', err);
+                uni.hideLoading();
                 uni.showToast({
-                  title: '服务器错误',
+                  title: '网络异常，请联系客服处理',
                   icon: 'none'
                 });
               },
