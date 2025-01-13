@@ -4,7 +4,7 @@
     <view class="custom-header">
       <image src="@/static/keai-logo.png" class="header-logo" @click="showAboutUs" />
       <view class="centered-picker-container" @tap="showModal">
-        <view class="student-select">{{ students[selectedStudentIndex].name }} ▼</view>
+        <view class="student-select">{{ students[selectIndex].name }} ▼</view>
       </view>
       <!-- 占位元素：确保与系统按钮对齐 -->
       <view class="header-placeholder"></view>
@@ -138,7 +138,7 @@ export default {
       showCalendar: false, // 控制日历弹窗显示
       calendar: [],        // 存储生成的日历
       currentStep: 0,     // 记录选择的步骤 (0: 第一步, 1: 第二步)
-      selectedStudentIndex: 0, // 当前选中学生索引
+      selectIndex: 0, // 当前选中学生索引
       selectedTimeZoneIndex: 0, // 当前选中时区索引
       timezone: "Asia/Shanghai",
       students: [
@@ -155,14 +155,14 @@ export default {
     };
   },
   created() {
-    console.log('timezones', this.$global.timezones);
+    this.timezones = this.$global.timezones;
     const now = new Date();
     this.currentYear = now.getFullYear();
     this.currentMonth = now.getMonth() + 1;
-    console.log('timezoneIndex', uni.getStorageSync("timezoneIndex"));
-    this.timezones = this.$global.timezones;
     this.selectedTimeZoneIndex = uni.getStorageSync("timezoneIndex") || 0;
-    this.timezone = this.timezones[this.selectedTimeZoneIndex].value;
+    this.$global.timezone = this.$global.timezones[this.selectedTimeZoneIndex].value;
+    this.selectIndex = uni.getStorageSync("selectIndex") || 0;
+    this.studentCode = uni.getStorageSync("studentCode") || '';
   },
   methods: {
     showModal() {
@@ -172,10 +172,12 @@ export default {
       this.isVisible = false;
     },
     handleUpdateStudent(index) {
-      this.selectedStudentIndex = index;
+      this.selectIndex = index;
       this.$global.selectIndex = index;
-      this.studentCode = this.students[this.selectedStudentIndex].code;
+      this.studentCode = this.students[this.selectIndex].code;
       this.$global.studentCode = this.studentCode;
+      uni.setStorageSync('studentCode', this.studentCode);
+      uni.setStorageSync('selectIndex', this.selectIndex);
       console.log('选中的学生代码:', this.studentCode, this.$global.studentCode);
       this.fetchData();
       this.hideModal();
@@ -183,20 +185,12 @@ export default {
     showAboutUs() {
       this.showAbout = true;
     },
-    onStudentChange(event) {
-      this.selectedStudentIndex = event.detail.value;
-      this.studentCode = this.students[this.selectedStudentIndex].code;
-      this.$global.studentCode = this.studentCode;
-      console.log('选中的学生代码:', this.studentCode, this.$global.studentCode);
-      this.fetchData();
-    },
     onTimeZoneChange(event) {
       this.selectedTimeZoneIndex = event.detail.value;
       this.selectedTimeZone = this.timezones[this.selectedTimeZoneIndex]; // 根据索引获取对应的时区对象
-      this.timezone = this.selectedTimeZone.value;
+      this.$global.timezone = this.selectedTimeZone.value;
       uni.setStorageSync('timezoneIndex', this.selectedTimeZoneIndex);
       this.fetchData(); // 获取数据列表
-      console.log('选中的时区:', this.timezone); // 输出选中的时区值
     },
     getState(state) {
       return this.states[state];
@@ -211,15 +205,18 @@ export default {
 
       this.startDate = this.formatDate(monday);
       this.endDate = this.formatDate(sunday);
+      this.$global.startDate = this.startDate;
+      this.$global.endDate = this.endDate;
       this.currentYear = today.getFullYear();
       this.currentMonth = today.getMonth() + 1;
 
       this.tempStartDate = this.startDate;
       this.tempEndDate = this.endDate;
-      this.initCalendar();
     },
     // 打开日历
     openCalendar() {
+      this.tempStartDate = this.startDate;
+      this.tempEndDate = this.endDate;
       this.showCalendar = true;
     },
     // 确认日期选择
@@ -270,8 +267,9 @@ export default {
     initCalendar() {
       let year = this.currentYear;
       let month = this.currentMonth;
+      const firstDate = `${year}-${String(month).padStart(2, '0')}-01`;
       const daysInMonth = new Date(year, month, 0).getDate(); // 当月天数
-      const firstDay = new Date(year, month, 1).getDay(); // 当月1号是星期几 (0-6, 0代表周日)
+      const firstDay = new Date(firstDate).getDay(); // 当月1号是星期几 (0-6, 0代表周日)
 
       // 上个月的相关数据
       const prevMonthYear = month === 1 ? year - 1 : year; // 上个月的年份
@@ -338,18 +336,19 @@ export default {
         });
         this.loading = true;
 
-        console.log('开始时间', this.startDate, this.endDate, this.timezone, this.studentCode);
+        console.log('开始时间', this.startDate, this.endDate, this.$global.timezone, this.studentCode);
         const res = await getCourseList({
           "start_dt": this.startDate,
           "end_dt": this.endDate,
           "studentCode": this.studentCode,
-          "timezone": this.timezone
+          "timezone": this.$global.timezone
         });
         console.log('课程列表:', res);
         // 处理返回的数据
         if (res.code == 0) {
           this.courses = res.data;
-          this.$global.studentList = this.students;
+          this.$global.startDate = this.startDate;
+          this.$global.endDate = this.endDate;
         }
       } catch (error) {
         console.error('显示加载提示失败:', error);
@@ -360,14 +359,18 @@ export default {
       }
     },
     async init() {
-      this.setDefaultWeek(); // 初始化默认本周日期
       const res = await getStudentList(this.$global.phone);
       if (res.code == 0) {
         this.students = res.data;
-        this.$global.studentList = this.students;
-        this.studentCode = res.data[0].code;
+
+        this.$global.studentList = this.students.map(item => {
+          item.name = uni.getStorageSync(item.code) || item.name;
+          return item;
+        });
+        this.$global.selectIndex = uni.getStorageSync("selectIndex") || 0;
+        this.studentCode = this.students[this.$global.selectIndex].code;
+        uni.setStorageSync("studentCode", this.studentCode);
         this.$global.studentCode = this.studentCode;
-        this.selectIndex = 0;
         this.fetchData(); // 获取数据列表
       } else {
         uni.showToast({
@@ -390,8 +393,15 @@ export default {
     }
   },
   onLoad() {
-    this.init();
+    this.selectIndex = uni.getStorageSync("selectIndex") || 0;
+    this.selectedTimeZoneIndex = uni.getStorageSync("timezoneIndex") || 0;
+    this.selectedTimeZone = this.timezones[this.selectedTimeZoneIndex]; // 根据索引获取对应的时区对象
+    this.$global.timezone = this.selectedTimeZone.value;
+    uni.setStorageSync('timezoneIndex', this.selectedTimeZoneIndex);
+    uni.setStorageSync('selectIndex', this.selectIndex);
+    this.setDefaultWeek(); // 初始化默认本周日期
     this.initCalendar();   // 初始化日历
+    this.init();
   },
   // onShow() {
   //   console.log('timezones', this.$global.timezones);
@@ -401,27 +411,13 @@ export default {
   //   this.timezones = this.$global.timezones;
   //   this.students = this.$global.studentList;
   //   this.studentCode = this.$global.studentCode;
-  //   this.selectedStudentIndex = this.$global.selectIndex;
-  //   const currentStudent = this.students[this.selectedStudentIndex];
+  //   this.selectIndex = this.$global.selectIndex;
+  //   const currentStudent = this.students[this.selectIndex];
   //   this.studentName = currentStudent ? currentStudent.name: '';
   //   this.selectedTimeZoneIndex = uni.getStorageSync("timezoneIndex") || 0;
   //   this.timezone = this.timezones[this.selectedTimeZoneIndex].value;
   //   this.fetchData(); // 获取数据列表
   // },
-  onShareAppMessage() {
-      return {
-          title: this.$global.share.title,
-          path: this.$global.share.path,
-          imageUrl: this.$global.share.imageUrl
-      };
-  },
-  onShareTimeline() {
-    return {
-      title: this.$global.share.title, // 分享的标题
-      query: this.$global.share.path, // 分享的参数
-      imageUrl: this.$global.share.imageUrl, // 分享的图片路径
-    };
-  },
   onPullDownRefresh() {
     this.fetchData(); // 获取数据列表
     setTimeout(() => {

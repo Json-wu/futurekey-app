@@ -280,9 +280,8 @@ export default {
       }
     },
     getStudentName() {
-      console.log('getStudentName', this.$global.studentList);
-      console.log('getStudentName', this.$global.selectIndex);
-      return this.$global.studentList[this.$global.selectIndex].name;
+      const sdata = this.$global.studentList[this.$global.selectIndex];
+      return uni.getStorageSync(sdata.studentCode) || sdata.name;
     }
   },
   created() {
@@ -293,12 +292,14 @@ export default {
     this.students = this.$global.studentList;
     this.studentCode = this.$global.studentCode;
     this.selectedStudentIndex = this.$global.selectIndex;
-    this.studentName = this.students[this.selectedStudentIndex].name;
+    const sdata = this.students[this.selectedStudentIndex];
+    this.studentName = uni.getStorageSync(sdata.code) || sdata.name;
     this.studentBirth = this.students[this.selectedStudentIndex].value4;
     this.birth = this.studentBirth;
     this.studentLevel = this.students[this.selectedStudentIndex].value5;
     this.selectedTimeZoneIndex = uni.getStorageSync("timezoneIndex") || 0;
-    this.timezone = this.timezones[this.selectedTimeZoneIndex].value;
+    this.startDate = this.$global.startDate;
+    this.endDate = this.$global.endDate;
   },
   methods: {
     getBirth() {
@@ -314,7 +315,6 @@ export default {
       this.isShow = false;
     },
     async save() {
-      console.log('save', this.studentName, this.birth);
       try {
         // 显示加载提示
         uni.showLoading({
@@ -331,6 +331,8 @@ export default {
           this.isShow = false;
           this.studentBirth = this.birth;
           this.students[this.selectedStudentIndex].value4 = this.birth;
+          this.students[this.selectedStudentIndex].name = this.studentName;
+          uni.setStorageSync(this.studentCode, this.studentName);
           uni.showToast({
             title: '保存成功',
             icon: 'success',
@@ -372,12 +374,15 @@ export default {
     handleUpdateStudent(index) {
       this.selectedStudentIndex = index;
       this.$global.selectIndex = index;
-      this.studentCode = this.students[this.selectedStudentIndex].code;
-      this.studentName = this.students[this.selectedStudentIndex].name;
+      const sdata = this.students[this.selectedStudentIndex];
+      this.studentCode = sdata.code;
+      this.studentName = uni.getStorageSync(sdata.code) || sdata.name;
       this.$global.studentCode = this.studentCode;
-      this.studentBirth = this.students[this.selectedStudentIndex].value4;
+      this.studentBirth = sdata.value4;
+      uni.setStorageSync('studentCode', this.studentCode);
+      uni.setStorageSync('selectIndex', this.selectedStudentIndex);
       this.birth = this.studentBirth;
-      this.studentLevel = this.students[this.selectedStudentIndex].value5;
+      this.studentLevel = sdata.value5;
       console.log('选中的学生代码:', this.studentCode, this.$global.studentCode);
       this.hideModal();
     },
@@ -424,10 +429,9 @@ export default {
     onTimeZoneChange(event) {
       this.selectedTimeZoneIndex = event.detail.value;
       this.selectedTimeZone = this.timezones[this.selectedTimeZoneIndex]; // 根据索引获取对应的时区对象
-      this.timezone = this.selectedTimeZone.value;
+      this.$global.timezone = this.selectedTimeZone.value;
       uni.setStorageSync('timezoneIndex', this.selectedTimeZoneIndex);
       this.fetchData(); // 获取数据列表
-      console.log('选中的时区:', this.timezone); // 输出选中的时区值
     },
     getState(state) {
       return this.states[state];
@@ -442,8 +446,8 @@ export default {
       const monday = new Date(today.getTime() - (dayOfWeek - 1) * 86400000); // 本周一
       const sunday = new Date(today.getTime() + (7 - dayOfWeek) * 86400000); // 本周日
 
-      this.startDate = this.formatDate(monday);
-      this.endDate = this.formatDate(sunday);
+      // this.startDate = this.formatDate(monday);
+      // this.endDate = this.formatDate(sunday);
       this.currentYear = today.getFullYear();
       this.currentMonth = today.getMonth() + 1;
 
@@ -453,6 +457,8 @@ export default {
     },
     // 打开日历
     openCalendar() {
+      this.tempStartDate = this.startDate;
+      this.tempEndDate = this.endDate;
       this.showCalendar = true;
     },
     // 确认日期选择
@@ -503,8 +509,9 @@ export default {
     initCalendar() {
       let year = this.currentYear;
       let month = this.currentMonth;
+      const firstDate = `${year}-${String(month).padStart(2, '0')}-01`;
       const daysInMonth = new Date(year, month, 0).getDate(); // 当月天数
-      const firstDay = new Date(year, month, 1).getDay(); // 当月1号是星期几 (0-6, 0代表周日)
+      const firstDay = new Date(firstDate).getDay(); // 当月1号是星期几 (0-6, 0代表周日)
 
       // 上个月的相关数据
       const prevMonthYear = month === 1 ? year - 1 : year; // 上个月的年份
@@ -589,20 +596,19 @@ export default {
         });
         this.loading = true;
 
-        console.log('开始时间', this.startDate, this.endDate, this.timezone, this.studentCode);
         const res = await getCourseList({
           "start_dt": this.startDate,
           "end_dt": this.endDate,
           "studentCode": this.studentCode,
-          "timezone": this.timezone
+          "timezone": this.$global.timezone
         });
         console.log('课程列表:', res);
         // 处理返回的数据
         if (res.code == 0) {
           this.courseList = res.data;
           this.hasCourses = this.courseList.length > 0;
-          console.log('hasCourses:', this.hasCourses);
-
+          this.$global.startDate = this.startDate;
+          this.$global.endDate = this.endDate;
         }
       } catch (error) {
         console.error('显示加载提示失败:', error);
@@ -614,12 +620,11 @@ export default {
     },
     async getStudentTotal() {
       try {
-        console.log('getStudentTotal开始时间', this.startDate, this.endDate, this.timezone, this.studentCode);
         const res = await getStudentTotal({
           "start_dt": this.startDate,
           "end_dt": this.endDate,
           "studentCode": this.studentCode,
-          "timezone": this.timezone
+          "timezone": this.$global.timezone
         });
         console.log('课程列表:', res);
         // 处理返回的数据
@@ -632,13 +637,12 @@ export default {
     },
     async fetchOrderData() {
       try {
-        console.log('开始时间', this.startDate, this.endDate, this.timezone, this.studentCode);
         const res = await getOrderList({
           "phone": this.$global.phone,
           "start_dt": this.startDate,
           "end_dt": this.endDate,
           "studentCode": this.studentCode,
-          "timezone": this.timezone
+          "timezone": this.$global.timezone
         });
         console.log('订单列表:', res);
         // 处理返回的数据
@@ -649,10 +653,6 @@ export default {
       } catch (error) {
         console.error('订单列表加载提示失败:', error);
       }
-    },
-    async init() {
-      this.setDefaultWeek(); // 初始化默认本周日期
-      this.fetchData();
     },
     async course_downloadPDF() {
       try {
@@ -671,14 +671,14 @@ export default {
           "end_dt": this.endDate,
           "studentCode": this.studentCode,
           "studentName": this.studentName,
-          "timezone": this.timezone
+          "timezone": this.$global.timezone
         });
         console.log('downloadPDF_course:', res);
         // 处理返回的数据
         if (res.code == 0) {
           const downloadUrl = `https://www.futurekey.com/classroom/downloadtemp/${res.filename}`
           uni.downloadFile({
-            url: downloadUrl, 
+            url: downloadUrl,
             success: (downloadResult) => {
               console.log('下载结果:', downloadResult);
               if (downloadResult.statusCode === 200) {
@@ -737,14 +737,14 @@ export default {
           "end_dt": this.endDate,
           "studentCode": this.studentCode,
           "studentName": this.studentName,
-          "timezone": this.timezone
+          "timezone": this.$global.timezone
         });
         console.log('downloadPDF_order:', res);
         // 处理返回的数据
         if (res.code == 0) {
           const downloadUrl = `https://www.futurekey.com/classroom/downloadtemp/${res.filename}`
           uni.downloadFile({
-            url: downloadUrl, 
+            url: downloadUrl,
             success: (downloadResult) => {
               console.log('下载结果:', downloadResult);
               if (downloadResult.statusCode === 200) {
@@ -802,8 +802,9 @@ export default {
   },
   onLoad() {
     console.log('onLoad');
-    this.init();
+    this.setDefaultWeek(); // 初始化默认本周日期
     this.initCalendar();   // 初始化日历
+    this.fetchData();
   },
   onPullDownRefresh() {
     this.fetchData(); // 获取数据列表
@@ -1558,8 +1559,7 @@ export default {
 
 .picker {
   width: 280rpx;
-  padding: 20rpx;
-  justify-content: center;
+  padding: 20rpx; justify-content: center;
   align-items: center;
   border-radius: 10rpx;
   background-color: #f5f5f5;

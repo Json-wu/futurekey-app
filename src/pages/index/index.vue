@@ -116,7 +116,8 @@ export default {
         success: (response) => {
           let result = response.data;
           if (result.code == 0) {
-            this.handleLoginSuccess(result.data.phone);
+            let phone = result.data.phone;
+            this.handleLoginSuccess(phone);
           } else {
             this.handleLoginFail(result.message);
           }

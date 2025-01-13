@@ -58,6 +58,7 @@ export default {
             this.$global.isLogin = false;
             this.$global.studentList=[];
             uni.removeStorageSync('timezoneIndex');
+            uni.removeStorageSync('selectIndex');
             uni.removeStorageSync('studentCode');
             uni.removeStorageSync('phone');
             uni.removeStorageSync('isLogin');

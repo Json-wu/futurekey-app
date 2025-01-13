@@ -19,6 +19,7 @@ Vue.prototype.$global = {
     { name: "纽约", value: "America/New_York" },
     { name: "马德里", value: "Europe/Madrid" }
   ],
+  timezoneIndex: 0,
   share: {
     title: '科爱信-开心英语',
     path: '/pages/index/index', // 分享路径

@@ -6,7 +6,6 @@
         <image src="@/static/back-icon.png" class="back-icon"></image>
       </view>
       <view class="centered-picker-container" @tap="showModal">
-        <view class="studentname" v-if="students.length==1">{{ students[0].name }}</view>
         <view class="student-select">{{ students[selectedStudentIndex].name }} ▼</view>
       </view>
       <!-- 占位元素：确保与系统按钮对齐 -->
@@ -173,7 +172,8 @@ export default {
     this.studentCode = this.$global.studentCode;
     this.selectedStudentIndex = this.$global.selectIndex;
     this.selectedTimeZoneIndex = uni.getStorageSync("timezoneIndex") || 0;
-    this.timezone = this.timezones[this.selectedTimeZoneIndex].value;
+    this.startDate = this.$global.startDate;
+    this.endDate = this.$global.endDate;
   },
   methods: {
     showModal() {
@@ -205,20 +205,12 @@ export default {
     goBack() {
       uni.navigateBack();
     },
-    onStudentChange(event) {
-      this.selectedStudentIndex = event.detail.value;
-      this.studentCode = this.students[this.selectedStudentIndex].code;
-      this.$global.studentCode = this.studentCode;
-      console.log('选中的学生代码:', this.studentCode, this.$global.studentCode);
-      this.fetchData();
-    },
     onTimeZoneChange(event) {
       this.selectedTimeZoneIndex = event.detail.value;
       this.selectedTimeZone = this.timezones[this.selectedTimeZoneIndex]; // 根据索引获取对应的时区对象
-      this.timezone = this.selectedTimeZone.value;
+      this.$global.timezone = this.selectedTimeZone.value;
       uni.setStorageSync('timezoneIndex', this.selectedTimeZoneIndex);
       this.fetchData(); // 获取数据列表
-      console.log('选中的时区:', this.timezone); // 输出选中的时区值
     },
     getState(state) {
       return this.states[state];
@@ -233,8 +225,8 @@ export default {
       const monday = new Date(today.getTime() - (dayOfWeek - 1) * 86400000); // 本周一
       const sunday = new Date(today.getTime() + (7 - dayOfWeek) * 86400000); // 本周日
 
-      this.startDate = this.formatDate(monday);
-      this.endDate = this.formatDate(sunday);
+      // this.startDate = this.formatDate(monday);
+      // this.endDate = this.formatDate(sunday);
       this.currentYear = today.getFullYear();
       this.currentMonth = today.getMonth() + 1;
 
@@ -244,6 +236,8 @@ export default {
     },
     // 打开日历
     openCalendar() {
+      this.tempStartDate = this.startDate;
+      this.tempEndDate = this.endDate;
       this.showCalendar = true;
     },
     // 确认日期选择
@@ -294,8 +288,9 @@ export default {
     initCalendar() {
       let year = this.currentYear;
       let month = this.currentMonth;
+      const firstDate = `${year}-${String(month).padStart(2, '0')}-01`;
       const daysInMonth = new Date(year, month, 0).getDate(); // 当月天数
-      const firstDay = new Date(year, month, 1).getDay(); // 当月1号是星期几 (0-6, 0代表周日)
+      const firstDay = new Date(firstDate).getDay(); // 当月1号是星期几 (0-6, 0代表周日)
 
       // 上个月的相关数据
       const prevMonthYear = month === 1 ? year - 1 : year; // 上个月的年份
@@ -362,17 +357,23 @@ export default {
         });
         this.loading = true;
 
-        console.log('开始时间', this.startDate, this.endDate, this.timezone, this.studentCode);
         const res = await getCourseList({
           "start_dt": this.startDate,
           "end_dt": this.endDate,
           "studentCode": this.studentCode,
-          "timezone": this.timezone
+          "timezone": this.$global.timezone
         });
         console.log('课程列表:', res);
         // 处理返回的数据
         if (res.code == 0) {
           this.courses = res.data;
+          this.selectedStudentIndex = uni.getStorageSync("selectIndex") || 0;
+          this.$global.selectIndex = this.selectedStudentIndex;
+          this.studentCode = this.students[this.selectedStudentIndex].code;
+          this.$global.studentCode = uni.getStorageSync("studentCode");
+
+          this.$global.startDate = this.startDate;
+          this.$global.endDate = this.endDate;
         }
       } catch (error) {
         console.error('显示加载提示失败:', error);
@@ -453,6 +454,8 @@ export default {
       this.$global.selectIndex = index;
       this.studentCode = this.students[this.selectedStudentIndex].code;
       this.$global.studentCode = this.studentCode;
+      uni.setStorageSync('studentCode', this.studentCode);
+      uni.setStorageSync('selectIndex', this.selectedStudentIndex);
       console.log('选中的学生代码:', this.studentCode, this.$global.studentCode);
       this.fetchData();
       this.hideModal();

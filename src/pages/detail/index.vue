@@ -47,9 +47,9 @@
       <!-- 内容区 -->
       <view v-if="currentTab === 'before'" class="content">
         <!-- 作业文本 -->
-        <view class="task-content">
-          <text class="courseContent">{{ courseData.preview }}</text>
-        </view>
+        <scroll-view  class="task-content" scroll-y="true">
+          <text class="courseContent">{{ courseData.preview || '' }}</text>
+        </scroll-view>
 
         <!-- 附件 -->
         <view class="attachment-list">
@@ -66,9 +66,9 @@
 
       <view v-else class="content">
         <!-- 作业文本 -->
-        <view class="task-content">
-          <text class="courseContent">{{ courseData.homework }}</text>
-        </view>
+        <scroll-view  class="task-content" scroll-y="true">
+          <text class="courseContent">{{ courseData.homework || '' }}</text>
+        </scroll-view>
 
         <!-- 附件 -->
         <view class="attachment-list">
@@ -140,16 +140,23 @@ export default {
       uploadFiles: [],
       files: [
       ],
+      timezones: [],
+      selectedTimeZoneIndex: 0
     };
   },
+  created() {
+    this.timezones = this.$global.timezones;
+    this.selectedTimeZoneIndex = uni.getStorageSync("timezoneIndex") || 0;
+    this.$global.timezone = this.timezones[this.selectedTimeZoneIndex].value;
+  },
   methods: {
-    subFilename(fname){
-      console.log('fname',fname);
-      if(fname.split('-').length>1){
+    subFilename(fname) {
+      console.log('fname', fname);
+      if (fname.split('-').length > 1) {
         return fname.split('-').pop();
       }
       if (fname.length > 20) {
-        return fname.slice(0, 20) +"."+ fname.split('.').pop();
+        return fname.slice(0, 20) + "." + fname.split('.').pop();
       }
       return fname;
     },
@@ -162,7 +169,7 @@ export default {
       console.log("file", file);
       // 监听上传进度
       let ffname = file.path.split('/').pop()
-     
+
       let uploadItem = {
         name: this.subFilename(ffname),
         size: Math.floor(file.size / 1000),
@@ -213,7 +220,7 @@ export default {
       }
       uni.chooseImage({
         count: count,
-        size: 3072*1000,
+        size: 3072 * 1000,
         success: (res) => {
           const maxSize = 3 * 1024 * 1024; // 3MB in bytes
           res.tempFiles.forEach(file => {
@@ -591,14 +598,15 @@ export default {
 }
 
 .content {
-  padding: 20rpx 40rpx 20rpx 40rpx;
+  padding: 20rpx;
   min-height: 200rpx;
 }
 
 /* 作业文本内容 */
 .task-content {
-  margin: 20rpx 0;
-  min-height: 16vh;
+  border-radius: 10rpx;
+  border: 2rpx dashed #323235;
+  height: 17vh;
 }
 
 .title {
