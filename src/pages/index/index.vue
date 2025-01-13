@@ -118,7 +118,7 @@ export default {
           if (result.code == 0) {
             this.handleLoginSuccess(result.data.phone);
           } else {
-            this.handleLoginFail('获取手机号失败，请重试');
+            this.handleLoginFail(result.message);
           }
         },
         fail: (err) => {
