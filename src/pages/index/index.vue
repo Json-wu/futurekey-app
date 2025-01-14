@@ -12,7 +12,7 @@
 
     <view class="login-container">
       <!-- 手机号展示 -->
-      <view class="phone-number">{{ phone }}</view>
+      <view class="phone-number">{{ hidePhone() }}</view>
 
       <!-- 登录按钮 -->
       <view class="login-section">
@@ -81,6 +81,12 @@ export default {
     };
   },
   methods: {
+    hidePhone() {
+      if (!this.phone) return '';
+      const len = this.phone.length;
+      if (len <= 5) return this.phone; // 如果号码太短就直接显示
+      return this.phone.substring(0, 2) + '*'.repeat(len - 5) + this.phone.slice(-3);
+    },
     // 显示用户协议
     showAgreement() {
       this.isAgreementVisible = true;
@@ -484,6 +490,7 @@ input[type="text"] {
   text-align: center;
   font-weight: bold;
 }
+
 .datachoose-text {
   width: 670rpx;
   font-weight: bold;
