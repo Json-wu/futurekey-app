@@ -28,7 +28,7 @@
 
     <!-- 滚动课程列表 -->
     <scroll-view class="course-list" scroll-y>
-      <view class="month-title">{{ currentYear }}年{{ currentMonth }}月</view>
+      <view class="month-title">课程列表</view>
       <view v-if="courses.length == 0" class="course-card">
         <text>暂无课程</text>
       </view>

@@ -75,10 +75,6 @@
         </view>
       </view>
 
-      <!-- 课程列表 -->
-      <!-- <view class="titlecss">
-        <text>课程历史</text>
-      </view> -->
       <view class="course-history">
         <scroll-view class="contentdiv" scroll-x="true">
           <view class="table">
@@ -109,14 +105,12 @@
           </view>
           <view class="download-pdf" @click="course_downloadPDF">下载 PDF</view>
         </view>
-      </view>
 
-      <!-- 历史订单 -->
-      <view class="titlecss">
-        <text>历史订单</text>
-      </view>
+        <!-- 历史订单 -->
+        <view class="titlehistory">
+          <text>历史订单</text>
+        </view>
 
-      <view class="course-history">
         <scroll-view class="contentdiv" scroll-x="true">
           <view class="table">
             <!-- 表头 -->
@@ -139,7 +133,7 @@
             </view>
           </view>
         </scroll-view>
-        <view class="course-footer">
+        <view class="order-footer">
           <view class="expand-btn" @tap="toggleExpandOrder" :disabled="visibleRowsOrder.length == 0">
             <text class="expend"> {{ isExpandedOrder ? '收起' : '展开' }}</text>
             <image class="icon-down" :src="getIconOrder()" mode="scaleToFill" />
@@ -825,7 +819,6 @@ export default {
 .container {
   background: linear-gradient(to bottom, #2F51FF, #c4cdd9);
   flex-direction: column;
-  height: 100vh;
 }
 
 /* 顶部导航栏 */
@@ -1353,10 +1346,12 @@ export default {
   padding: 10px;
 }
 
-.course-footer {
+.order-footer {
   display: flex;
   padding: 20rpx;
   justify-content: space-between;
+  background: #FFFFFF;
+  border-radius: 0 0 10rpx 10rpx;
 }
 
 .expand-btn {
@@ -1378,6 +1373,12 @@ export default {
   margin: 20rpx auto 20rpx auto;
 }
 
+.titlehistory {
+  text-align: center;
+  color: #313bc5;
+  margin: 20rpx auto 20rpx auto;
+}
+
 .icon1 {
   width: 4px;
   height: 20px;
@@ -1394,25 +1395,35 @@ export default {
 }
 
 .course-history {
+  display: flex;
+  flex-direction: column;
+}
+
+.order-history {
+  text-align: center;
+  color: #353333;
+  padding: 30rpx;
   background: #FFFFFF;
   border-radius: 10px;
 }
 
-.order-history {
+.course-footer {
+  display: flex;
+  padding: 20rpx;
+  justify-content: space-between;
   background: #FFFFFF;
-  border-radius: 10px;
+  border-radius: 0px 0px 10px 10px;
 }
 
 .contentdiv {
   height: auto;
   width: 100%;
-  /* 必须定义容器宽度 */
-  /* overflow-x: scroll;  */
   white-space: nowrap;
-  /* 防止子元素换行 */
   font-size: 28rpx;
   color: #555;
   line-height: 1.6;
+  background: #FFFFFF;
+  border-radius: 10px 10px 0px 0px;
 }
 
 /* 设置滚动条样式（仅部分支持） */
@@ -1476,12 +1487,6 @@ export default {
   padding: 4px;
   text-align: center;
   white-space: normal;
-}
-
-.order-history {
-  text-align: center;
-  color: #353333;
-  padding: 30rpx;
 }
 
 .nonedata {
