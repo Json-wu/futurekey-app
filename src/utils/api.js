@@ -82,3 +82,11 @@ export function downloadPDF_order(params = {}) {
     data: params,
   });
 }
+// 封装请假接口
+export function leaveSubmit(params = {}) {
+  return request({
+    url: `${BASE_URL}/leave/student`,
+    method: 'POST',
+    data: params,
+  });
+}

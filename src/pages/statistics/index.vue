@@ -1375,7 +1375,7 @@ export default {
 
 .titlehistory {
   text-align: center;
-  color: #313bc5;
+  color: #FFFFFF;
   margin: 20rpx auto 20rpx auto;
 }
 

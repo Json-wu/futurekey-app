@@ -19,13 +19,6 @@
         <text class="separator">一</text>
         <text class="date-text">{{ endDate || '请选择' }}</text>
       </view>
-
-      <!-- 筛选按钮 -->
-      <!-- <view class="filter-button">
-        <picker @change="onTimeZoneChange" :value="selectedTimeZoneIndex" :range="timezones" range-key="name">
-          <view class="timezone-select">{{ timezones[selectedTimeZoneIndex].name }} ▼</view>
-        </picker>
-      </view> -->
     </view>
 
     <!-- 滚动课程列表 -->
@@ -72,6 +65,10 @@
           <text class="datechoose-text">请假申请</text>
           <view class="close-btn" @tap="closeModal">×</view>
         </view>
+
+        <view class="tips">
+          <text>注：每月最多享有1次无责请假机会(返还课时)</text>
+        </view>
         
         <!-- Leave Reason Selection -->
         <view class="leave-reason-selection">
@@ -117,7 +114,7 @@
 <script>
 import CalendarPopup from '@/components/CalendarPopup.vue';
 import studentPopup from '@/components/StudentPopup.vue';
-import { getCourseList, getStudentList } from '../../utils/api';
+import { getCourseList, leaveSubmit } from '../../utils/api';
 
 export default {
   components: {
@@ -191,11 +188,32 @@ export default {
     onReasonChange(e) {
       this.selectedReason = e.detail.value; // Update selected reason
     },
-    confirmLeave() {
+    async confirmLeave() {
       // Handle leave confirmation logic here
-      console.log('Selected Reason:', this.leaveReasons[this.selectedReason]);
-      console.log('Remarks:', this.remarks);
+      const reason = this.leaveReasons[this.selectedReason];
+      const remarks = this.remarks;
+      const selectedCourses = this.courses.filter(course => course.isSelected).map(course => course.id);
+      console.log('Leave Reason:', reason);
+      console.log('Remarks:', remarks);
+      console.log('selectedCourses:', selectedCourses);
       this.closeModal();
+      uni.showLoading({
+        title: '提交中...'
+      });
+      const res = await leaveSubmit({
+        "studentCode": this.studentCode,
+        "courseIds": selectedCourses,
+        "reason": reason,
+        "remarks": remarks,
+      });
+      uni.hideLoading();
+      if (res.code !== 0) {
+        uni.showToast({
+          title: '请假提交失败',
+          icon: 'none'
+        });
+        return;
+      }
       uni.showToast({
         title: '请假已提交',
         icon: 'success',
@@ -391,7 +409,7 @@ export default {
       let course = this.courses.find(item => item.id === id);
       course.isSelected = !course.isSelected;
       console.log('toggleCheck', course.isSelected);
-      if(!this.courses.find(x=>!x.isSelected)){
+      if(!this.courses.find(x=>!x.isSelected && x.state == 0)){
         this.checkall = true;
       }else{
         this.checkall = false;
@@ -401,6 +419,7 @@ export default {
       console.log('selectAll',this.checkall);
       this.checkall = !this.checkall;
       this.courses.forEach(course => {
+        if(course.state !== 0) return;
         course.isSelected = this.checkall;
         console.log(course);
       });
@@ -418,35 +437,6 @@ export default {
       }else{ 
         this.openModal();
         return; 
-        // 在这里处理选中的课程，例如批量请假操作
-        //  弹出框，输入请假理由，用户填写请假理由，长度20个字
-
-        uni.showModal({
-          title: '请假理由',
-          content: '请输入请假理由',
-          showCancel: true,
-          confirmText: '提交',
-          confirmColor: '#007AFF',
-          inputPlaceholder: '请输入请假理由',
-          inputMaxLength: 20,
-          inputType: 'text',
-          success: (res) => {
-            if (res.confirm) {
-              // 用户点击了提交按钮，执行请假操作
-              uni.showToast({
-                title: '请假成功',
-                icon: 'success',
-                duration: 2000
-              });
-            } else {
-              uni.showToast({
-                title: '取消请假',
-                icon: 'none',
-                duration: 2000
-              });
-            }
-          }
-        });
       }
     },
     handleUpdateStudent(index) {
@@ -741,7 +731,6 @@ export default {
 }
 
 .calendar-header {
-  margin: 30rpx;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -764,5 +753,11 @@ export default {
 
 .picker {
   margin: 10px 0;
+}
+
+.tips {
+  padding: 20rpx;
+    font-size: 28rpx;
+    color: #8a581a;
 }
 </style>
