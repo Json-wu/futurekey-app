@@ -179,8 +179,8 @@ export default {
       uni.setStorageSync('studentCode', this.studentCode);
       uni.setStorageSync('selectIndex', this.selectIndex);
       console.log('选中的学生代码:', this.studentCode, this.$global.studentCode);
-      this.fetchData();
       this.hideModal();
+      this.fetchData();
     },
     showAboutUs() {
       this.showAbout = true;
@@ -218,50 +218,6 @@ export default {
       this.tempStartDate = this.startDate;
       this.tempEndDate = this.endDate;
       this.showCalendar = true;
-    },
-    // 确认日期选择
-    confirmDates() {
-      this.startDate = this.tempStartDate;
-      this.endDate = this.tempEndDate;
-      console.log(this.startDate, this.endDate)
-      this.showCalendar = false;
-      this.fetchData();
-    },
-    // 判断是否在选中范围内
-    isInRange(date) {
-      if (this.tempStartDate && this.tempEndDate) {
-        return date > this.tempStartDate && date < this.tempEndDate;
-      }
-      return false;
-    },
-    // 选择日期
-    selectDate(date, isOtherMonth) {
-      if (isOtherMonth) return;
-      if (this.currentStep === 0) {
-        this.tempStartDate = date;
-        this.currentStep = 1; // 进入选择截止日期步骤
-      } else {
-        if (date >= this.tempStartDate) {
-          this.tempEndDate = date;
-          this.currentStep = 0; // 重置步骤
-        } else {
-          uni.showToast({ title: '截止日期不能小于开始日期', icon: 'none' });
-        }
-      }
-    },
-    // 切换月份
-    changeMonth(step) {
-      const newMonth = this.currentMonth + step;
-      if (newMonth > 12) {
-        this.currentYear++;
-        this.currentMonth = 1;
-      } else if (newMonth < 1) {
-        this.currentYear--;
-        this.currentMonth = 12;
-      } else {
-        this.currentMonth = newMonth;
-      }
-      this.initCalendar();
     },
     // 生成日历数据，补齐完整的周数据
     initCalendar() {

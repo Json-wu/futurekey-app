@@ -211,7 +211,7 @@ export default {
       isExpanded: false, // 是否展开
       isExpandedOrder: false, // 是否展开
       loading: true,
-      studentCode: "202408392",
+      studentCode: "",
       studentName: '',
       studentBirth: '', // 出生年月
       studentAge: '--',
@@ -388,6 +388,7 @@ export default {
       this.studentLevel = sdata.value5;
       console.log('选中的学生代码:', this.studentCode, this.$global.studentCode);
       this.hideModal();
+      this.fetchData();
     },
     handleLogout() {
       console.log("退出登录");
@@ -442,15 +443,7 @@ export default {
     // 设置默认本周的开始和结束日期
     setDefaultWeek() {
       const today = new Date();
-      // 获取上月第一天和最后一天
-      const firstDayOfMonth = new Date('2024-10-01');//new Date(today.getFullYear(), today.getMonth(), 1);
-      const lastDayOfMonth = new Date('2024-10-31');//new Date(today.getFullYear(), today.getMonth() + 1, 0);
-      const dayOfWeek = today.getDay() || 7; // 将周日转为 7
-      const monday = new Date(today.getTime() - (dayOfWeek - 1) * 86400000); // 本周一
-      const sunday = new Date(today.getTime() + (7 - dayOfWeek) * 86400000); // 本周日
 
-      // this.startDate = this.formatDate(monday);
-      // this.endDate = this.formatDate(sunday);
       this.currentYear = today.getFullYear();
       this.currentMonth = today.getMonth() + 1;
 
@@ -463,50 +456,6 @@ export default {
       this.tempStartDate = this.startDate;
       this.tempEndDate = this.endDate;
       this.showCalendar = true;
-    },
-    // 确认日期选择
-    confirmDates() {
-      this.startDate = this.tempStartDate;
-      this.endDate = this.tempEndDate;
-      console.log(this.startDate, this.endDate)
-      this.showCalendar = false;
-      this.fetchData();
-    },
-    // 判断是否在选中范围内
-    isInRange(date) {
-      if (this.tempStartDate && this.tempEndDate) {
-        return date > this.tempStartDate && date < this.tempEndDate;
-      }
-      return false;
-    },
-    // 选择日期
-    selectDate(date, isOtherMonth) {
-      if (isOtherMonth) return;
-      if (this.currentStep === 0) {
-        this.tempStartDate = date;
-        this.currentStep = 1; // 进入选择截止日期步骤
-      } else {
-        if (date >= this.tempStartDate) {
-          this.tempEndDate = date;
-          this.currentStep = 0; // 重置步骤
-        } else {
-          uni.showToast({ title: '截止日期不能小于开始日期', icon: 'none' });
-        }
-      }
-    },
-    // 切换月份
-    changeMonth(step) {
-      const newMonth = this.currentMonth + step;
-      if (newMonth > 12) {
-        this.currentYear++;
-        this.currentMonth = 1;
-      } else if (newMonth < 1) {
-        this.currentYear--;
-        this.currentMonth = 12;
-      } else {
-        this.currentMonth = newMonth;
-      }
-      this.initCalendar();
     },
     // 生成日历数据，补齐完整的周数据
     initCalendar() {
@@ -560,13 +509,6 @@ export default {
       }
 
       this.calendar = calendar;
-    },
-    // 格式化日期
-    formatDate(date) {
-      const y = date.getFullYear();
-      const m = String(date.getMonth() + 1).padStart(2, '0');
-      const d = String(date.getDate()).padStart(2, '0');
-      return `${y}-${m}-${d}`;
     },
     goToDetail(courseId) {
       uni.navigateTo({

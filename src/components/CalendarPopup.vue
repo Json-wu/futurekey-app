@@ -92,20 +92,37 @@ export default {
     selectDate(date, isOtherMonth) {
       if (isOtherMonth) return;
       if (this.currentStep === 0) {
-        this.$emit('update:tempStartDate', date);
-        this.$emit('update:currentStep', 1);
+        if (date < this.tempEndDate) {
+          this.$emit('update:tempStartDate', date);
+          this.$emit('update:currentStep', 1);
+        }else{
+          this.$emit('update:tempStartDate', this.tempEndDate);
+          this.$emit('update:tempEndDate', date);
+          this.$emit('update:currentStep', 1);
+        }
       } else {
         if (date >= this.tempStartDate) {
           this.$emit('update:tempEndDate', date);
           this.$emit('update:currentStep', 0);
         } else {
-          uni.showToast({ title: '截止日期不能小于开始日期', icon: 'none' });
+          this.$emit('update:tempStartDate', date);
+          this.$emit('update:tempEndDate', this.tempStartDate);
+          this.$emit('update:currentStep', 0);
         }
       }
     },
     confirmDates() {
+      if(!this.tempStartDate) {
+        uni.showToast({ title: '请选择开始日期', icon: 'none' });
+        return;
+      }
+      if(!this.tempEndDate) {
+        uni.showToast({ title: '请选择截止日期', icon: 'none' });
+        return;
+      }
       this.$emit('update:startDate', this.tempStartDate);
       this.$emit('update:endDate', this.tempEndDate);
+      this.$emit('update:currentStep', 0);
       this.$emit('update:showCalendar', false);
       this.$emit('fetchData');
     }
