@@ -575,6 +575,7 @@ export default {
     },
     async fetchData() {
       try {
+        if(!this.studentCode) return;
         // 显示加载提示
         uni.showLoading({
           title: '加载中...'

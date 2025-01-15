@@ -375,6 +375,7 @@ export default {
     },
     async fetchData() {
       try {
+        if(!this.studentCode) return; 
         // 显示加载提示
         uni.showLoading({
           title: '加载中...'
@@ -552,7 +553,7 @@ export default {
   display: flex;
   align-items: center;
   background-color: #f5f5f5;
-  border-radius: 8px;
+  border-radius: 10rpx;
   padding: 20rpx;
   width: 96%;
   justify-content: space-between;
@@ -597,7 +598,7 @@ export default {
 .course-card {
   display: flex;
   background: #f3f6ff;
-  border-radius: 10px;
+  border-radius: 10rpx;
   padding: 10px;
   margin: 16px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -688,7 +689,7 @@ export default {
   flex: 1;
   margin: 0 5rpx;
   height: 80rpx;
-  border-radius: 20rpx;
+  border-radius: 10rpx;
   font-size: 14px;
   font-weight: bold;
   text-align: center;
@@ -725,7 +726,7 @@ export default {
 .modal-content {
   background-color: #fff;
   padding: 20rpx;
-  border-radius: 5px;
+  border-radius: 10rpx;
   width: 80%;
 }
 

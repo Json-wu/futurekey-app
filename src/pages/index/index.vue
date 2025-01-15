@@ -424,7 +424,7 @@ export default {
 .modal-content {
   background-color: #fff;
   padding: 20rpx;
-  border-radius: 5px;
+  border-radius: 10rpx;
   width: 80%;
 }
 
@@ -445,7 +445,7 @@ input[type="text"] {
   flex: 1;
   padding: 10rpx;
   border: 1rpx solid #ccc;
-  border-radius: 4rpx;
+  border-radius: 10rpx;
   width: 280rpx;
 }
 
@@ -462,7 +462,7 @@ input[type="text"] {
   flex: 1;
   margin: 0 5rpx;
   height: 80rpx;
-  border-radius: 20rpx;
+  border-radius: 10rpx;
   font-size: 14px;
   font-weight: bold;
   text-align: center;

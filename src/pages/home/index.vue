@@ -330,6 +330,7 @@ export default {
     },
     async fetchData() {
       try {
+        if(!this.studentCode) return;
         // 显示加载提示
         uni.showLoading({
           title: '加载中...'
@@ -658,7 +659,7 @@ export default {
   flex: 1;
   margin: 0 5px;
   height: 40px;
-  border-radius: 20rpx;
+  border-radius: 10rpx;
   font-size: 14px;
   font-weight: bold;
   color: #fff;

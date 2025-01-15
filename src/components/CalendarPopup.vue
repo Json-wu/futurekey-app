@@ -67,6 +67,7 @@ export default {
   },
   methods: {
     closeCalendar() {
+      this.$emit('update:currentStep', 0);
       this.$emit('update:showCalendar', false);
     },
     changeMonth(step) {
