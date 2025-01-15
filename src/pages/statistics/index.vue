@@ -234,13 +234,8 @@ export default {
       students: [
       ],
       timezones: [],
-      dateRange: "2024-01-09 - 2024-01-26", // 日期范围
+      dateRange: "", // 日期范围
       courses: [],
-      states: {
-        0: "待出席",
-        1: "已出席",
-        2: "已请假"
-      },
       // 示例课程数据
       courseList: [
 
@@ -260,7 +255,6 @@ export default {
   computed: {
     // 计算属性，根据 isExpanded 状态控制显示的行数
     visibleRows() {
-      console.log('visibleRows', this.courseList);
       if (this.courseList.length > 0) {
         if (this.isExpanded) {
           return this.courseList;
@@ -363,7 +357,7 @@ export default {
         case 2:
           return '已请假';
         case 3:
-          return '缺勤';
+          return '已缺课';
         default:
           return '未知';
       }
@@ -436,9 +430,6 @@ export default {
       this.$global.timezone = this.selectedTimeZone.value;
       uni.setStorageSync('timezoneIndex', this.selectedTimeZoneIndex);
       this.fetchData(); // 获取数据列表
-    },
-    getState(state) {
-      return this.states[state];
     },
     // 设置默认本周的开始和结束日期
     setDefaultWeek() {
@@ -523,7 +514,7 @@ export default {
           title: '加载中...'
         });
         this.loading = true;
-        await this.getStudentTotal();
+        // await this.getStudentTotal();
         await this.fetchCourseData();
         await this.fetchOrderData();
       } catch (error) {
@@ -552,6 +543,7 @@ export default {
         // 处理返回的数据
         if (res.code == 0) {
           this.courseList = res.data;
+          this.totalData = res.total;
           this.hasCourses = this.courseList.length > 0;
           this.$global.startDate = this.startDate;
           this.$global.endDate = this.endDate;

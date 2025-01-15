@@ -132,7 +132,7 @@ export default {
       isVisible: false,
       checkall: false,
       loading: true,
-      studentCode: "202408392",
+      studentCode: "",
       currentYear: 0, // 当前年份
       currentMonth: 0, // 当前月份
       startDate: '',       // 开始日期
@@ -149,13 +149,8 @@ export default {
       students: [
       ],
       timezones: [],
-      dateRange: "2024-01-09 - 2024-01-26", // 日期范围
+      dateRange: "", // 日期范围
       courses: [],
-      states: {
-        0: "待出席",
-        1: "已出席",
-        2: "已请假"
-      },
       isShow: false, // Controls modal visibility
       leaveReasons: ['事假', '病假', '其他'], // Leave reasons
       selectedReason: 0, // Index of selected leave reason
@@ -166,10 +161,6 @@ export default {
     const now = new Date();
     this.currentYear = now.getFullYear();
     this.currentMonth = now.getMonth() + 1;
-    console.log('created', this.$global.timezones);
-    console.log('created', this.$global.studentList);
-    console.log('created', this.$global.studentCode);
-    console.log('created', this.$global.selectIndex);
     this.timezones = this.$global.timezones;
     this.students = this.$global.studentList;
     this.studentCode = this.$global.studentCode;
@@ -235,9 +226,6 @@ export default {
       this.$global.timezone = this.selectedTimeZone.value;
       uni.setStorageSync('timezoneIndex', this.selectedTimeZoneIndex);
       this.fetchData(); // 获取数据列表
-    },
-    getState(state) {
-      return this.states[state];
     },
     // 设置默认本周的开始和结束日期
     setDefaultWeek() {

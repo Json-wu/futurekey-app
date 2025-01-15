@@ -33,7 +33,7 @@
         <text>暂无课程</text>
       </view>
       <view v-else class="course-card" v-for="(course, index) in courses" :key="index">
-        <view :class="course.css">
+        <view>
           <image :src="course.class_category == 'writing' ? '../../static/write.png' : '../../static/default.png'"
             class="course-icon"></image>
         </view>
@@ -50,15 +50,10 @@
         </view>
         <view class="course-status">
           <view class="status-container">
-            <!-- 状态图标 -->
-            <view class="status-icon"
-              :class="course.state == 1 ? 'status-attended' : (course.state == 2 ? 'status-leave' : 'status-pending')">
-            </view>
-            <!-- 状态文本 -->
+            <view class="status-icon" :class="course.css"></view>
             <text class="status-text">{{ getState(course.state) }}</text>
           </view>
           <view class="course-arrow" @tap="goToDetail(course.id)">
-            <!-- 圆形背景 + 箭头 -->
             <view class="circle-arrow">
               <view class="arrow"></view>
             </view>
@@ -150,8 +145,9 @@ export default {
       states: {
         0: "待出席",
         1: "已出席",
-        2: "已请假"
-      },
+        2: "已请假",
+        3: "已缺课"
+      }
     };
   },
   created() {
@@ -556,7 +552,7 @@ export default {
 }
 
 /* 已出席状态 - 蓝色 */
-.status-attended {
+.status-attend {
   background-color: #4A90E2;
   /* 蓝色 */
 }
@@ -566,7 +562,10 @@ export default {
   background-color: #00C878;
   /* 绿色 */
 }
-
+/* 已缺课 */
+.status-absent {
+  background-color: #ff9900;
+}
 
 .course-arrow {
   margin-top: 40rpx;
@@ -584,18 +583,6 @@ export default {
 .arrow-icon {
   height: 24px;
   width: 24px;
-}
-
-.status-pending {
-  color: #ff9900;
-}
-
-.status-attended {
-  color: #4caf50;
-}
-
-.status-leave {
-  color: #2196f3;
 }
 
 /* 底部按钮 */
