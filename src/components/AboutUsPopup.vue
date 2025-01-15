@@ -142,7 +142,7 @@ export default {
 .popup {
   background-color: #ffffff;
   width: 80%;
-  border-radius: 10px;
+  border-radius: 10rpx;
   padding: 0 20rpx 20rpx 20rpx;
   box-shadow: 0 10rpx 30rpx rgba(0, 0, 0, 0.1);
 }

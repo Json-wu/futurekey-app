@@ -75,6 +75,11 @@
         </view>
       </view>
 
+      <!-- 课程记录 -->
+      <view class="titlehistory">
+        <text>课程记录</text>
+      </view>
+
       <view class="course-history">
         <scroll-view class="contentdiv" scroll-x="true">
           <view class="table">
@@ -108,7 +113,7 @@
 
         <!-- 历史订单 -->
         <view class="titlehistory">
-          <text>历史订单</text>
+          <text>订单记录</text>
         </view>
 
         <scroll-view class="contentdiv" scroll-x="true">
@@ -120,8 +125,6 @@
               <view class="table-cell">到期日期</view>
               <view class="table-cell">金额</view>
             </view>
-
-            <!-- 表格内容 -->
             <view v-if="visibleRowsOrder.length == 0" class="table-row">
               <text class="nonedata">暂无订单</text>
             </view>
@@ -160,12 +163,18 @@
     <!-- child Info Modal -->
     <view v-if="isShow" class="modal">
       <view class="modal-content">
+        <view class="calendar-header">
+          <text class="datechoose-text">修改学生信息</text>
+          <view class="close-btn" @tap="closeModal">×</view>
+        </view>
+
         <view class="wechatInfo">
           <view class="viewname">昵称：</view>
           <view class="viewname">
             <input class="picker" type="text" placeholder="修改用户昵称" maxlength="20" v-model="studentName" />
           </view>
         </view>
+
         <view class="wechatInfo">
           <view class="viewname">生日：</view>
           <view class="viewname">
@@ -838,13 +847,6 @@ export default {
   margin-left: 20rpx;
 }
 
-.header-logo {
-  width: 55px;
-  height: 32px;
-  margin-top: 6px;
-  margin-left: 10px;
-}
-
 .centered-picker-container {
   display: flex;
   justify-content: center;
@@ -885,7 +887,7 @@ export default {
   display: flex;
   align-items: center;
   background-color: #f5f5f5;
-  border-radius: 8px;
+  border-radius: 10rpx;
   padding: 20rpx;
   width: 96%;
   justify-content: space-between;
@@ -905,212 +907,11 @@ export default {
   margin-right: 20rpx;
 }
 
-/* 筛选按钮区域 */
-.filter-button {
-  display: flex;
-  align-items: center;
-  font-size: 28rpx;
-  margin-left: 20rpx;
-}
-
-.icon {
-  font-size: 20rpx;
-  margin-left: 5rpx;
-}
-
-
-/* 课程列表 */
-.course-list {
-  flex: 1;
-  margin-bottom: 40rpx;
-  /* 留出底部按钮位置 */
-}
-
-.month-title {
-  font-size: 14px;
-  color: #FFFFFF;
-  margin-top: 10px;
-  text-align: center;
-}
-
-.course-card {
-  display: flex;
-  background: #f3f6ff;
-  border-radius: 10px;
-  padding: 10px;
-  margin: 16px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.course-icon {
-  width: 40px;
-  height: 40px;
-}
-
-.who-icon {
-  width: 14px;
-  height: 14px;
-  margin-right: 10rpx;
-}
-
-/* 状态图标基础样式 */
-.status-icon {
-  width: 20rpx;
-  height: 20rpx;
-  border-radius: 50%;
-  margin-right: 8rpx;
-}
-
-/* 待出席状态 - 灰色 */
-.status-pending {
-  background-color: #9c9898;
-  /* 灰色 */
-}
-
-/* 已出席状态 - 蓝色 */
-.status-attended {
-  background-color: #4A90E2;
-  /* 蓝色 */
-}
-
-/* 已请假状态 - 绿色 */
-.status-leave {
-  background-color: #00C878;
-  /* 绿色 */
-}
-
-
-.course-arrow {
-  margin-top: 40rpx;
-  margin-left: 20px;
-  font-size: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  cursor: pointer;
-}
-
-.arrow-icon {
-  height: 24px;
-  width: 24px;
-}
-
-.status-pending {
-  color: #ff9900;
-}
-
-.status-attended {
-  color: #4caf50;
-}
-
-.status-leave {
-  color: #2196f3;
-}
-
-/* 底部按钮 */
-.footer {
-  display: flex;
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background-color: #fff;
-  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.1);
-  padding: 10px;
-  justify-content: space-around;
-}
-
-.footer-btn {
-  flex: 1;
-  margin: 0 5px;
-  height: 40px;
-  border-radius: 20px;
-  font-size: 14px;
-  font-weight: bold;
-  color: #fff;
-  text-align: center;
-  line-height: 40px;
-}
-
-.stat-btn {
-  background: #4c9aff;
-}
-
-.leave-btn {
-  background: #4caf50;
-}
-
-
-/* 整个底部容器 */
-.bottom-container {
-  position: fixed;
-  bottom: 34rpx;
-  /* 距离底部 */
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 100;
-}
-
-/* 按钮区域 */
-.bottom-buttons {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  width: 320rpx;
-  height: 90rpx;
-  background: linear-gradient(139.01deg, #6DB6E7 -2.19%, #2F51FF 97.65%);
-  border-radius: 40rpx;
-  box-shadow: 0px 0px 12px 0px rgb(47 81 255 / 80%);
-  padding: 0 16rpx 0 16rpx;
-  gap: 8px;
-}
-
-/* 每个按钮 */
-.button-item {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  flex: 1;
-}
-
 /* 按钮图标 */
 .icon {
   width: 36rpx;
   height: 36rpx;
   margin-bottom: 6rpx;
-}
-
-/* 按钮文本 */
-.button-text {
-  font-size: 24rpx;
-  color: #FFFFFF;
-}
-
-/* 分割线 */
-.viewider {
-  width: 1rpx;
-  height: 40rpx;
-  background-color: #FFFFFF;
-  opacity: 0.5;
-}
-
-.calendar-popup {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  background-color: #fff;
-  border-top-left-radius: 20rpx;
-  border-top-right-radius: 20rpx;
-  box-shadow: 0 -2rpx 10rpx rgba(0, 0, 0, 0.1);
 }
 
 .calendar-header {
@@ -1119,7 +920,6 @@ export default {
   align-items: center;
   text-align: center;
   font-weight: bold;
-  padding: 20rpx 30rpx;
 }
 
 .datechoose-text {
@@ -1136,115 +936,10 @@ export default {
   color: #999;
   cursor: pointer;
 }
-
-.calendar-row {
-  display: flex;
-}
-
-.calendar-day {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 60rpx;
-  height: 60rpx;
-  margin: 10rpx 26rpx 10rpx 26rpx;
-  border-radius: 50%;
-  text-align: center;
-  background-color: transparent;
-  color: #333;
-  font-size: 28rpx;
-}
-
-.calendar-day.selected {
-  background-color: #007aff;
-  color: #fff;
-}
-
-.calendar-day.in-range {
-  background-color: #d9ecff;
-}
-
-.confirm-btn {
-  margin: 20rpx;
-  background-color: #007aff;
-  color: #fff;
-}
-
-.week-days {
-  display: flex;
-  text-align: center;
-  font-size: 24rpx;
-  color: #333;
-}
-
-.week-day {
-  flex: 1;
-}
-
-
 .month-switch {
   display: flex;
   justify-content: space-between;
   align-items: center;
-}
-
-.circle-arrow {
-  width: 30px;
-  height: 30px;
-  background-color: rgba(100, 149, 237, 0.2);
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-}
-
-/* 箭头样式 */
-.arrow {
-  width: 5px;
-  height: 5px;
-  border-right: 2px solid #1E90FF;
-  border-bottom: 2px solid #1E90FF;
-  /* -webkit-transform: rotate(-45deg); */
-  transform: rotate(-45deg);
-  position: absolute;
-}
-
-.circle-arrow2 {
-  width: 40px;
-  height: 30px;
-  background-color: rgba(100, 149, 237, 0.2);
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-  border-radius: 5rpx;
-  padding: 5rpx 15rpx;
-  margin-bottom: 10rpx;
-}
-
-/* 箭头样式 */
-.arrow-left {
-  width: 10px;
-  height: 10px;
-  border-right: 2px solid #1E90FF;
-  border-bottom: 2px solid #1E90FF;
-  transform: rotate(135deg);
-  position: absolute;
-}
-
-.arrow-right {
-  width: 10px;
-  height: 10px;
-  border-right: 2px solid #1E90FF;
-  border-bottom: 2px solid #1E90FF;
-  transform: rotate(-45deg);
-  position: absolute;
-}
-
-.other-month {
-  color: #ccc;
 }
 
 .page {
@@ -1253,7 +948,7 @@ export default {
 
 .user-card {
   background-color: #fff;
-  border-radius: 8rpx;
+  border-radius: 10rpx;
   padding: 24rpx;
   margin-bottom: 16rpx;
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
@@ -1304,7 +999,7 @@ export default {
 }
 
 .stat-item {
-  border-radius: 6px;
+  border-radius: 10rpx;
   padding: 8px 16px 8px 16px;
   gap: 28px;
   background-color: #fff;
@@ -1322,7 +1017,7 @@ export default {
 .course-section {
   margin-top: 30rpx;
   background-color: #fff;
-  border-radius: 8rpx;
+  border-radius: 10rpx;
   padding: 24rpx;
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
   display: flex;
@@ -1362,7 +1057,7 @@ export default {
   background-color: #007aff;
   color: #fff;
   border: none;
-  border-radius: 4%;
+  border-radius: 10rpx;
   font-size: 16px;
   padding: 6px 14px;
 }
@@ -1382,7 +1077,7 @@ export default {
 .icon1 {
   width: 4px;
   height: 20px;
-  border-radius: 4%;
+  border-radius: 10rpx;
   background: #2F51FF;
 }
 
@@ -1404,7 +1099,7 @@ export default {
   color: #353333;
   padding: 30rpx;
   background: #FFFFFF;
-  border-radius: 10px;
+  border-radius: 10rpx;
 }
 
 .course-footer {
@@ -1412,7 +1107,7 @@ export default {
   padding: 20rpx;
   justify-content: space-between;
   background: #FFFFFF;
-  border-radius: 0px 0px 10px 10px;
+  border-radius: 0rpx 0rpx 10rpx 10rpx;
 }
 
 .contentdiv {
@@ -1423,7 +1118,7 @@ export default {
   color: #555;
   line-height: 1.6;
   background: #FFFFFF;
-  border-radius: 10px 10px 0px 0px;
+  border-radius: 10rpx 10rpx 0px 0px;
 }
 
 /* 设置滚动条样式（仅部分支持） */
@@ -1434,7 +1129,7 @@ export default {
 .contentdiv::-webkit-scrollbar-thumb {
   background: rgba(0, 0, 0, 0.2);
   /* 滑块颜色 */
-  border-radius: 4px;
+  border-radius: 10rpx;
 }
 
 .contentdiv::-webkit-scrollbar-track {
@@ -1472,7 +1167,7 @@ export default {
 }
 
 .table-header {
-  border-radius: 10px;
+  border-radius: 10rpx;
   font-weight: bold;
   border-bottom: 1rpx solid #e5e5e5;
   margin-bottom: 12rpx;
@@ -1510,7 +1205,7 @@ export default {
 .modal-content {
   background-color: #fff;
   padding: 20rpx;
-  border-radius: 5px;
+  border-radius: 10rpx;
   width: 80%;
 }
 
@@ -1527,20 +1222,11 @@ export default {
   color: #333;
 }
 
-.calendar-header {
-  margin: 30rpx;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  text-align: center;
-  font-weight: bold;
-}
-
 .btn {
   flex: 1;
   margin: 0 5rpx;
   height: 80rpx;
-  border-radius: 20rpx;
+  border-radius: 10rpx;
   font-size: 14px;
   font-weight: bold;
   text-align: center;
@@ -1553,7 +1239,6 @@ export default {
 .confirm {
   color: #fff;
   background-color: #007aff;
-  margin-left: 30rpx;
 }
 
 .cancel {

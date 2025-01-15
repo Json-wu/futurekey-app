@@ -403,21 +403,11 @@ export default {
     this.initCalendar();   // 初始化日历
     this.init();
   },
-  // onShow() {
-  //   console.log('timezones', this.$global.timezones);
-  //   console.log('studentList', this.$global.studentList);
-  //   console.log('studentCode', this.$global.studentCode);
-  //   console.log('selectIndex', this.$global.selectIndex);
-  //   this.timezones = this.$global.timezones;
-  //   this.students = this.$global.studentList;
-  //   this.studentCode = this.$global.studentCode;
-  //   this.selectIndex = this.$global.selectIndex;
-  //   const currentStudent = this.students[this.selectIndex];
-  //   this.studentName = currentStudent ? currentStudent.name: '';
-  //   this.selectedTimeZoneIndex = uni.getStorageSync("timezoneIndex") || 0;
-  //   this.timezone = this.timezones[this.selectedTimeZoneIndex].value;
-  //   this.fetchData(); // 获取数据列表
-  // },
+  onShow() {
+    this.startDate = this.$global.startDate;
+    this.endDate = this.$global.endDate;
+    this.fetchData(); // 获取数据列表
+  },
   onPullDownRefresh() {
     this.fetchData(); // 获取数据列表
     setTimeout(() => {
@@ -494,7 +484,7 @@ export default {
   display: flex;
   align-items: center;
   background-color: #f5f5f5;
-  border-radius: 8px;
+  border-radius: 10rpx;
   padding: 20rpx;
   width: 70%;
   justify-content: space-between;
@@ -545,7 +535,7 @@ export default {
 .course-card {
   display: flex;
   background: #f3f6ff;
-  border-radius: 10px;
+  border-radius: 10rpx;
   padding: 10px;
   margin: 16px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -668,7 +658,7 @@ export default {
   flex: 1;
   margin: 0 5px;
   height: 40px;
-  border-radius: 20px;
+  border-radius: 20rpx;
   font-size: 14px;
   font-weight: bold;
   color: #fff;

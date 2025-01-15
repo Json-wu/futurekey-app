@@ -79,7 +79,13 @@
           </picker>
           
           <!-- Remarks Input -->
-          <input type="text" placeholder="请输入备注" maxlength="20" v-model="remarks" />
+          <textarea 
+            class="textarea" 
+            placeholder="请输入备注" 
+            maxlength="200"
+            v-model="remarks"
+            auto-height
+          />
         </view>
         <!-- Action Buttons -->
         <view class="calendar-header">
@@ -726,7 +732,7 @@ export default {
 .leave-reason-selection {
   display: flex;
   flex-direction: column;
-  margin: 20rpx;
+  margin: 0 10rpx 40rpx 10rpx;
   padding: 10rpx;
 }
 

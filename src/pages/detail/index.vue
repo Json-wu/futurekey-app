@@ -528,7 +528,7 @@ export default {
 }
 
 .coursediv {
-  border-radius: 6px;
+  border-radius: 10rpx;
   padding: 10px 16px 10px 16px;
   gap: 28px;
   background-color: #fff;
@@ -698,7 +698,7 @@ export default {
   margin: 10rpx 20rpx 10rpx 20rpx;
   font-size: 24rpx;
   padding: 10rpx;
-  border-radius: 4px;
+  border-radius: 10rpx;
 }
 
 .file-name.success {

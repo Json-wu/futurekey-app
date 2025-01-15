@@ -139,7 +139,7 @@ export default {
 .modal-content {
     background-color: #fff;
     width: 80%;
-    border-radius: 10px;
+    border-radius: 10rpx;
     padding: 20px;
     text-align: center;
 }
@@ -181,14 +181,14 @@ export default {
     background-color: #007aff;
     font-size: 14px;
     padding: 2px 8px;
-    border-radius: 4px;
+    border-radius: 10rpx;
 }
 
 .logout-btn {
     background-color: #007aff;
     color: #fff;
     border: none;
-    border-radius: 6px;
+    border-radius: 10rpx;
     padding: 4px 20px;
     font-size: 16px;
 }
