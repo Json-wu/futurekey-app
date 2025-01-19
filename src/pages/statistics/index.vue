@@ -59,7 +59,7 @@
       <view class="stat-section">
         <view class="stat-item">
           <text class="label">课程总时长</text>
-          <text class="stat-value">{{ totalData.hour }} h</text>
+          <text class="stat-value">{{ totalData.time }} h</text>
         </view>
         <view class="stat-item">
           <text class="label">课程总节数</text>
@@ -196,7 +196,7 @@
 import calendarPopup from '@/components/CalendarPopup.vue';
 import studentPopup from '@/components/StudentPopup.vue';
 
-import { getStudentTotal, getCourseList, getOrderList, saveInfo, downloadPDF_course, downloadPDF_order } from '../../utils/api';
+import { getCourseList, getOrderList, saveInfo, downloadPDF_course, downloadPDF_order } from '../../utils/api';
 
 export default {
   components: {
@@ -537,7 +537,8 @@ export default {
           "start_dt": this.startDate,
           "end_dt": this.endDate,
           "studentCode": this.studentCode,
-          "timezone": this.$global.timezone
+          "timezone": this.$global.timezone,
+          "type": "statics"
         });
         console.log('课程列表:', res);
         // 处理返回的数据
@@ -554,23 +555,6 @@ export default {
         // 隐藏加载提示
         uni.hideLoading();
         this.loading = false;
-      }
-    },
-    async getStudentTotal() {
-      try {
-        const res = await getStudentTotal({
-          "start_dt": this.startDate,
-          "end_dt": this.endDate,
-          "studentCode": this.studentCode,
-          "timezone": this.$global.timezone
-        });
-        console.log('课程列表:', res);
-        // 处理返回的数据
-        if (res.code == 0) {
-          this.totalData = res.data;
-        }
-      } catch (error) {
-        console.error('显示加载提示失败:', error);
       }
     },
     async fetchOrderData() {

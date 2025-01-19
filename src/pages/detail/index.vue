@@ -550,7 +550,7 @@ export default {
 
 .courseContent {
   width: 253px;
-  height: 20px;
+  height: auto;
   font-family: PingFang SC;
   font-size: 14px;
   font-weight: 400;

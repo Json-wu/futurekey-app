@@ -67,7 +67,8 @@
         </view>
 
         <view class="tips">
-          <text>注：每月最多享有1次无责请假机会(返还课时)</text>
+          <li>注：1.每月享有1次补课机会</li>
+          <li>&nbsp;2.24h内请假，由代课老师补课，不能指定老师</li>
         </view>
         
         <!-- Leave Reason Selection -->
@@ -154,6 +155,7 @@ export default {
       isShow: false, // Controls modal visibility
       leaveReasons: ['事假', '病假', '其他'], // Leave reasons
       selectedReason: 0, // Index of selected leave reason
+      leaveCount: 0, // 本月请假次数
       remarks: '' // Remarks input
     };
   },
