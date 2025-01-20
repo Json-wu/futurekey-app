@@ -2,9 +2,10 @@
   <view class="container">
     <!-- 自定义顶部导航栏 -->
     <view class="custom-header">
-      <view class="nav-left" @click="goBack">
+      <!-- <view class="nav-left" @click="goBack">
         <image src="@/static/back-icon.png" class="back-icon"></image>
-      </view>
+      </view> -->
+      <image src="/static/keai-logo.png" class="header-logo" @click="showAboutUs" />
       <view class="centered-picker-container" @tap="showModal">
         <view class="student-select">{{ students[selectedStudentIndex].name }} ▼</view>
       </view>
@@ -157,6 +158,7 @@
       @update:tempEndDate="val => tempEndDate = val" @update:currentStep="val => currentStep = val"
       @initCalendar="initCalendar" @fetchData="fetchData" />
 
+    <AboutUsPopup :showAbout="showAbout" @update:showAbout="val => showAbout = val" />
     <!-- 引用 StudentPopup 组件 -->
     <StudentPopup :isVisible="isVisible" :studentList="students" :selectedStudentCode="studentCode"
       @updateStudent="handleUpdateStudent" @update:isVisible="val => isVisible = val" @logout="handleLogout" />
@@ -193,6 +195,7 @@
 </template>
 
 <script>
+import aboutUsPopup from '@/components/AboutUsPopup.vue';
 import calendarPopup from '@/components/CalendarPopup.vue';
 import studentPopup from '@/components/StudentPopup.vue';
 
@@ -200,11 +203,13 @@ import { getCourseList, getOrderList, saveInfo, downloadPDF_course, downloadPDF_
 
 export default {
   components: {
+    aboutUsPopup,
     calendarPopup,
     studentPopup
   },
   data() {
     return {
+      showAbout: false,
       hasCourses: false,
       hasOrders: false,
       isVisible: false,
@@ -299,6 +304,9 @@ export default {
     this.endDate = this.$global.endDate;
   },
   methods: {
+    showAboutUs() {
+      this.showAbout = true;
+    },
     getBirth() {
       if (!this.studentBirth) return '----/--';
 
@@ -720,13 +728,37 @@ export default {
     },
     onBirthChange(event) {
       this.birth = event.detail.value;
+    },
+    load() {
+      console.log('加载数据');
+      console.log(`startDate: ${this.startDate}, endDate: ${this.endDate}, timezone: ${this.$global.timezone}, studentCode: ${this.studentCode}`);
+      this.timezones = this.$global.timezones;
+      const now = new Date();
+      this.currentYear = now.getFullYear();
+      this.currentMonth = now.getMonth() + 1;
+      this.selectIndex = uni.getStorageSync("selectIndex") || 0;
+      this.studentCode = uni.getStorageSync("studentCode") || '';
+      this.startDate = this.$global.startDate;
+      this.endDate = this.$global.endDate;
+      this.selectIndex = uni.getStorageSync("selectIndex") || 0;
+      this.selectedTimeZoneIndex = uni.getStorageSync("timezoneIndex") || 0;
+      this.selectedTimeZone = this.timezones[this.selectedTimeZoneIndex]; // 根据索引获取对应的时区对象
+      this.$global.timezone = this.selectedTimeZone.value;
+      uni.setStorageSync('timezoneIndex', this.selectedTimeZoneIndex);
+      uni.setStorageSync('selectIndex', this.selectIndex);
+      this.fetchData();
     }
   },
   onLoad() {
     console.log('onLoad');
     this.setDefaultWeek(); // 初始化默认本周日期
     this.initCalendar();   // 初始化日历
-    this.fetchData();
+    this.load();
+   
+  },
+  onShow() {
+    console.log('onShow');
+    this.load();
   },
   onPullDownRefresh() {
     this.fetchData(); // 获取数据列表
@@ -1173,4 +1205,11 @@ export default {
   border-radius: 10rpx;
   background-color: #f5f5f5;
 }
+
+.header-logo {
+    width: 55px;
+    height: 32px;
+    margin-top: 6px;
+    margin-left: 10px;
+  }
 </style>

@@ -288,7 +288,8 @@ export default {
     if (this.phone) {
       console.log("用户已登录，直接跳转！！");
       setTimeout(() => {
-        uni.navigateTo({
+        console.log("跳转到主页");
+        uni.switchTab({
           url: "/pages/home/index",
         });
       }, 100);

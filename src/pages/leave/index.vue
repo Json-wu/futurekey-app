@@ -2,9 +2,7 @@
   <view class="container">
     <!-- 自定义顶部导航栏 -->
     <view class="custom-header">
-      <view class="nav-left" @click="goBack">
-        <image src="@/static/back-icon.png" class="back-icon"></image>
-      </view>
+      <image src="/static/keai-logo.png" class="header-logo" @click="showAboutUs" />
       <view class="centered-picker-container" @tap="showModal">
         <view class="student-select">{{ students[selectedStudentIndex].name }} ▼</view>
       </view>
@@ -22,24 +20,24 @@
     </view>
 
     <!-- 滚动课程列表 -->
-    <scroll-view class="course-list" scroll-y>
+    <scroll-view class="course-list" :style="{ 'padding-bottom': showbutton ? '90px' : '0'}" scroll-y>
       <view class="month-title">课程列表</view>
       <view v-if="courses.length == 0" class="course-card">
         <text>暂无课程</text>
       </view>
       <view v-else class="course-card" v-for="(course, index) in courses" :key="index">
         <view :class="course.css">
-          <image :src="course.class_category == 'writing' ? '../../static/write.png' : '../../static/default.png'"
+          <image :src="course.class_category == 'writing' ? '/static/write.png' : '/static/default.png'"
             class="course-icon"></image>
         </view>
         <view class="course-info">
           <view class="course-title">{{ course.title }}</view>
           <view class="course-time">
-            <image src='../../static/icons/time.png' class="who-icon"></image>
+            <image src='/static/icons/time.png' class="who-icon"></image>
             {{ course.time }}
           </view>
           <view class="course-teacher">
-            <image src='../../static/icons/who.png' class="who-icon"></image>
+            <image src='/static/icons/who.png' class="who-icon"></image>
             {{ course.student }}
           </view>
         </view>
@@ -50,11 +48,11 @@
     </scroll-view>
 
      <!-- 底部固定栏 -->
-     <view class="bottom-bar">
+     <view class="bottom-bar" v-if = "showbutton">
       <view class="allcheck">
           <checkbox :checked="checkall" @tap="toggleCheckAll()">全选</checkbox>
         </view>
-      <button class="btn cancel" @tap="goBack()">取消</button>
+      <button class="btn cancel" @tap="cancel()">取消</button>
       <button class="btn confirm" @tap="commit()">确定</button>
     </view>
 
@@ -115,21 +113,27 @@
           @update:isVisible="val => isVisible = val"
           @logout="handleLogout"
         />
+
+      <AboutUsPopup :showAbout="showAbout" @update:showAbout="val => showAbout = val" />
   </view>
 </template>
 
 <script>
-import CalendarPopup from '@/components/CalendarPopup.vue';
+import aboutUsPopup from '@/components/AboutUsPopup.vue';
+import calendarPopup from '@/components/CalendarPopup.vue';
 import studentPopup from '@/components/StudentPopup.vue';
 import { getCourseList, leaveSubmit } from '../../utils/api';
 
 export default {
   components: {
-    CalendarPopup,
+    aboutUsPopup,
+    calendarPopup,
     studentPopup
   },
   data() {
     return {
+      showbutton: false,
+      showAbout: false,
       isVisible: false,
       checkall: false,
       loading: true,
@@ -171,7 +175,17 @@ export default {
     this.startDate = this.$global.startDate;
     this.endDate = this.$global.endDate;
   },
+  computed: {
+    dynamicStyles() {
+      return {
+        'padding-bottom': this.showbutton ? '90px' : '0'
+      };
+    }
+  },
   methods: {
+    showAboutUs() {
+      this.showAbout = true;
+    },
     showModal() {
       this.isVisible = true;
     },
@@ -183,6 +197,7 @@ export default {
     },
     closeModal() {
       this.isShow = false; // Hide the modal
+      
     },
     onReasonChange(e) {
       this.selectedReason = e.detail.value; // Update selected reason
@@ -219,8 +234,13 @@ export default {
         duration: 2000
       });
     },
-    goBack() {
-      uni.navigateBack();
+    cancel() {
+      this.showbutton = false;
+      uni.showTabBar();
+      this.courses.forEach(course => {
+        if(course.state !== 0) return;
+        course.isSelected = false;
+      });
     },
     onTimeZoneChange(event) {
       this.selectedTimeZoneIndex = event.detail.value;
@@ -345,10 +365,6 @@ export default {
         this.loading = false;
       }
     },
-    async init() {
-      this.setDefaultWeek(); // 初始化默认本周日期
-      this.fetchData(); // 获取数据列表
-    },
     toggleCheck(id) {
       let course = this.courses.find(item => item.id === id);
       course.isSelected = !course.isSelected;
@@ -357,6 +373,16 @@ export default {
         this.checkall = true;
       }else{
         this.checkall = false;
+      }
+      this.changeTabbar();
+    },
+    changeTabbar(){
+      if(this.courses.find(x=>x.isSelected && x.state == 0)){
+        this.showbutton = true;
+        uni.hideTabBar();
+      }else{
+        this.showbutton = false;
+        uni.showTabBar();
       }
     },
     toggleCheckAll() {
@@ -411,10 +437,34 @@ export default {
       });
       this.hideModal();
     },
+    load() {
+      console.log('加载数据');
+      console.log(`startDate: ${this.startDate}, endDate: ${this.endDate}, timezone: ${this.$global.timezone}, studentCode: ${this.studentCode}`);
+      this.timezones = this.$global.timezones;
+      const now = new Date();
+      this.currentYear = now.getFullYear();
+      this.currentMonth = now.getMonth() + 1;
+      this.selectIndex = uni.getStorageSync("selectIndex") || 0;
+      this.studentCode = uni.getStorageSync("studentCode") || '';
+      this.startDate = this.$global.startDate;
+      this.endDate = this.$global.endDate;
+      this.selectIndex = uni.getStorageSync("selectIndex") || 0;
+      this.selectedTimeZoneIndex = uni.getStorageSync("timezoneIndex") || 0;
+      this.selectedTimeZone = this.timezones[this.selectedTimeZoneIndex]; // 根据索引获取对应的时区对象
+      this.$global.timezone = this.selectedTimeZone.value;
+      uni.setStorageSync('timezoneIndex', this.selectedTimeZoneIndex);
+      uni.setStorageSync('selectIndex', this.selectIndex);
+      this.fetchData();
+    }
   },
   onLoad() {
-    this.init();
+    this.setDefaultWeek(); // 初始化默认本周日期
     this.initCalendar();   // 初始化日历
+    this.load();
+  },
+  onShow() {
+    console.log('onShow');
+    this.load();
   },
   onPullDownRefresh() {
     this.fetchData(); // 获取数据列表
@@ -521,8 +571,6 @@ export default {
 /* 课程列表 */
 .course-list {
   flex: 1;
-  margin-bottom: 200px;
-  /* 留出底部按钮位置 */
 }
 
 .month-title {
@@ -703,5 +751,12 @@ export default {
   padding: 20rpx;
     font-size: 28rpx;
     color: #8a581a;
+}
+
+.header-logo {
+  width: 55px;
+  height: 32px;
+  margin-top: 6px;
+  margin-left: 10px;
 }
 </style>

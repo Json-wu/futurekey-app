@@ -47,12 +47,8 @@
       <!-- 内容区 -->
       <view v-if="currentTab === 'before'" class="content">
         <!-- 作业文本 -->
-        <scroll-view  class="task-content" scroll-y="true">
-          <text class="courseContent">{{ courseData.preview || '' }}</text>
-        </scroll-view>
-
-        <!-- 附件 -->
-        <view class="attachment-list">
+        <view class="task-content">
+          <textarea class="remarks">{{ courseData.preview || '' }}</textarea>
           <block v-for="(file, index) in courseData.previewFiles" :key="index">
             <view class="file-item">
               <image src="@/static/file-icon.png" class="file-icon" />
@@ -66,12 +62,8 @@
 
       <view v-else class="content">
         <!-- 作业文本 -->
-        <scroll-view  class="task-content" scroll-y="true">
-          <text class="courseContent">{{ courseData.homework || '' }}</text>
-        </scroll-view>
-
-        <!-- 附件 -->
-        <view class="attachment-list">
+        <view class="task-content">
+          <textarea class="remarks">{{ courseData.homework || '' }}</textarea>
           <block v-for="(file, index) in courseData.homeworkFiles" :key="index">
             <view class="file-item">
               <image src="@/static/file-icon.png" class="file-icon" />
@@ -87,7 +79,9 @@
         <image src="@/static/upload-icon.png" class="upload-icon" @click="chooseFile"></image>
         <view class="upload-btn">点击上传</view>
         <text class="upload-tips">最多可上传5个附件，每个附件大小不超过3M</text>
-        <!-- 上传文件进度 -->
+      </view>
+       <!-- 上传文件进度 -->
+      <view class="file-list">
         <block v-for="(file, index) in uploadFiles" :key="index">
           <!-- 上传状态：成功 -->
           <view v-if="file.status === 'success'" class="file-info">
@@ -117,6 +111,7 @@
           <progress class="upload-progress" :percent="file.progress" v-if="file.status === 'uploading'" />
         </block>
       </view>
+      
     </view>
   </view>
 </template>
@@ -485,10 +480,8 @@ export default {
 <style>
 .container {
   background: linear-gradient(to bottom, #2F51FF, #F7F9FC);
-  ;
   height: 100vh;
   flex-direction: column;
-  overflow-y: hidden;
 }
 
 .custom-nav {
@@ -538,6 +531,7 @@ export default {
 }
 
 .label {
+  padding: 10rpx;
   font-family: PingFang SC;
   font-size: 14px;
   font-weight: 400;
@@ -549,8 +543,9 @@ export default {
 }
 
 .courseContent {
+  padding: 10rpx;
   width: 253px;
-  height: auto;
+  height: auto; /* 让高度根据内容自动调整 */
   font-family: PingFang SC;
   font-size: 14px;
   font-weight: 400;
@@ -560,14 +555,21 @@ export default {
   gap: 0px;
   text-align: left;
   color: #2D2D2D;
+  
+  /* 使文本自动换行 */
+  word-wrap: break-word; /* 换行 */
+  white-space: normal;   /* 确保内容可以换行 */
+}
+
+.remarks {
+  padding: 20rpx;
+  height: auto;
 }
 
 .tab-container {
   margin: 20rpx;
   background-color: #fff;
   border-radius: 10rpx;
-  overflow: hidden;
-  height: 65vh;
 }
 
 .tab-bar {
@@ -604,9 +606,10 @@ export default {
 
 /* 作业文本内容 */
 .task-content {
+  background: #00000008;
+  min-height: 10vh;
+  padding-bottom: 10rpx;
   border-radius: 10rpx;
-  border: 2rpx dashed #323235;
-  height: 17vh;
 }
 
 .title {
@@ -622,27 +625,27 @@ export default {
 .file-item {
   display: flex;
   align-items: center;
-  padding: 10rpx 0;
+  padding: 10rpx;
   color: #2F51FF;
   font-size: 24rpx;
+  background-color: #e2e1e6;
+  margin: 20rpx;
+  border-radius: 10rpx;
 }
 
 .file-icon {
   width: 30rpx;
   height: 30rpx;
-  margin-right: 10rpx;
 }
 
 /* 上传区域 */
 .fileSection {
   border-radius: 10rpx;
-  border: 2rpx dashed #190ee2;
-  min-height: 180px;
+  border: 1rpx dashed #D4D6D9;
   gap: 0px;
   text-align: center;
   margin: 20rpx;
-  padding-top: 40rpx;
-  height: 34vh;
+  padding: 40rpx;
 }
 
 .upload-icon {
@@ -701,6 +704,12 @@ export default {
   border-radius: 10rpx;
 }
 
+.file-name {
+  padding: 10rpx;
+  background-color: #00000006;
+  width: 470rpx;
+}
+
 .file-name.success {
   width: 470rpx;
   text-align: left;
@@ -727,5 +736,12 @@ export default {
   margin-left: 8rpx;
   width: 32rpx;
   height: 32rpx;
+}
+
+.file-list {
+  padding: 20rpx;
+  margin: 20rpx;
+  border-radius: 10rpx;
+  background-color: #fff;
 }
 </style>

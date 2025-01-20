@@ -120,6 +120,9 @@ export default {
         uni.showToast({ title: '请选择截止日期', icon: 'none' });
         return;
       }
+      this.$global.startDate = this.tempStartDate;
+      this.$global.endDate = this.tempEndDate;
+      console.log(this.tempStartDate, this.tempEndDate);
       this.$emit('update:startDate', this.tempStartDate);
       this.$emit('update:endDate', this.tempEndDate);
       this.$emit('update:currentStep', 0);

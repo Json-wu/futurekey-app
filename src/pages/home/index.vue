@@ -2,7 +2,7 @@
   <view class="container">
     <!-- 自定义顶部导航栏 -->
     <view class="custom-header">
-      <image src="@/static/keai-logo.png" class="header-logo" @click="showAboutUs" />
+      <image src="/static/keai-logo.png" class="header-logo" @click="showAboutUs" />
       <view class="centered-picker-container" @tap="showModal">
         <view class="student-select">{{ students[selectIndex].name }} ▼</view>
       </view>
@@ -34,17 +34,17 @@
       </view>
       <view v-else class="course-card" v-for="(course, index) in courses" :key="index">
         <view>
-          <image :src="course.class_category == 'writing' ? '../../static/write.png' : '../../static/default.png'"
+          <image :src="course.class_category == 'writing' ? '/static/write.png' : '/static/default.png'"
             class="course-icon"></image>
         </view>
         <view class="course-info">
           <view class="course-title">{{ course.title }}</view>
           <view class="course-time">
-            <image src='../../static/icons/time.png' class="who-icon"></image>
+            <image src='/static/icons/time.png' class="who-icon"></image>
             {{ course.time }}
           </view>
           <view class="course-teacher">
-            <image src='../../static/icons/who.png' class="who-icon"></image>
+            <image src='/static/icons/who.png' class="who-icon"></image>
             {{ course.student }}
           </view>
         </view>
@@ -62,23 +62,19 @@
       </view>
     </scroll-view>
 
-    <view class="bottom-container" v-if="!showCalendar">
-      <!-- 底部按钮区域 -->
+    <!-- <view class="bottom-container" v-if="!showCalendar">
       <view class="bottom-buttons">
-        <!-- 统计按钮 -->
         <view class="button-item" @click="showStatistics">
           <image src="/static/total.png" class="icon" mode="widthFix"></image>
           <text class="button-text">统计</text>
         </view>
-        <!-- 分割线 -->
         <view class="viewider"></view>
-        <!-- 请假按钮 -->
         <view class="button-item" @click="showLeave">
           <image src="/static/leave.png" class="icon" mode="widthFix"></image>
           <text class="button-text">请假</text>
         </view>
       </view>
-    </view>
+    </view> -->
 
     <!-- 引入 CalendarPopup 组件 -->
     <CalendarPopup :showCalendar="showCalendar" :currentYear="currentYear" :currentMonth="currentMonth"
@@ -94,13 +90,8 @@
     <AboutUsPopup :showAbout="showAbout" @update:showAbout="val => showAbout = val" />
 
     <!-- 引用 StudentPopup 组件 -->
-    <StudentPopup
-      :isVisible="isVisible"
-      :studentList="students"
-      :selectedStudentCode="studentCode"
-      @updateStudent="handleUpdateStudent"
-      @update:isVisible="val => isVisible = val"
-    />
+    <StudentPopup :isVisible="isVisible" :studentList="students" :selectedStudentCode="studentCode"
+      @updateStudent="handleUpdateStudent" @update:isVisible="val => isVisible = val" />
   </view>
 </template>
 
@@ -110,6 +101,7 @@ import calendarPopup from '@/components/CalendarPopup.vue';
 import studentPopup from '@/components/StudentPopup.vue';
 
 import { getCourseList, getStudentList } from '../../utils/api';
+import { onShow } from '@dcloudio/uni-app';
 
 export default {
   components: {
@@ -137,7 +129,7 @@ export default {
       selectedTimeZoneIndex: 0, // 当前选中时区索引
       timezone: "Asia/Shanghai",
       students: [
-        {name:'',code:'',value4:''}
+        { name: '', code: '', value4: '' }
       ],
       timezones: [],
       dateRange: "", // 日期范围
@@ -282,7 +274,7 @@ export default {
     },
     async fetchData() {
       try {
-        if(!this.studentCode) return;
+        if (!this.studentCode) return;
         // 显示加载提示
         uni.showLoading({
           title: '加载中...'
@@ -343,23 +335,36 @@ export default {
       uni.navigateTo({
         url: '/pages/leave/index'
       });
+    },
+    load() {
+      console.log('加载数据');
+      console.log(`startDate: ${this.startDate}, endDate: ${this.endDate}, timezone: ${this.$global.timezone}, studentCode: ${this.studentCode}`);
+      this.timezones = this.$global.timezones;
+      const now = new Date();
+      this.currentYear = now.getFullYear();
+      this.currentMonth = now.getMonth() + 1;
+      this.selectIndex = uni.getStorageSync("selectIndex") || 0;
+      this.studentCode = uni.getStorageSync("studentCode") || '';
+      this.startDate = this.$global.startDate;
+      this.endDate = this.$global.endDate;
+      this.selectIndex = uni.getStorageSync("selectIndex") || 0;
+      this.selectedTimeZoneIndex = uni.getStorageSync("timezoneIndex") || 0;
+      this.selectedTimeZone = this.timezones[this.selectedTimeZoneIndex]; // 根据索引获取对应的时区对象
+      this.$global.timezone = this.selectedTimeZone.value;
+      uni.setStorageSync('timezoneIndex', this.selectedTimeZoneIndex);
+      uni.setStorageSync('selectIndex', this.selectIndex);
+     
+      this.init();
     }
   },
   onLoad() {
-    this.selectIndex = uni.getStorageSync("selectIndex") || 0;
-    this.selectedTimeZoneIndex = uni.getStorageSync("timezoneIndex") || 0;
-    this.selectedTimeZone = this.timezones[this.selectedTimeZoneIndex]; // 根据索引获取对应的时区对象
-    this.$global.timezone = this.selectedTimeZone.value;
-    uni.setStorageSync('timezoneIndex', this.selectedTimeZoneIndex);
-    uni.setStorageSync('selectIndex', this.selectIndex);
     this.setDefaultWeek(); // 初始化默认本周日期
     this.initCalendar();   // 初始化日历
-    this.init();
+    this.load();
   },
   onShow() {
-    this.startDate = this.$global.startDate;
-    this.endDate = this.$global.endDate;
-    this.fetchData(); // 获取数据列表
+    console.log('onShow');
+    this.load();
   },
   onPullDownRefresh() {
     this.fetchData(); // 获取数据列表
@@ -374,7 +379,6 @@ export default {
 /* 页面背景 */
 .container {
   background: linear-gradient(to bottom, #2F51FF, #F7F9FC);
-  ;
   height: 100vh;
   flex-direction: column;
 }
@@ -562,6 +566,7 @@ export default {
   background-color: #00C878;
   /* 绿色 */
 }
+
 /* 已缺课 */
 .status-absent {
   background-color: #ff9900;
