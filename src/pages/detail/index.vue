@@ -47,32 +47,35 @@
       <!-- 内容区 -->
       <view v-if="currentTab === 'before'" class="content">
         <!-- 作业文本 -->
-        <view class="task-content">
-          <textarea class="remarks">{{ courseData.preview || '' }}</textarea>
-          <block v-for="(file, index) in courseData.previewFiles" :key="index">
+        <div class="task-content">
+          {{ courseData.preview }}
+        </div>
+          
+            <!-- <block v-for="(file, index) in courseData.previewFiles" :key="index">
             <view class="file-item">
               <image src="@/static/file-icon.png" class="file-icon" />
               <text class="file-name" @click="downloadFile(file)">
                 {{ file }}
               </text>
             </view>
-          </block>
-        </view>
+          </block> -->
+        
       </view>
 
       <view v-else class="content">
         <!-- 作业文本 -->
-        <view class="task-content">
-          <textarea class="remarks">{{ courseData.homework || '' }}</textarea>
-          <block v-for="(file, index) in courseData.homeworkFiles" :key="index">
-            <view class="file-item">
-              <image src="@/static/file-icon.png" class="file-icon" />
-              <text class="file-name" @click="downloadFile(file)">
-                {{ file }}
-              </text>
-            </view>
-          </block>
-        </view>
+        <div class="text-content">
+          {{ courseData.homework }}
+        </div>
+       
+            <block v-for="(file, index) in courseData.homeworkFiles" :key="index">
+              <view class="file-item">
+                <image src="@/static/file-icon.png" class="file-icon" />
+                <text class="file-name" @click="downloadFile(file)">
+                  {{ file }}
+                </text>
+              </view>
+            </block>
       </view>
       <!-- 上传文件按钮 -->
       <view class="fileSection">
@@ -488,7 +491,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 45px;
+  height: 54px;
   color: #fff;
   padding-top: 44px;
 }
@@ -531,45 +534,33 @@ export default {
 }
 
 .label {
+  width: 150rpx;
   padding: 10rpx;
-  font-family: PingFang SC;
   font-size: 14px;
   font-weight: 400;
   line-height: 20px;
   text-align: left;
-  text-underline-position: from-font;
-  text-decoration-skip-ink: none;
-  color: #00000083;
+  color: #6d6a6a;
 }
 
 .courseContent {
   padding: 10rpx;
-  width: 253px;
-  height: auto; /* 让高度根据内容自动调整 */
-  font-family: PingFang SC;
+  width: 500rpx;
+  height: auto;
   font-size: 14px;
   font-weight: 400;
   line-height: 20px;
-  text-underline-position: from-font;
-  text-decoration-skip-ink: none;
-  gap: 0px;
   text-align: left;
   color: #2D2D2D;
-  
-  /* 使文本自动换行 */
-  word-wrap: break-word; /* 换行 */
-  white-space: normal;   /* 确保内容可以换行 */
-}
-
-.remarks {
-  padding: 20rpx;
-  height: auto;
+  word-wrap: break-word;
+  white-space: normal;
 }
 
 .tab-container {
   margin: 20rpx;
   background-color: #fff;
   border-radius: 10rpx;
+  min-height: 62vh;
 }
 
 .tab-bar {
@@ -600,16 +591,26 @@ export default {
 }
 
 .content {
-  padding: 20rpx;
+  margin: 20rpx;
   min-height: 200rpx;
+  height: auto;
+  border-radius: 10rpx;
 }
 
 /* 作业文本内容 */
 .task-content {
-  background: #00000008;
-  min-height: 10vh;
-  padding-bottom: 10rpx;
+  padding: 10rpx;
+  min-height: 160rpx;
+  height: auto;
+  background-color: rgba(43, 41, 41, 0.031);
   border-radius: 10rpx;
+  word-wrap: break-word;
+  white-space: normal;
+}
+
+
+.remarks {
+  /* padding: 20rpx; */
 }
 
 .title {
@@ -619,16 +620,17 @@ export default {
 
 /* 文件列表 */
 .attachment-list {
-  margin: 20rpx 0;
+  background-color: #c52424;
+  margin-top: 40rpx;
+  min-height: 6vh;
 }
 
 .file-item {
-  display: flex;
   align-items: center;
   padding: 10rpx;
   color: #2F51FF;
   font-size: 24rpx;
-  background-color: #e2e1e6;
+  background-color: #3c1bc0;
   margin: 20rpx;
   border-radius: 10rpx;
 }
@@ -706,7 +708,7 @@ export default {
 
 .file-name {
   padding: 10rpx;
-  background-color: #00000006;
+  background-color: rgba(0, 0, 0, 0.024);
   width: 470rpx;
 }
 
@@ -743,5 +745,11 @@ export default {
   margin: 20rpx;
   border-radius: 10rpx;
   background-color: #fff;
+}
+
+textarea {
+  width: 100%; /* 确保宽度为 100% */
+  height: auto; /* 高度根据内容自适应 */
+  box-sizing: border-box; /* 包括 padding 和 border */
 }
 </style>
