@@ -779,6 +779,7 @@ export default {
 .container {
   background: linear-gradient(to bottom, #2F51FF, #c4cdd9);
   flex-direction: column;
+  height: auto;
 }
 
 /* 顶部导航栏 */
@@ -894,7 +895,7 @@ export default {
 }
 
 .page {
-  padding: 36rpx;
+  padding: 32rpx;
 }
 
 .user-card {
@@ -951,7 +952,7 @@ export default {
 
 .stat-item {
   border-radius: 10rpx;
-  padding: 8px 16px 8px 16px;
+  padding: 20rpx;
   gap: 28px;
   background-color: #fff;
   display: flex;

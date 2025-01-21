@@ -194,6 +194,8 @@ export default {
     },
     openModal() {
       this.isShow = true; // Show the modal
+      this.selectedReason = 0;
+      this.remarks="";
     },
     closeModal() {
       this.isShow = false; // Hide the modal
@@ -207,9 +209,6 @@ export default {
       const reason = this.leaveReasons[this.selectedReason];
       const remarks = this.remarks;
       const selectedCourses = this.courses.filter(course => course.isSelected).map(course => course.id);
-      console.log('Leave Reason:', reason);
-      console.log('Remarks:', remarks);
-      console.log('selectedCourses:', selectedCourses);
       this.closeModal();
       uni.showLoading({
         title: '提交中...'
@@ -228,11 +227,17 @@ export default {
         });
         return;
       }
+      console.log('请假已提交-0', new Date());
       uni.showToast({
         title: '请假已提交',
         icon: 'success',
         duration: 2000
       });
+      setTimeout(() => {
+        console.log('请假已提交-1', new Date());
+        this.cancel();
+        this.fetchData();
+      }, 2000);
     },
     cancel() {
       this.showbutton = false;

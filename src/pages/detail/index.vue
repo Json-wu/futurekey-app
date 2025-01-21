@@ -47,35 +47,34 @@
       <!-- 内容区 -->
       <view v-if="currentTab === 'before'" class="content">
         <!-- 作业文本 -->
-        <div class="task-content">
-          {{ courseData.preview }}
+        <div class="text-content">
+          {{ courseData.preview || '' }}
         </div>
           
-            <!-- <block v-for="(file, index) in courseData.previewFiles" :key="index">
-            <view class="file-item">
-              <image src="@/static/file-icon.png" class="file-icon" />
-              <text class="file-name" @click="downloadFile(file)">
-                {{ file }}
-              </text>
-            </view>
-          </block> -->
+        <block v-for="(file, index) in courseData.previewFiles" :key="index">
+          <view class="file-item">
+            <image src="@/static/file-icon.png" class="file-icon" />
+            <text class="file-name" @click="downloadFile(file)">
+              {{ file }}
+            </text>
+          </view>
+        </block>
         
       </view>
 
       <view v-else class="content">
         <!-- 作业文本 -->
         <div class="text-content">
-          {{ courseData.homework }}
+          {{ courseData.homework || '' }}
         </div>
-       
-            <block v-for="(file, index) in courseData.homeworkFiles" :key="index">
-              <view class="file-item">
-                <image src="@/static/file-icon.png" class="file-icon" />
-                <text class="file-name" @click="downloadFile(file)">
-                  {{ file }}
-                </text>
-              </view>
-            </block>
+        <block v-for="(file, index) in courseData.homeworkFiles" :key="index">
+          <view class="file-item">
+            <image src="@/static/file-icon.png" class="file-icon" />
+            <text class="file-name" @click="downloadFile(file)">
+              {{ file }}
+            </text>
+          </view>
+        </block>
       </view>
       <!-- 上传文件按钮 -->
       <view class="fileSection">
@@ -89,19 +88,17 @@
           <!-- 上传状态：成功 -->
           <view v-if="file.status === 'success'" class="file-info">
             <image class="icon-del" :src="file.icon_file" @click="downloadFile(file.filename)"></image>
-            <text class="file-name success" @click="downloadFile(file.filename)">{{ file.name }}</text>
-            <text class="file-size">{{ file.size }}kb</text>
+            <text class="file-name success" :class = "file.fontcss" @click="downloadFile(file.filename)">{{ file.name }}</text>
+            <text class="file-size" :class = "file.fontcss">{{ file.size }}kb</text>
             <image class="icon-del" :src="file.icon_del" @click="deleteFile(index, file.filename)"></image>
           </view>
 
           <!-- 上传状态：进行中 -->
           <view v-else-if="file.status === 'uploading'" class="file-info">
             <image class="icon-del" :src="file.icon_file"></image>
-            <text class="file-name uploading">{{ file.name }}</text>
-            <text class="file-size">{{ file.size }}kb</text>
-            <view class="progress-bar">
-              <view class="progress" :style="{ width: file.progress + '%' }"></view>
-            </view>
+            <text class="file-name uploading" :class = "file.fontcss">{{ file.name }}</text>
+            <text class="file-size" :class = "file.fontcss">{{ file.size }}kb</text>
+          
             <image class="icon-del" :src="file.icon_del" @click="cancelUpload(index)"></image>
           </view>
 
@@ -139,7 +136,8 @@ export default {
       files: [
       ],
       timezones: [],
-      selectedTimeZoneIndex: 0
+      selectedTimeZoneIndex: 0,
+      openfilesPath: []
     };
   },
   created() {
@@ -173,6 +171,7 @@ export default {
         size: Math.floor(file.size / 1000),
         status: 'uploading',
         progress: 0,
+        fontcss: "upload",
         icon_del: "/static/icons/del.png",
         icon_file: "/static/file-icon.png"
       };
@@ -304,6 +303,7 @@ export default {
             x.size = x.size;
             x.icon_del = "/static/icons/del-his.png";
             x.icon_file = "/static/file-his.png";
+            x.fontcss = "upload-his";
             return x;
           });
           console.log("this.uploadFiles", this.uploadFiles);
@@ -337,12 +337,7 @@ export default {
           // 文件未缓存，执行下载操作
           console.log('文件未缓存，开始下载...');
           this.downloadAndSaveFile(url, fileKey, fileType);
-        },
-        complete: () => {
-          // 下载完成，执行回调函数
-          console.log('下载完成，执行回调函数...');
-          uni.hideLoading();
-        },
+        }
       });
     },
 
@@ -427,10 +422,11 @@ export default {
       } else if (fileType === 'png' || fileType === 'jpg' || fileType === 'gif' || fileType === 'webp') {
         // 打开图片文件
         uni.previewImage({
-          urls: [filePath], // 图片路径数组
+          urls: this.openfilesPath.length>0 ? this.openfilesPath: [filePath], // 图片路径数组
           current: filePath // 当前图片路径
         }).then(() => {
           console.log('图片文件打开成功');
+          this.openfilesPath.push(filePath);
           uni.hideLoading();
         }).catch((err) => {
           console.error('图片文件打开失败：', err);
@@ -483,7 +479,7 @@ export default {
 <style>
 .container {
   background: linear-gradient(to bottom, #2F51FF, #F7F9FC);
-  height: 100vh;
+  height: auto;
   flex-direction: column;
 }
 
@@ -524,19 +520,23 @@ export default {
 }
 
 .coursediv {
-  border-radius: 10rpx;
+  /* border-radius: 10rpx;
   padding: 10px 16px 10px 16px;
   gap: 28px;
   background-color: #fff;
   display: flex;
   justify-content: space-between;
-  margin-bottom: 10rpx;
+  margin-bottom: 10rpx; */
+  border-radius: 10rpx;
+  padding: 20rpx;
+  background-color: #fff;
+  margin-bottom: 20rpx;
 }
 
 .label {
   width: 150rpx;
   padding: 10rpx;
-  font-size: 14px;
+  /* font-size: 14px; */
   font-weight: 400;
   line-height: 20px;
   text-align: left;
@@ -547,11 +547,11 @@ export default {
   padding: 10rpx;
   width: 500rpx;
   height: auto;
-  font-size: 14px;
+  /* font-size: 14px; */
   font-weight: 400;
   line-height: 20px;
   text-align: left;
-  color: #2D2D2D;
+  color: rgba(45, 45, 45, 1);;
   word-wrap: break-word;
   white-space: normal;
 }
@@ -560,7 +560,8 @@ export default {
   margin: 20rpx;
   background-color: #fff;
   border-radius: 10rpx;
-  min-height: 62vh;
+  min-height: 58vh;
+  padding-bottom: 60rpx;
 }
 
 .tab-bar {
@@ -595,17 +596,19 @@ export default {
   min-height: 200rpx;
   height: auto;
   border-radius: 10rpx;
+  padding-bottom: 10rpx;
+  background-color: rgba(43, 41, 41, 0.031);
 }
 
 /* 作业文本内容 */
-.task-content {
-  padding: 10rpx;
+.text-content {
+  padding: 20rpx;
   min-height: 160rpx;
   height: auto;
-  background-color: rgba(43, 41, 41, 0.031);
   border-radius: 10rpx;
   word-wrap: break-word;
   white-space: normal;
+  color: rgba(45, 45, 45, 1);
 }
 
 
@@ -626,18 +629,19 @@ export default {
 }
 
 .file-item {
+  display: flex;
   align-items: center;
   padding: 10rpx;
   color: #2F51FF;
-  font-size: 24rpx;
-  background-color: #3c1bc0;
-  margin: 20rpx;
+  background-color: #f0eef7;
+  margin: 10rpx 20rpx 10rpx 20rpx;
   border-radius: 10rpx;
 }
 
 .file-icon {
-  width: 30rpx;
-  height: 30rpx;
+  width: 32rpx;
+  height: 32rpx;
+  margin-left: 8rpx;
 }
 
 /* 上传区域 */
@@ -667,17 +671,11 @@ export default {
   color: #999;
 }
 
-.filename {
-  text-align: left;
-  font-size: 28rpx;
-  white-space: normal;
-  margin-bottom: 10rpx;
-}
-
 .upload-progress {
-  margin: 10rpx;
+  margin: 20rpx;
   padding: 10rpx;
-  background: #2F82FF1A;
+  border-radius: 10rpx;
+  color: rgba(47, 81, 255, 1);
 }
 
 .delete-icon {
@@ -701,27 +699,18 @@ export default {
   display: flex;
   align-items: center;
   margin: 10rpx 20rpx 10rpx 20rpx;
-  font-size: 24rpx;
   padding: 10rpx;
   border-radius: 10rpx;
-}
-
-.file-name {
-  padding: 10rpx;
-  background-color: rgba(0, 0, 0, 0.024);
-  width: 470rpx;
 }
 
 .file-name.success {
   width: 470rpx;
   text-align: left;
-  color: #2D2D2D;
 }
 
 .file-name.uploading {
   width: 470rpx;
   text-align: left;
-  color: blue;
 }
 
 .file-name.error {
@@ -740,11 +729,12 @@ export default {
   height: 32rpx;
 }
 
-.file-list {
-  padding: 20rpx;
-  margin: 20rpx;
-  border-radius: 10rpx;
-  background-color: #fff;
+.upload {
+  color: rgba(47, 81, 255, 1);
+}
+
+.upload-his {
+  color: rgba(45, 45, 45, 1);
 }
 
 textarea {
