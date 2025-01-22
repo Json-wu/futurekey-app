@@ -141,7 +141,8 @@ export default {
       uni.setStorageSync('isLogin', true);
       uni.setStorageSync('isAgreed', true);
       uni.removeStorageSync('session_key');
-      uni.navigateTo({
+      console.log("登录成功,开始跳转至home页面");
+      uni.switchTab({
         url: "/pages/home/index",
         success: () => {
           uni.hideLoading();

@@ -129,7 +129,7 @@ export default {
       selectedTimeZoneIndex: 0, // 当前选中时区索引
       timezone: "Asia/Shanghai",
       students: [
-        { name: '', code: '', value4: '' }
+        { name: '', code: '', birth: '', level: '' }
       ],
       timezones: [],
       dateRange: "", // 日期范围

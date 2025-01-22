@@ -47,7 +47,7 @@
             📍 英语等级
           </view>
           <view>
-            {{ studentLevel || '-' }}
+            {{ totalData.level || '-' }}
           </view>
         </view>
       </view>
@@ -68,7 +68,7 @@
         </view>
         <view class="stat-item">
           <text class="label">下次续订日期</text>
-          <text class="stat-value">{{ totalData.nextDate }}</text>
+          <text class="stat-value">{{ totalData.exprire_dt || '-' }}</text>
         </view>
         <view class="stat-item">
           <text class="label">教务顾问</text>
@@ -97,9 +97,9 @@
               <text class="nonedata">暂无课程</text>
             </view>
             <view v-else class="table-row" v-for="(item, index) in visibleRows" :key="index">
-              <view class="table-cell">{{ item.title }}</view>
-              <view class="table-cell">{{ item.time }}</view>
-              <view class="table-cell">{{ item.teacher }}</view>
+              <view class="table-cell">{{ item.title || '-' }}</view>
+              <view class="table-cell">{{ item.time || '-' }}</view>
+              <view class="table-cell">{{ item.teacher || '-' }}</view>
               <view class="table-cell">{{ formatState(item.state) }}</view>
             </view>
           </view>
@@ -121,18 +121,20 @@
           <view class="table">
             <!-- 表头 -->
             <view class="table-row table-header">
-              <view class="table-cell">课程</view>
+              <!-- <view class="table-cell">课程名称</view> -->
+              <view class="table-cell">课程类型</view>
               <view class="table-cell">签订日期</view>
               <view class="table-cell">到期日期</view>
-              <view class="table-cell">金额</view>
+              <view class="table-cell">订单金额(元)</view>
             </view>
             <view v-if="visibleRowsOrder.length == 0" class="table-row">
               <text class="nonedata">暂无订单</text>
             </view>
             <view v-else class="table-row" v-for="(item, index) in visibleRowsOrder" :key="index">
-              <view class="table-cell">{{ item.course_type }}</view>
-              <view class="table-cell">{{ item.sign_dt }}</view>
-              <view class="table-cell">{{ item.sign_dt }}</view>
+              <!-- <view class="table-cell">{{ item.course_title || '-' }}</view> -->
+              <view class="table-cell">{{ item.course_type || '-' }}</view>
+              <view class="table-cell">{{ item.sign_dt || '-' }}</view>
+              <view class="table-cell">{{ item.exprire_dt || '-' }}</view>
               <view class="table-cell">{{ item.contract_amount }}</view>
             </view>
           </view>
@@ -308,11 +310,13 @@ export default {
       this.showAbout = true;
     },
     getBirth() {
-      if (!this.studentBirth) return '----/--';
+      console.log(this.studentBirth);
+      if (!this.studentBirth || this.studentBirth == '-') return '----/--';
 
       return this.studentBirth.substr(0, 4) + '/' + this.getAge();
     },
     editChild() {
+      this.birth = this.studentBirth;
       this.isShow = true;
     },
     closeModal() {
@@ -383,11 +387,8 @@ export default {
       this.studentCode = sdata.code;
       this.studentName = uni.getStorageSync(sdata.code) || sdata.name;
       this.$global.studentCode = this.studentCode;
-      this.studentBirth = sdata.value4;
       uni.setStorageSync('studentCode', this.studentCode);
       uni.setStorageSync('selectIndex', this.selectedStudentIndex);
-      this.birth = this.studentBirth;
-      this.studentLevel = sdata.value5;
       console.log('选中的学生代码:', this.studentCode, this.$global.studentCode);
       this.hideModal();
       this.fetchData();
@@ -553,6 +554,8 @@ export default {
         if (res.code == 0) {
           this.courseList = res.data;
           this.totalData = res.total;
+          console.log('this.totalData', this.totalData);
+          this.studentBirth = this.totalData.birth;
           this.hasCourses = this.courseList.length > 0;
           this.$global.startDate = this.startDate;
           this.$global.endDate = this.endDate;
