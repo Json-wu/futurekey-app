@@ -657,7 +657,7 @@ export default {
 .checkbox-container {
   display: flex;
   align-items: center;
-  height: 8vh;
+  margin-top: 50rpx;
 }
 
 .custom-checkbox {
