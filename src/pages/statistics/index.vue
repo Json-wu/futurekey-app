@@ -259,7 +259,7 @@ export default {
         if (this.isExpanded) {
           return this.courseList;
         } else {
-          return this.courseList.length > 3 ? this.courseList.slice(0, 3) : this.courseList;
+          return this.courseList.length > 1 ? this.courseList.slice(0, 1) : this.courseList;
         }
       } else {
         return this.courseList;
@@ -270,7 +270,7 @@ export default {
         if (this.isExpandedOrder) {
           return this.orderList;
         } else {
-          return this.orderList.length > 3 ? this.orderList.slice(0, 3) : this.orderList;
+          return this.orderList.length > 1 ? this.orderList.slice(0, 1) : this.orderList;
         }
       } else {
         return this.orderList;
