@@ -1,20 +1,14 @@
 <template>
   <view class="container">
-    <!-- 自定义顶部导航栏 -->
     <view class="custom-header">
-      <!-- <view class="nav-left" @click="goBack">
-        <image src="@/static/back-icon.png" class="back-icon"></image>
-      </view> -->
       <image src="/static/keai-logo.png" class="header-logo" @click="showAboutUs" />
       <view class="centered-picker-container" @tap="showModal">
         <view class="student-select">{{ students[selectedStudentIndex].name }} ▼</view>
       </view>
-      <!-- 占位元素：确保与系统按钮对齐 -->
       <view class="header-placeholder"></view>
     </view>
 
     <view class="date-filter">
-      <!-- 日期选择器 -->
       <view class="date-range" @tap="openCalendar">
         <text class="date-text">{{ startDate || '请选择' }}</text>
         <text class="separator">一</text>
@@ -23,7 +17,6 @@
     </view>
 
     <view class="page">
-      <!-- 用户信息 -->
       <view class="user-card">
         <view class="user-info">
           <view class="user-name">
@@ -77,9 +70,9 @@
       </view>
 
       <!-- 课程记录 -->
-      <view class="titlehistory">
+      <!-- <view class="titlehistory">
         <text>课程记录</text>
-      </view>
+      </view> -->
 
       <view class="course-history">
         <scroll-view class="contentdiv" scroll-x="true">
@@ -114,7 +107,7 @@
 
         <!-- 历史订单 -->
         <view class="titlehistory">
-          <text>订单记录</text>
+          <text>历史订单</text>
         </view>
 
         <scroll-view class="contentdiv" scroll-x="true">
@@ -780,7 +773,7 @@ export default {
 
 /* 页面背景 */
 .container {
-  background: linear-gradient(to bottom, #2F51FF, #c4cdd9);
+  background: linear-gradient(to bottom, #2F51FF, #F7F9FC);
   flex-direction: column;
   height: auto;
 }
@@ -1005,7 +998,9 @@ export default {
 }
 
 .expand-btn {
-  padding-top: 16rpx;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 .download-pdf {

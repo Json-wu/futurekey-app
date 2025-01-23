@@ -527,6 +527,7 @@ export default {
   display: flex;
   justify-content: space-between;
   margin-bottom: 10rpx; */
+  display: flex;
   border-radius: 10rpx;
   padding: 20rpx;
   background-color: #fff;

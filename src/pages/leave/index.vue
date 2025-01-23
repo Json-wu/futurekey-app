@@ -21,12 +21,12 @@
 
     <!-- 滚动课程列表 -->
     <scroll-view class="course-list" :style="{ 'padding-bottom': showbutton ? '90px' : '0'}" scroll-y>
-      <view class="month-title">课程列表</view>
-      <view v-if="courses.length == 0" class="course-card">
-        <text>暂无课程</text>
+      <view class="month-title">待出席课程列表</view>
+      <view v-if="courses.length == 0" class="course-card-null">
+        <text>暂无待出席课程</text>
       </view>
-      <view v-else class="course-card" v-for="(course, index) in courses" :key="index">
-        <view :class="course.css">
+      <view v-else class="course-card" v-for="(course, index) in courses" :key="index"  @tap="toggleCheck(course.id)">
+        <view>
           <image :src="course.class_category == 'writing' ? '/static/write.png' : '/static/default.png'"
             class="course-icon"></image>
         </view>
@@ -41,17 +41,28 @@
             {{ course.student }}
           </view>
         </view>
-        <view class="checkbox-container">
-          <checkbox :disabled="course.state !==0"  :checked="course.isSelected" @tap="toggleCheck(course.id)"></checkbox>
+        <view class="course-status">
+          <view class="checkbox-container">
+            <view class="custom-checkbox" :class="{'checked': course.isSelected, 'disabled': course.state !== 0}">
+              <view v-if="course.isSelected" class="checkmark">
+                <view class="checkmark-inner"></view>
+              </view>
+            </view>
+          </view>
         </view>
       </view>
     </scroll-view>
 
      <!-- 底部固定栏 -->
      <view class="bottom-bar" v-if = "showbutton">
-      <view class="allcheck">
-          <checkbox :checked="checkall" @tap="toggleCheckAll()">全选</checkbox>
+      <view class="allcheck" @tap="toggleCheckAll()">
+        <view class="custom-checkbox" :class="{'checked': checkall}">
+          <view v-if="checkall" class="checkmark">
+            <view class="checkmark-inner"></view>
+          </view>
         </view>
+        <text class="status-text">全选</text>
+      </view>
       <button class="btn cancel" @tap="cancel()">取消</button>
       <button class="btn confirm" @tap="commit()">确定</button>
     </view>
@@ -160,7 +171,13 @@ export default {
       leaveReasons: ['事假', '病假', '其他'], // Leave reasons
       selectedReason: 0, // Index of selected leave reason
       leaveCount: 0, // 本月请假次数
-      remarks: '' // Remarks input
+      remarks: '', // Remarks input
+      states: {
+        0: "待出席",
+        1: "已出席",
+        2: "已请假",
+        3: "已缺课"
+      }
     };
   },
   created() {
@@ -183,6 +200,9 @@ export default {
     }
   },
   methods: {
+    getState(state) {
+      return this.states[state];
+    },
     showAboutUs() {
       this.showAbout = true;
     },
@@ -348,7 +368,8 @@ export default {
           "start_dt": this.startDate,
           "end_dt": this.endDate,
           "studentCode": this.studentCode,
-          "timezone": this.$global.timezone
+          "timezone": this.$global.timezone,
+          "type": 'leave'
         });
         console.log('课程列表:', res);
         // 处理返回的数据
@@ -585,6 +606,15 @@ export default {
   text-align: center;
 }
 
+.course-card-null {
+  display: flex;
+  background: #f3f6ff;
+  border-radius: 10rpx;
+  padding: 20px;
+  margin: 16px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
 .course-card {
   display: flex;
   background: #f3f6ff;
@@ -627,32 +657,45 @@ export default {
 .checkbox-container {
   display: flex;
   align-items: center;
+  height: 8vh;
 }
 
-.checkbox {
-  width: 24rpx;
-  height: 24rpx;
+.custom-checkbox {
+  width: 30rpx;
+  height: 30rpx;
   border: 2rpx solid #ccc;
   border-radius: 50%; /* 圆形 */
   margin-right: 10rpx;
-  position: relative;
+  /* position: relative; */
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.checkbox.checked {
+.custom-checkbox.checked {
   background-color: #007aff;
   border-color: #007aff;
 }
 
-.checkbox.checked::after {
-  content: '';
-  width: 12rpx;
-  height: 12rpx;
-  background-color: #fff;
-  border-radius: 50%; /* 圆形 */
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+.custom-checkbox.checked .checkmark {
+  width: 40rpx;
+  height: 40rpx;
+  background-color: transparent;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.checkmark-inner {
+  width: 14rpx;
+  height: 10rpx;
+  border-left: 2rpx solid white;
+  border-bottom: 2rpx solid white;
+  transform: rotate(-45deg);
+}
+
+.custom-checkbox.disabled {
+  opacity: 0.5;
 }
 
 /* 底部固定栏 */
@@ -664,20 +707,19 @@ export default {
   display: flex;
   justify-content: space-around;
   background-color: #fff;
-  padding: 30rpx 0 50rpx 0;
+  padding: 30rpx 20rpx 50rpx 20rpx;
   box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .allcheck {
+  display: flex;
   flex: 1;
-  width: 200rpx;
-  margin-left: 20rpx;
-  line-height: 70rpx;
+  align-items: center;
 }
 
 .btn {
   flex: 1;
-  margin: 0 5rpx;
+  margin: 0 10rpx;
   height: 80rpx;
   border-radius: 10rpx;
   font-size: 14px;
@@ -763,5 +805,50 @@ export default {
   height: 32px;
   margin-top: 6px;
   margin-left: 10px;
+}
+
+
+.course-status {
+  font-size: 22rpx;
+  align-items: center;
+  margin-right: 10px;
+}
+
+/* 状态容器 */
+.status-container {
+  display: flex;
+  align-items: center;
+  margin-top: 20rpx;
+}
+
+/* 状态图标基础样式 */
+.status-icon {
+  width: 20rpx;
+  height: 20rpx;
+  border-radius: 50%;
+  margin-right: 8rpx;
+}
+
+/* 待出席状态 - 灰色 */
+.status-pending {
+  background-color: #9c9898;
+  /* 灰色 */
+}
+
+/* 已出席状态 - 蓝色 */
+.status-attend {
+  background-color: #4A90E2;
+  /* 蓝色 */
+}
+
+/* 已请假状态 - 绿色 */
+.status-leave {
+  background-color: #00C878;
+  /* 绿色 */
+}
+
+/* 已缺课 */
+.status-absent {
+  background-color: #ff9900;
 }
 </style>

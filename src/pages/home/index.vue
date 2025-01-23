@@ -29,7 +29,7 @@
     <!-- 滚动课程列表 -->
     <scroll-view class="course-list" scroll-y>
       <view class="month-title">课程列表</view>
-      <view v-if="courses.length == 0" class="course-card">
+      <view v-if="courses.length == 0" class="course-card-null">
         <text>暂无课程</text>
       </view>
       <view v-else class="course-card" v-for="(course, index) in courses" :key="index">
@@ -48,12 +48,12 @@
             {{ course.student }}
           </view>
         </view>
-        <view class="course-status">
+        <view class="course-status" @tap="goToDetail(course.id)">
           <view class="status-container">
             <view class="status-icon" :class="course.css"></view>
             <text class="status-text">{{ getState(course.state) }}</text>
           </view>
-          <view class="course-arrow" @tap="goToDetail(course.id)">
+          <view class="course-arrow">
             <view class="circle-arrow">
               <view class="arrow"></view>
             </view>
@@ -61,20 +61,6 @@
         </view>
       </view>
     </scroll-view>
-
-    <!-- <view class="bottom-container" v-if="!showCalendar">
-      <view class="bottom-buttons">
-        <view class="button-item" @click="showStatistics">
-          <image src="/static/total.png" class="icon" mode="widthFix"></image>
-          <text class="button-text">统计</text>
-        </view>
-        <view class="viewider"></view>
-        <view class="button-item" @click="showLeave">
-          <image src="/static/leave.png" class="icon" mode="widthFix"></image>
-          <text class="button-text">请假</text>
-        </view>
-      </view>
-    </view> -->
 
     <!-- 引入 CalendarPopup 组件 -->
     <CalendarPopup :showCalendar="showCalendar" :currentYear="currentYear" :currentMonth="currentMonth"
@@ -489,6 +475,15 @@ export default {
   text-align: center;
 }
 
+.course-card-null {
+  display: flex;
+  background: #f3f6ff;
+  border-radius: 10rpx;
+  padding: 20px;
+  margin: 16px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
 .course-card {
   display: flex;
   background: #f3f6ff;
@@ -573,16 +568,12 @@ export default {
 }
 
 .course-arrow {
-  margin-top: 40rpx;
+  margin-top: 20rpx;
   margin-left: 20px;
   font-size: 18px;
-  display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
   border-radius: 50%;
-  cursor: pointer;
 }
 
 .arrow-icon {
