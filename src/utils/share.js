@@ -4,8 +4,8 @@ export default {
             share: {
                 title: '科爱信-开心英语',
                 path: '/pages/index/index', // 分享路径
-                imageUrl: '/static/illustration.png' // 分享图片URL
-            }
+                imageUrl: 'https://futurekey.com/classroom/download/1737727891005-1737727891005.jpeg' // 分享图片URL
+              },
         }
     },
     //1.配置发送给朋友

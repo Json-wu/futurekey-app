@@ -7,7 +7,7 @@
 
     <!-- Illustration -->
     <view class="illustration">
-      <image src="@/static/illustration.png" class="illustration-image" mode="aspectFit" />
+      <image :src="getillustration()" class="illustration-image" mode="aspectFit" />
     </view>
 
     <view class="login-container">
@@ -81,6 +81,9 @@ export default {
     };
   },
   methods: {
+    getillustration() {
+      return this.$global.illustration;
+    },
     hidePhone() {
       if (!this.phone) return '';
       const len = this.phone.length;

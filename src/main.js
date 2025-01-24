@@ -20,15 +20,11 @@ Vue.prototype.$global = {
     { name: "马德里", value: "Europe/Madrid" }
   ],
   timezoneIndex: 0,
-  share: {
-    title: '科爱信-开心英语',
-    path: '/pages/index/index', // 分享路径
-    imageUrl: '/static/illustration.png' // 分享图片URL
-  },
   currentYear: new Date().getFullYear(),
   currentMonth: new Date().getMonth() + 1,
   stratDate: new Date().getFullYear() + '-' + (new Date().getMonth() + 1) + '-01',
   endDate: new Date().getFullYear() + '-' + (new Date().getMonth() + 1) + '-' + new Date().getDate(),
+  illustration: "/static/illustration.png"//'https://futurekey.com/classroom/download/1737727298280-1737727298280.png',
 };
 
 App.mpType = 'app'

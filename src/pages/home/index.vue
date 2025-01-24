@@ -293,6 +293,10 @@ export default {
       const res = await getStudentList(this.$global.phone);
       if (res.code == 0) {
         this.students = res.data;
+        // .map((x,i)=> {
+        //   x.class_size = i==0 ?"1:1": "1:4";
+        //   return x;
+        // });
 
         this.$global.studentList = this.students.map(item => {
           item.name = uni.getStorageSync(item.code) || item.name;

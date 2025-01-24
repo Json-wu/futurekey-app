@@ -75,9 +75,20 @@
           <view class="close-btn" @tap="closeModal">×</view>
         </view>
 
-        <view class="tips">
-          <li>注：1.每月享有1次补课机会</li>
-          <li>&nbsp;2.24h内请假，由代课老师补课，不能指定老师</li>
+        <view class="tips" v-if="getSize()">
+            <li>请假规则如下：</li>
+            <li>1. 每个月有一次提前24小时通知补课的机会，该机会可累计，一学期（通常按4个月计算）总共可补课4次.</li>
+            <li>2. ⚠因老师原因调课，不计入调课次数.</li>
+            <li>3. ⚠如预计上课时间频繁冲突，请提前和教务顾问沟通，尽量安排不容易冲突的时间段，老师通常会牺牲自己的周末时间或节假日时间进行补课.</li>
+            <li>4. ⚠若为临时通知（通知时间不到24小时）或超过补课次数的课程，可安排代课老师补课，但不能指定老师.</li>
+            <li>5. ⚠每月如有缺课，一般应在当月补完.</li>
+        </view>
+        <view class="tips" v-else>
+            <li>请假规则如下：</li>
+            <li>1. 教务顾问会为请假学生提供课程回放。如学生遇特殊情况（生病等），提前24小时或以上通知，每月可有1次重新安排时间补课。因为老师原因调课，不计入次数.</li>
+            <li>2. ⚠如预计上课时间频繁冲突，请提前和教务顾问沟通，尽量安排不容易冲突的时间段（老师通常牺牲自己周末时间或节假日时间补课）.</li>
+            <li>3. ⚠临时通知（不到24小时）或超过补课次数的课程，可安排代课老师补课，不能指定老师.</li>
+            <li>4. ⚠每月如有缺课，一般应该在当月补完.</li>
         </view>
         
         <!-- Leave Reason Selection -->
@@ -171,6 +182,7 @@ export default {
       leaveReasons: ['事假', '病假', '其他'], // Leave reasons
       selectedReason: 0, // Index of selected leave reason
       leaveCount: 0, // 本月请假次数
+      class_size: '', // 课程类型
       remarks: '', // Remarks input
       states: {
         0: "待出席",
@@ -188,18 +200,20 @@ export default {
     this.students = this.$global.studentList;
     this.studentCode = this.$global.studentCode;
     this.selectedStudentIndex = this.$global.selectIndex;
+    this.class_size = this.students[this.selectedStudentIndex].class_size;
     this.selectedTimeZoneIndex = uni.getStorageSync("timezoneIndex") || 0;
     this.startDate = this.$global.startDate;
     this.endDate = this.$global.endDate;
   },
-  computed: {
-    dynamicStyles() {
-      return {
-        'padding-bottom': this.showbutton ? '90px' : '0'
-      };
-    }
-  },
   methods: {
+    getSize(){
+      console.log('class_size',this.class_size);
+      if(this.class_size){
+        return this.class_size=='1:1' ? true: false;
+      }else {
+        return true;
+      }
+    },
     getState(state) {
       return this.states[state];
     },
@@ -224,7 +238,23 @@ export default {
     onReasonChange(e) {
       this.selectedReason = e.detail.value; // Update selected reason
     },
-    async confirmLeave() {
+    confirmLeave() {
+      // 弹出确认弹窗
+      uni.showModal({
+        title: '确定请假',
+        content: '确定知晓请假规则，并提交？',
+        success: (res) => {
+          if (res.confirm) {
+            // 这里添加提交操作的代码，例如向服务器发送请求等
+            console.log("提交操作");
+            handleLeave();
+          } else if (res.cancel) {
+            console.log('取消操作');
+          }
+        }
+      });
+    },
+    async handleLeave() {
       // Handle leave confirmation logic here
       const reason = this.leaveReasons[this.selectedReason];
       const remarks = this.remarks;
@@ -439,6 +469,7 @@ export default {
       this.selectedStudentIndex = index;
       this.$global.selectIndex = index;
       this.studentCode = this.students[this.selectedStudentIndex].code;
+      this.class_size = this.students[this.selectedStudentIndex].class_size;
       this.$global.studentCode = this.studentCode;
       uni.setStorageSync('studentCode', this.studentCode);
       uni.setStorageSync('selectIndex', this.selectedStudentIndex);
@@ -472,9 +503,9 @@ export default {
       this.currentMonth = now.getMonth() + 1;
       this.selectIndex = uni.getStorageSync("selectIndex") || 0;
       this.studentCode = uni.getStorageSync("studentCode") || '';
+      this.class_size = this.students[this.selectIndex].class_size;
       this.startDate = this.$global.startDate;
       this.endDate = this.$global.endDate;
-      this.selectIndex = uni.getStorageSync("selectIndex") || 0;
       this.selectedTimeZoneIndex = uni.getStorageSync("timezoneIndex") || 0;
       this.selectedTimeZone = this.timezones[this.selectedTimeZoneIndex]; // 根据索引获取对应的时区对象
       this.$global.timezone = this.selectedTimeZone.value;
