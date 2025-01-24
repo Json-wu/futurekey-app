@@ -1,4 +1,4 @@
-<template>
+l<template>
   <view class="container">
     <view class="custom-header">
       <image src="/static/keai-logo.png" class="header-logo" @click="showAboutUs" />
@@ -75,7 +75,12 @@
       </view> -->
 
       <view class="course-history">
-        <scroll-view class="contentdiv" scroll-x="true">
+        <scroll-view 
+        v-if="tabVisible"
+        class="contentdiv" 
+        scroll-x="true"
+        show-scrollbar="true" 
+        >
           <view class="table">
             <!-- 表头 -->
             <view class="table-row table-header">
@@ -250,6 +255,9 @@ export default {
         nextDate: '-',
         consultant: '无'
       },
+      tabVisible: true,
+      expandedHeight: '100px',
+      key: 0 // 用于强制重绘
     };
   },
   computed: {
@@ -279,6 +287,13 @@ export default {
     getStudentName() {
       const sdata = this.$global.studentList[this.$global.selectIndex];
       return uni.getStorageSync(sdata.studentCode) || sdata.name;
+    },
+    scrollViewStyle() {
+      return {
+        height: `${this.expandedHeight}px`,
+        overflow: 'scroll',
+        'white-space': 'nowrap'
+      }
     }
   },
   created() {
@@ -299,6 +314,37 @@ export default {
     this.endDate = this.$global.endDate;
   },
   methods: {
+    
+    // 切换展开状态
+    toggleExpand() {
+      this.isExpanded = !this.isExpanded;
+      this.tabVisible = false;
+       // 详细调试信息
+      this.$nextTick(() => {
+        uni.createSelectorQuery().in(this)
+          .select('.table')
+          .fields({
+            size: true,
+            scrollOffset: true,
+            computedStyle: ['display', 'overflow', 'height']
+          }, res => {
+            console.log('表格详细信息:', res)
+            // 修改scroll-view高度
+            this.expandedHeight = `${res.height}px`;
+            // 强制重绘
+            this.key++;
+           
+            this.tabVisible = true;
+            console.log(`key: ${this.key}, tabVisible: ${this.tabVisible}`);
+          })
+          .exec()
+      })
+    },
+    // 切换展开状态
+    toggleExpandOrder() {
+      this.isExpandedOrder = !this.isExpandedOrder;
+      console.log(this.isExpandedOrder);
+    },
     showAboutUs() {
       this.showAbout = true;
     },
@@ -712,16 +758,6 @@ export default {
         console.error('下载过程中出错:', error);
       }
     },
-    // 切换展开状态
-    toggleExpand() {
-      this.isExpanded = !this.isExpanded;
-      console.log(this.isExpanded);
-    },
-    // 切换展开状态
-    toggleExpandOrder() {
-      this.isExpandedOrder = !this.isExpandedOrder;
-      console.log(this.isExpandedOrder);
-    },
     onBirthChange(event) {
       this.birth = event.detail.value;
     },
@@ -1061,30 +1097,28 @@ export default {
 }
 
 .contentdiv {
-  height: auto;
-  width: 100%;
-  white-space: nowrap;
   font-size: 28rpx;
   color: #555;
   line-height: 1.6;
   background: #FFFFFF;
   border-radius: 10rpx 10rpx 0px 0px;
+  overflow-x: scroll !important;
+  -webkit-overflow-scrolling: touch;
 }
 
-/* 设置滚动条样式（仅部分支持） */
+/* 微信小程序滚动条样式 */
 .contentdiv::-webkit-scrollbar {
-  width: 4px;
+  height: 4px;
+  background-color: rgba(47, 81, 255, 0.1);
 }
 
 .contentdiv::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.2);
-  /* 滑块颜色 */
-  border-radius: 10rpx;
+  background-color: rgba(47, 81, 255, 0.3);
+  border-radius: 2px;
 }
 
-.contentdiv::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  /* 滑块轨道颜色 */
+.contentdiv::-webkit-scrollbar-thumb:hover {
+  background-color: #555; /* 悬停时的滑块颜色 */
 }
 
 .expend {
