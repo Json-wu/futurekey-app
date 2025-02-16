@@ -15,7 +15,7 @@
        <scroll-view class="contentdiv" scroll-y="true">
             <view class="page-container">
                 <view class="header">
-                    <text class="text-title">科爱信-开心英语小程序 用户隐私协议</text>
+                    <text class="text-title">科爱信-开心英语小程序 用户服务条款</text>
                 </view>
                 <view>
                     <text class="effective-time">生效时间：2024 年 11 月 25 日</text>
@@ -485,7 +485,7 @@ export default {
     },
     title: {
       type: String,
-      default: "用户隐私协议", // 标题
+      default: "用户服务条款", // 标题
     }
   },
   data() {

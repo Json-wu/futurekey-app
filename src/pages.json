@@ -48,7 +48,7 @@
 		{
 			"path": "pages/useragree/index",
 			"style": {
-				"navigationBarTitleText": "用户隐私协议",
+				"navigationBarTitleText": "用户服务条款",
 				"enablePullDownRefresh": false
 			}
 		}
@@ -68,25 +68,25 @@
 	"enableShareTimeline": true,
 	"tabBar": {
 		"color": "#7A7E7F",
-		"selectedColor": "#2F51FF",
+		"selectedColor": "#3858fe",
 		"backgroundColor": "#ffffff",
 		"borderStyle": "black",
 		"list": [
 			{
 				"pagePath": "pages/home/index",
-				"text": "首页",
+				"text": "课程",
 				"iconPath": "static/icons/home.png",
 				"selectedIconPath": "static/icons/home_hover.png"
 			},
-			{
-				"pagePath": "pages/leave/index",
-				"text": "请假",
-				"iconPath": "static/icons/leave.png",
-				"selectedIconPath": "static/icons/leave_hover.png"
-			},
+			// {
+			// 	"pagePath": "pages/leave/index",
+			// 	"text": "请假",
+			// 	"iconPath": "static/icons/leave.png",
+			// 	"selectedIconPath": "static/icons/leave_hover.png"
+			// },
 			{
 				"pagePath": "pages/statistics/index",
-				"text": "统计",
+				"text": "我的",
 				"iconPath": "static/icons/statics.png",
 				"selectedIconPath": "static/icons/statics_hover.png"
 			}

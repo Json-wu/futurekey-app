@@ -33,13 +33,13 @@
           </label>
         </checkbox-group>
         <view>
-          同意<text class="highlight" @click="showAgreement">《用户隐私协议》</text>并授权科爱信获取信息
+          同意<text class="highlight" @click="showAgreement">《用户服务条款》</text>并授权科爱信获取登录信息
         </view>
       </view>
     </view>
 
     <!-- 用户协议组件 -->
-    <AgreementPopup :show="isAgreementVisible" title="用户隐私协议" :content="agreementContent"
+    <AgreementPopup :show="isAgreementVisible" title="用户服务条款" :content="agreementContent"
       @close="isAgreementVisible = false" />
 
     <!-- Wechat ID Modal -->

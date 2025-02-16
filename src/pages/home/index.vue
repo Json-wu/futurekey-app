@@ -62,6 +62,21 @@
       </view>
     </scroll-view>
 
+      <!-- 底部按钮区域 -->
+      <!-- <view class="bottom-container">
+        <view class="bottom-buttons">
+          <view class="button-item" @click="showStatistics">
+            <image src="/static/total.png" class="icon" mode="widthFix"></image>
+            <text class="button-text">统计</text>
+          </view>
+          <view class="viewider"></view>
+          <view class="button-item" @click="showLeave">
+            <image src="/static/leave.png" class="icon" mode="widthFix"></image>
+            <text class="button-text">请假</text>
+          </view>
+        </view>
+      </view> -->
+
     <!-- 引入 CalendarPopup 组件 -->
     <CalendarPopup :showCalendar="showCalendar" :currentYear="currentYear" :currentMonth="currentMonth"
       :startDate="startDate" :endDate="endDate" :tempStartDate="tempStartDate" :tempEndDate="tempEndDate"

@@ -113,11 +113,116 @@
       </view>
       
     </view>
+
+    <!-- 底部按钮区域 -->
+    <view class="bottom-container">
+      <view class="bottom-buttons">
+        <!-- 统计按钮 -->
+        <view class="button-item" @click="showLate">
+          <image src="/static/late.png" class="icon" mode="widthFix"></image>
+          <text class="button-text">迟到</text>
+        </view>
+        <!-- 分割线 -->
+        <view class="viewider"></view>
+        <!-- 请假按钮 -->
+        <view class="button-item" @click="showLeave">
+          <image src="/static/leave.png" class="icon" mode="widthFix"></image>
+          <text class="button-text">请假</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- Modal -->
+    <view v-if="isShow" class="modal">
+      <view class="modal-content">
+        <view class="calendar-header">
+          <text class="datechoose-text">请假申请</text>
+          <view class="close-btn" @tap="hideLeave">×</view>
+        </view>
+
+        <view class="rule-section"> 
+          <view class="rule-header">
+            <view>本次请假<text v-if="courseData.freeLeave==1">不扣除</text><text v-else>扣除1</text>课时，查看<text class="rule-text" @click="toggleRule">请假规则</text></view>
+          </view>
+          <view class="tips" v-if="isShowRule">
+            <li>请假规则如下：</li>
+            <li class="tipli">每4周可有 1 次不扣课时的请假，需提前 24 小时请假，并在两周内申请补课。</li>
+            <li class="tipli">以下情况课时不退：无故缺课、未提前 24 小时请假、或超出每月 1 次请假机会。</li>
+            <li class="tipli2"> - 若课程有回放，仅提供回放，不安排补课；</li>
+            <li class="tipli2"> - 若课程无回放，可在两周内申请补课。</li>
+            <li class="tipli">如需连续请假 2 节以上，需提前一周通知，课时可顺延，并可申请补课。</li>
+            <li class="tipli">1v1 课程） 学生迟到 5 分钟后，老师有权退出教室。若学生未成功出席，可在两周内申请补课。</li>
+            <li class="tipli">因老师原因调整课程，不计入学生请假次数，课时不受影响。</li>
+          </view>
+        </view>
+        
+        <!-- Leave Reason Selection -->
+        <view class="leave-reason-selection">
+          <picker mode="selector" :range="leaveReasons" @change="onReasonChange">
+            <view class="picker">
+              请假原因：  {{ leaveReasons[selectedReason] }} ▼
+            </view>
+          </picker>
+          
+          <!-- Remarks Input -->
+          <textarea 
+            class="textarea" 
+            placeholder="请输入备注" 
+            maxlength="200"
+            v-model="remarks"
+            auto-height
+          />
+        </view>
+        <!-- Action Buttons -->
+        <view class="calendar-header">
+          <button class="btn cancel" @tap="hideLeave">取消</button>
+          <button class="btn confirm" @tap="confirmLeave">确定</button>
+        </view>
+      </view>
+    </view>
+    <!-- End Modal -->
+
+    <!-- Modal 迟到弹窗，选择预计迟到分钟数（15分钟以内），备注-->
+     <view v-if="isShowLate" class="modal">
+      <view class="modal-content">
+        <view class="calendar-header">
+          <text class="datechoose-text">迟到申请</text>
+          <view class="close-btn" @tap="hideLate">×</view>  
+        </view>
+
+        <view class="rule-section"> 
+          <view class="rule-header">
+            <view>选择迟到分钟数，并输入备注信息，通知老师课堂等待！！！</view>
+          </view>
+        </view> 
+        <view class="leave-reason-selection">
+          <picker mode="selector" :range="lateMinutes" @change="onLateChange">
+            <view class="picker">
+              预计迟到分钟数：  {{ lateMinutes[selectLateMinute] }} ▼
+            </view>
+          </picker>
+          
+          <!-- Remarks Input -->
+          <textarea 
+            class="textarea" 
+            placeholder="请输入备注" 
+            maxlength="200"
+            v-model="lateremarks"
+            auto-height
+          />
+        </view>
+
+        <view class="calendar-header">
+          <button class="btn cancel" @tap="hideLate">取消</button>
+          <button class="btn confirm" @tap="confirmLate">确定</button>
+        </view>
+      </view>
+     </view>
   </view>
 </template>
 
 <script>
-import { getCourseInfo, deleteFile } from '../../utils/api';
+import { getCourseInfo, deleteFile, leaveSubmit, lateSubmit } from '../../utils/api';
 
 export default {
   data() {
@@ -137,7 +242,17 @@ export default {
       ],
       timezones: [],
       selectedTimeZoneIndex: 0,
-      openfilesPath: []
+      openfilesPath: [],
+      isShow: false, // Controls modal visibility
+      leaveReasons: ['事假', '病假', '其他'], // Leave reasons
+      selectedReason: 0, // Index of selected leave reason
+      leaveCount: 0, // 本月请假次数
+      remarks: '', 
+      isShowRule: false,
+      isShowLate: false,
+      lateMinutes: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+      selectLateMinute: 0,
+      lateremarks: ''
     };
   },
   created() {
@@ -457,7 +572,171 @@ export default {
       const fileType = url.split('.').pop().toLowerCase(); // 根据文件后缀获取类型
       const furl = `https://www.futurekey.com/classroom/download/${url}`;
       this.downloadAndOpenFile(furl, fileType);
-    }
+    },
+    showLeave() {
+      if(this.courseData.state==1) {
+        uni.showToast({
+          title: '课程已结束，无法请假',
+          icon: 'none'
+        });
+        return;
+      }
+      if(this.courseData.state==2) {
+        uni.showToast({
+          title: '课程已请假，无法请假',
+          icon: 'none'
+        });
+        return;
+      }
+      this.isShow = true; // Show the modal
+      this.selectedReason = 0;
+      this.remarks="";
+    },
+    hideLeave() {
+      this.isShow = false; // Hide the modal
+    },
+    onReasonChange(e) {
+      this.selectedReason = e.detail.value; // Update selected reason
+    },
+    confirmLeave() {
+      if(this.remarks.trim().length ==0) {
+        uni.showToast({
+          title: '请输入备注信息',
+          icon: 'none'
+        });
+        return;
+      }
+      // 弹出确认弹窗
+      uni.showModal({
+        title: '确定请假',
+        content: '确定知晓请假规则，并提交？',
+        success: (res) => {
+          if (res.confirm) {
+            // 这里添加提交操作的代码，例如向服务器发送请求等
+            console.log("提交操作");
+            this.handleLeave();
+          } else if (res.cancel) {
+            console.log('取消操作');
+          }
+        }
+      });
+    },
+    async handleLeave() {
+      // Handle leave confirmation logic here
+      const reason = this.leaveReasons[this.selectedReason];
+      const remarks = this.remarks;
+      this.hideLeave();
+      uni.showLoading({
+        title: '提交中...'
+      });
+      const res = await leaveSubmit({
+        "studentCode": this.$global.studentCode,
+        "courseIds": [this.currentCourseId],
+        "reason": reason,
+        "remarks": remarks,
+      });
+      uni.hideLoading();
+      if (res.code !== 0) {
+        uni.showToast({
+          title: '请假提交失败',
+          icon: 'none'
+        });
+        return;
+      }
+      console.log('请假已提交-0', new Date());
+      uni.showToast({
+        title: '请假已提交',
+        icon: 'success',
+        duration: 2000
+      });
+      setTimeout(() => {
+        console.log('请假已提交-1', new Date());
+        this.fetchData();
+      }, 2000);
+    },
+    toggleRule() {
+      this.isShowRule = !this.isShowRule;
+      console.log('isShowRule', this.isShowRule);
+    },
+    showLate(){
+      if(this.courseData.state==1) {
+        uni.showToast({
+          title: '课程已结束，无法上报迟到',
+          icon: 'none'
+        });
+        return;
+      }
+      if(this.courseData.state==2) {
+        uni.showToast({
+          title: '课程已请假，无法上报迟到',
+          icon: 'none'
+        });
+       return;
+      }
+      this.isShowLate = true;
+    },
+    hideLate() {
+      this.isShowLate = false; // Hide the modal
+    },
+    onLateChange(e) {
+      this.selectLateMinute = e.detail.value; // Update selected reason
+    },
+    confirmLate() {
+      if(this.lateremarks.trim().length ==0) {
+        uni.showToast({
+          title: '请输入备注信息',
+          icon: 'none'
+        });
+        return;
+      }
+      // 弹出确认弹窗
+      uni.showModal({
+        title: '确定迟到',
+        content: '确定上报迟到，通知老师等待？',
+        success: (res) => {
+          if (res.confirm) {
+            // 这里添加提交操作的代码，例如向服务器发送请求等
+            console.log("提交操作");
+            this.handleLate();
+          } else if (res.cancel) {
+            console.log('取消操作');
+          }
+        }
+      });
+    },
+    async handleLate() {
+      // Handle leave confirmation logic here
+      const minute = this.lateMinutes[this.selectLateMinute];
+      const lateremarks = this.lateremarks;
+      this.hideLate();
+      uni.showLoading({
+        title: '提交中...'
+      });
+      const res = await lateSubmit({
+        "studentCode": this.$global.studentCode,
+        "courseId": this.currentCourseId,
+        "minute": minute,
+        "remarks": lateremarks,
+      });
+      uni.hideLoading();
+      if (res.code !== 0) {
+        uni.showToast({
+          title: '迟到提交失败',
+          icon: 'none'
+        });
+        return;
+      }
+      console.log('迟到已提交-0', new Date());
+      uni.showToast({
+        title: '迟到已提交',
+        icon: 'success',
+        duration: 2000
+      });
+      setTimeout(() => {
+        console.log('迟到已提交-1', new Date());
+        this.fetchData();
+      }, 2000);
+    },
   },
   onLoad(options) {
     // options 是一个对象，包含了所有传递的参数
@@ -481,6 +760,7 @@ export default {
   background: linear-gradient(to bottom, #2F51FF, #F7F9FC);
   height: auto;
   flex-direction: column;
+  padding-bottom: 140rpx;
 }
 
 .custom-nav {
@@ -562,7 +842,7 @@ export default {
   background-color: #fff;
   border-radius: 10rpx;
   min-height: 58vh;
-  padding-bottom: 60rpx;
+  padding-bottom: 40rpx;
 }
 
 .tab-bar {
@@ -610,11 +890,6 @@ export default {
   word-wrap: break-word;
   white-space: normal;
   color: rgba(45, 45, 45, 1);
-}
-
-
-.remarks {
-  /* padding: 20rpx; */
 }
 
 .title {
@@ -742,5 +1017,157 @@ textarea {
   width: 100%; /* 确保宽度为 100% */
   height: auto; /* 高度根据内容自适应 */
   box-sizing: border-box; /* 包括 padding 和 border */
+}
+
+
+/* 整个底部容器 */
+.bottom-container {
+  position: fixed;
+  bottom: 34rpx;
+  /* 距离底部 */
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+/* 按钮区域 */
+.bottom-buttons {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 320rpx;
+  height: 90rpx;
+  background: linear-gradient(139.01deg, #6DB6E7 -2.19%, #2F51FF 97.65%);
+  border-radius: 40rpx;
+  box-shadow: 0px 0px 12px 0px rgb(47 81 255 / 80%);
+  padding: 0 16rpx 0 16rpx;
+  gap: 8px;
+}
+
+/* 每个按钮 */
+.button-item {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+}
+
+/* 按钮图标 */
+.icon {
+  width: 36rpx;
+  height: 36rpx;
+  margin-bottom: 6rpx;
+}
+
+/* 按钮文本 */
+.button-text {
+  font-size: 24rpx;
+  color: #FFFFFF;
+}
+
+/* 分割线 */
+.viewider {
+  width: 1rpx;
+  height: 40rpx;
+  background-color: #FFFFFF;
+  opacity: 0.5;
+}
+
+
+.modal {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 20rpx;
+  border-radius: 10rpx;
+  width: 80%;
+}
+
+.leave-reason-selection {
+  display: flex;
+  flex-direction: column;
+  margin: 0 10rpx 40rpx 10rpx;
+  padding: 10rpx;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-align: center;
+  font-weight: bold;
+}
+
+.datechoose-text {
+  width: 670rpx;
+  font-weight: bold;
+  font-size: 32rpx;
+  color: #333;
+}
+
+.close-btn {
+  font-size: 50rpx;
+  color: #999;
+  cursor: pointer;
+}
+
+.picker {
+  margin: 10px 0;
+}
+
+.tips {
+  padding: 20rpx;
+    font-size: 28rpx;
+    color: #8a581a;
+}
+.tipli::before {
+  content: "•";
+  color: #eec50e;
+  margin-right: 10px;
+}
+.tipli2 {
+  margin-left: 20px;
+}
+
+.rule-section {
+  transition: max-height 0.5s;
+  overflow: hidden;
+  margin: 10rpx;
+  padding: 20rpx;
+  border-radius: 10rpx;
+  background-color: #f0eef7;
+}
+.rule-section-title {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333;
+}
+.rule-section-content {
+  font-size: 24rpx;
+  color: #333;
+}
+.arrow-icon {
+  width: 40rpx;
+  height: 40rpx;
+  margin-left: 10rpx;
+}
+.rule-text {
+  color: #007aff;
 }
 </style>

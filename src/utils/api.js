@@ -82,3 +82,11 @@ export function leaveSubmit(params = {}) {
     data: params,
   });
 }
+// 封装迟到接口
+export function lateSubmit(params = {}) {
+  return request({
+    url: `${BASE_URL}/course/late`,
+    method: 'POST',
+    data: params,
+  });
+}
