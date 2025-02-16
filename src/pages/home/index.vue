@@ -314,21 +314,7 @@ export default {
         });
       }
     },
-    showStatistics() {
-      console.log('跳转到统计页面');
-      uni.navigateTo({
-        url: '/pages/statistics/index'
-      });
-    },
-    showLeave() {
-      console.log('跳转到请假页面');
-      uni.navigateTo({
-        url: '/pages/leave/index'
-      });
-    },
     load() {
-      console.log('加载数据');
-      console.log(`startDate: ${this.startDate}, endDate: ${this.endDate}, timezone: ${this.$global.timezone}, studentCode: ${this.studentCode}`);
       this.timezones = this.$global.timezones;
       const now = new Date();
       this.currentYear = now.getFullYear();
@@ -353,7 +339,6 @@ export default {
     this.load();
   },
   onShow() {
-    console.log('onShow');
     this.load();
   },
   onPullDownRefresh() {

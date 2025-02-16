@@ -247,7 +247,7 @@ export default {
           if (res.confirm) {
             // 这里添加提交操作的代码，例如向服务器发送请求等
             console.log("提交操作");
-            handleLeave();
+            this.handleLeave();
           } else if (res.cancel) {
             console.log('取消操作');
           }
@@ -373,18 +373,6 @@ export default {
 
       this.calendar = calendar;
     },
-    // 格式化日期
-    formatDate(date) {
-      const y = date.getFullYear();
-      const m = String(date.getMonth() + 1).padStart(2, '0');
-      const d = String(date.getDate()).padStart(2, '0');
-      return `${y}-${m}-${d}`;
-    },
-    goToDetail(courseId) {
-      uni.navigateTo({
-        url: `/pages/detail/index?id=${courseId}`
-      });
-    },
     async fetchData() {
       try {
         if(!this.studentCode) return; 
@@ -452,8 +440,6 @@ export default {
     },
     commit() {
       const selectedCourses = this.courses.filter(course => course.isSelected);
-      console.log('Selected courses:', selectedCourses);
-      
       if(selectedCourses.length == 0){
         uni.showToast({
           title: '请选择课程',

@@ -516,7 +516,6 @@ export default {
           title: '加载中...'
         });
         this.loading = true;
-        // await this.getStudentTotal();
         await this.fetchCourseData();
         await this.fetchOrderData();
       } catch (error) {
@@ -550,6 +549,12 @@ export default {
           console.log('this.totalData', this.totalData);
           this.studentBirth = this.totalData.birth;
           this.hasCourses = this.courseList.length > 0;
+
+          this.selectedStudentIndex = uni.getStorageSync("selectIndex") || 0;
+          this.$global.selectIndex = this.selectedStudentIndex;
+          this.studentCode = this.students[this.selectedStudentIndex].code;
+          this.$global.studentCode = uni.getStorageSync("studentCode");
+
           this.$global.startDate = this.startDate;
           this.$global.endDate = this.endDate;
         }
@@ -665,7 +670,6 @@ export default {
           "studentName": this.studentName,
           "timezone": this.$global.timezone
         });
-        console.log('downloadPDF_order:', res);
         // 处理返回的数据
         if (res.code == 0) {
           const downloadUrl = `https://www.futurekey.com/classroom/downloadtemp/${res.filename}`
@@ -736,7 +740,6 @@ export default {
       this.studentCode = uni.getStorageSync("studentCode") || '';
       this.startDate = this.$global.startDate;
       this.endDate = this.$global.endDate;
-      this.selectIndex = uni.getStorageSync("selectIndex") || 0;
       this.selectedTimeZoneIndex = uni.getStorageSync("timezoneIndex") || 0;
       this.selectedTimeZone = this.timezones[this.selectedTimeZoneIndex]; // 根据索引获取对应的时区对象
       this.$global.timezone = this.selectedTimeZone.value;
@@ -750,7 +753,6 @@ export default {
     this.setDefaultWeek(); // 初始化默认本周日期
     this.initCalendar();   // 初始化日历
     this.load();
-   
   },
   onShow() {
     console.log('onShow');

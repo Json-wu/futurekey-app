@@ -40,7 +40,9 @@
 		{
 			"path": "pages/leave/index",
 			"style": {
-				"navigationStyle": "custom"
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": true,
+				"onReachBottomDistance": 50
 			}
 		},
 		{
@@ -73,7 +75,7 @@
 			{
 				"pagePath": "pages/home/index",
 				"text": "首页",
-				"iconPath": "static/icons/home1.png",
+				"iconPath": "static/icons/home.png",
 				"selectedIconPath": "static/icons/home_hover.png"
 			},
 			{
