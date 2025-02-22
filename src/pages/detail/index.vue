@@ -134,7 +134,7 @@
 
     <!-- Modal -->
     <view v-show="isShow" class="modal">
-      <view class="modal-content">
+      <view class="modal-content"  :style="{height: modalHeight+'rem'}">
         <view class="calendar-header">
           <text class="datechoose-text">请假申请</text>
           <view class="close-btn" @tap="hideLeave">×</view>
@@ -184,7 +184,7 @@
 
     <!-- Modal 迟到弹窗，选择预计迟到分钟数（15分钟以内），备注-->
      <view v-show="isShowLate" class="modal">
-      <view class="modal-content">
+      <view class="modal-content"  :style="{height: (modalHeight+1)+'rem'}">
         <view class="calendar-header">
           <text class="datechoose-text">迟到申请</text>
           <view class="close-btn" @tap="hideLate">×</view>  
@@ -252,7 +252,8 @@ export default {
       isShowLate: false,
       lateMinutes: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
       selectLateMinute: 0,
-      lateremarks: ''
+      lateremarks: '',
+      modalHeight: 17
     };
   },
   created() {
@@ -574,7 +575,6 @@ export default {
       this.downloadAndOpenFile(furl, fileType);
     },
     showLeave() {
-      this.isShowRule = false;
       if(this.courseData.state==1) {
         uni.showToast({
           title: '课程已结束，无法请假',
@@ -595,6 +595,8 @@ export default {
     },
     hideLeave() {
       this.isShow = false; // Hide the modal
+      this.isShowRule = false;
+      this.modalHeight = 17;
     },
     onReasonChange(e) {
       this.selectedReason = e.detail.value; // Update selected reason
@@ -657,6 +659,7 @@ export default {
     },
     toggleRule() {
       this.isShowRule = !this.isShowRule;
+      this.modalHeight = this.isShowRule ? 36 : 17;
       console.log('isShowRule', this.isShowRule);
     },
     showLate(){
@@ -1104,7 +1107,7 @@ textarea {
 .leave-reason-selection {
   display: flex;
   flex-direction: column;
-  margin: 0 10rpx 40rpx 10rpx;
+  margin: 0 10rpx 80rpx 10rpx;
   padding: 10rpx;
 }
 
