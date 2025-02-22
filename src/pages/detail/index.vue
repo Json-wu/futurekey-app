@@ -115,7 +115,7 @@
     </view>
 
     <!-- 底部按钮区域 -->
-    <view class="bottom-container">
+    <view class="bottom-container" v-show="!(isShow || isShowLate)">
       <view class="bottom-buttons">
         <!-- 统计按钮 -->
         <view class="button-item" @click="showLate">
@@ -133,7 +133,7 @@
     </view>
 
     <!-- Modal -->
-    <view v-if="isShow" class="modal">
+    <view v-show="isShow" class="modal">
       <view class="modal-content">
         <view class="calendar-header">
           <text class="datechoose-text">请假申请</text>
@@ -144,7 +144,7 @@
           <view class="rule-header">
             <view>本次请假<text v-if="courseData.freeLeave==1">不扣除</text><text v-else>扣除1</text>课时，查看<text class="rule-text" @click="toggleRule">请假规则</text></view>
           </view>
-          <view class="tips" v-if="isShowRule">
+          <view class="tips" v-show="isShowRule">
             <li>请假规则如下：</li>
             <li class="tipli">每4周可有 1 次不扣课时的请假，需提前 24 小时请假，并在两周内申请补课。</li>
             <li class="tipli">以下情况课时不退：无故缺课、未提前 24 小时请假、或超出每月 1 次请假机会。</li>
@@ -183,7 +183,7 @@
     <!-- End Modal -->
 
     <!-- Modal 迟到弹窗，选择预计迟到分钟数（15分钟以内），备注-->
-     <view v-if="isShowLate" class="modal">
+     <view v-show="isShowLate" class="modal">
       <view class="modal-content">
         <view class="calendar-header">
           <text class="datechoose-text">迟到申请</text>
@@ -574,6 +574,7 @@ export default {
       this.downloadAndOpenFile(furl, fileType);
     },
     showLeave() {
+      this.isShowRule = false;
       if(this.courseData.state==1) {
         uni.showToast({
           title: '课程已结束，无法请假',
@@ -1097,6 +1098,7 @@ textarea {
   padding: 20rpx;
   border-radius: 10rpx;
   width: 80%;
+  height: 17rem;
 }
 
 .leave-reason-selection {
