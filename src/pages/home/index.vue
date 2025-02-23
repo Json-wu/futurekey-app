@@ -348,12 +348,14 @@ export default {
       this.init();
     }
   },
-  onLoad() {
-    this.setDefaultWeek(); // 初始化默认本周日期
-    this.initCalendar();   // 初始化日历
-    this.load();
-  },
+  // onLoad() {
+  //   this.setDefaultWeek(); // 初始化默认本周日期
+  //   this.initCalendar();   // 初始化日历
+  //   this.load();
+  // },
   onShow() {
+      this.setDefaultWeek(); // 初始化默认本周日期
+    this.initCalendar();   // 初始化日历
     this.load();
   },
   onPullDownRefresh() {

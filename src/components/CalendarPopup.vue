@@ -1,8 +1,8 @@
 <template>
-<view>
+<view v-if="showCalendar">
    <!-- 遮罩层 -->
-  <view class="mask" v-if="showCalendar" @tap="closeCalendar"></view>
-  <view class="calendar-popup" v-if="showCalendar">
+  <view class="mask"  @tap="closeCalendar"></view>
+  <view class="calendar-popup">
     <view class="calendar-header">
       <text class="datechoose-text">请选择日期</text>
       <view class="close-btn" @tap="closeCalendar">×</view>
@@ -75,15 +75,19 @@ export default {
       if (newMonth > 12) {
         this.$emit('update:currentYear', this.currentYear + 1);
         this.$emit('update:currentMonth', 1);
+        this.currentMonth = 1;
       } else if (newMonth < 1) {
         this.$emit('update:currentYear', this.currentYear - 1);
         this.$emit('update:currentMonth', 12);
+        this.currentMonth = 12;
       } else {
         this.$emit('update:currentMonth', newMonth);
+        this.currentMonth = newMonth;
       }
       this.$emit('initCalendar');
     },
     isInRange(date) {
+      console.log('isInRange', date, this.tempStartDate, this.tempEndDate);
       if (this.tempStartDate && this.tempEndDate) {
         return date > this.tempStartDate && date < this.tempEndDate;
       }
@@ -122,7 +126,7 @@ export default {
       }
       this.$global.startDate = this.tempStartDate;
       this.$global.endDate = this.tempEndDate;
-      console.log(this.tempStartDate, this.tempEndDate);
+      console.log(this.tempStartDate, this.tempEndDate, this.currentMonth);
       this.$emit('update:startDate', this.tempStartDate);
       this.$emit('update:endDate', this.tempEndDate);
       this.$emit('update:currentStep', 0);

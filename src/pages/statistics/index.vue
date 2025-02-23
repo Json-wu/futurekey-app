@@ -748,14 +748,16 @@ export default {
       this.fetchData();
     }
   },
-  onLoad() {
-    console.log('onLoad');
-    this.setDefaultWeek(); // 初始化默认本周日期
-    this.initCalendar();   // 初始化日历
-    this.load();
-  },
+  // onLoad() {
+  //   console.log('onLoad');
+  //   this.setDefaultWeek(); // 初始化默认本周日期
+  //   this.initCalendar();   // 初始化日历
+  //   this.load();
+  // },
   onShow() {
     console.log('onShow');
+    this.setDefaultWeek(); // 初始化默认本周日期
+    this.initCalendar();   // 初始化日历
     this.load();
   },
   onPullDownRefresh() {
