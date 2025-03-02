@@ -21,7 +21,7 @@
           手机号一键登录
         </button>
         <view class="login-tip">
-          请使用家长手机号/<text class="greencolor" @click="showWechat">Wechat ID</text>登录
+          请使用家长手机号/<text class="greencolor" @click="showWechat">客户ID</text>登录
         </view>
       </view>
 
@@ -46,12 +46,12 @@
     <view v-if="isShow" class="modal">
       <view class="modal-content">
         <view class="modal-header">
-          <text class="datechoose-text">微信号登录</text>
+          <text class="datechoose-text">客户ID登录</text>
         </view>
         <view class="wechatInfo">
-          <view class="viewname">Wechat ID：</view>
+          <view class="viewname">客户ID：</view>
           <view class="viewname">
-            <input type="text" placeholder="长按粘贴Wechat ID" maxlength="20" v-model="wechatID" />
+            <input type="text" placeholder="输入客户ID" maxlength="20" v-model="wechatID" />
           </view>
         </view>
         <view class="calendar-header">

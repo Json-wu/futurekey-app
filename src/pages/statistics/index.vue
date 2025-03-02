@@ -106,11 +106,11 @@
         </view>
 
         <!-- 历史订单 -->
-        <view class="titlehistory">
+        <view class="titlehistory" v-show="isShowHistoryOrder">
           <text>历史订单</text>
         </view>
 
-        <scroll-view class="contentdiv" scroll-x="true">
+        <scroll-view class="contentdiv" scroll-x="true" v-show="isShowHistoryOrder">
           <view class="table">
             <!-- 表头 -->
             <view class="table-row table-header">
@@ -132,13 +132,13 @@
             </view>
           </view>
         </scroll-view>
-        <view class="order-footer">
+        <!-- <view class="order-footer">
           <view class="expand-btn" @tap="toggleExpandOrder" :disabled="visibleRowsOrder.length == 0">
             <text class="expend"> {{ isExpandedOrder ? '收起' : '展开' }}</text>
             <image class="icon-down" :src="getIconOrder()" mode="scaleToFill" />
           </view>
           <view class="download-pdf" @click="order_downloadPDF">下载 PDF</view>
-        </view>
+        </view> -->
       </view>
 
     </view>
@@ -204,6 +204,7 @@ export default {
   },
   data() {
     return {
+      isShowHistoryOrder: false,
       showAbout: false,
       hasCourses: false,
       hasOrders: false,
@@ -780,6 +781,7 @@ export default {
   background: linear-gradient(to bottom, #2F51FF, #F7F9FC);
   flex-direction: column;
   height: auto;
+  min-height: 100vh;
 }
 
 /* 顶部导航栏 */

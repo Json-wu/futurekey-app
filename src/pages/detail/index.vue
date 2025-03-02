@@ -201,15 +201,21 @@
               预计迟到分钟数：  {{ lateMinutes[selectLateMinute] }} ▼
             </view>
           </picker>
+
+          <picker mode="selector" :range="lateReasons" @change="onReasonChange">
+            <view class="picker">
+              选择迟到原因：  {{ lateReasons[selectLateReason] }} ▼
+            </view>
+          </picker>
           
           <!-- Remarks Input -->
-          <textarea 
+          <!-- <textarea 
             class="textarea" 
             placeholder="请输入备注" 
             maxlength="200"
             v-model="lateremarks"
             auto-height
-          />
+          /> -->
         </view>
 
         <view class="calendar-header">
@@ -250,9 +256,11 @@ export default {
       remarks: '', 
       isShowRule: false,
       isShowLate: false,
-      lateMinutes: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+      lateMinutes: [3, 5, 10, 15],
       selectLateMinute: 0,
       lateremarks: '',
+      lateReasons: ['网络连接不稳定 🌐','麦克风/摄像头问题 🎤','软件崩溃/更新 🔄','起床晚了 ⏰','身体不适 🤒','时间记错了 📅','家中有人来访 🚪','其他原因'],
+      selectLateReason: 0,
       modalHeight: 17
     };
   },
@@ -685,14 +693,17 @@ export default {
     onLateChange(e) {
       this.selectLateMinute = e.detail.value; // Update selected reason
     },
+    onReasonChange(e) {
+      this.selectLateReason = e.detail.value; // Update selected reason
+    },
     confirmLate() {
-      if(this.lateremarks.trim().length ==0) {
-        uni.showToast({
-          title: '请输入备注信息',
-          icon: 'none'
-        });
-        return;
-      }
+      // if(this.lateremarks.trim().length ==0) {
+      //   uni.showToast({
+      //     title: '请输入备注信息',
+      //     icon: 'none'
+      //   });
+      //   return;
+      // }
       // 弹出确认弹窗
       uni.showModal({
         title: '确定迟到',
@@ -711,7 +722,7 @@ export default {
     async handleLate() {
       // Handle leave confirmation logic here
       const minute = this.lateMinutes[this.selectLateMinute];
-      const lateremarks = this.lateremarks;
+      const lateremarks = this.leaveReasons[this.selectLateReason];
       this.hideLate();
       uni.showLoading({
         title: '提交中...'
