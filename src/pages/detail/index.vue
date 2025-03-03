@@ -142,9 +142,10 @@
 
         <view class="rule-section"> 
           <view class="rule-header">
-            <view>本次请假<text v-if="courseData.freeLeave==1">不扣除</text><text v-else>扣除1</text>课时，查看<text class="rule-text" @click="toggleRule">请假规则</text></view>
+            <view>本次请假<text v-if="courseData.checkLeave.status==0 || courseData.checkLeave.status==1">不扣除</text><text v-else>扣除1</text>课时，查看<text class="rule-text" @click="toggleRule">请假规则</text></view>
           </view>
           <view class="tips" v-show="isShowRule">
+            <li style="color: red;">⚠ {{courseData.checkLeave.message}}</li>
             <li>请假规则如下：</li>
             <li class="tipli">每4周可有 1 次不扣课时的请假，需提前 24 小时请假，并在两周内申请补课。</li>
             <li class="tipli">以下情况课时不退：无故缺课、未提前 24 小时请假、或超出每月 1 次请假机会。</li>
