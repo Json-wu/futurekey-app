@@ -668,7 +668,7 @@ export default {
     },
     toggleRule() {
       this.isShowRule = !this.isShowRule;
-      this.modalHeight = this.isShowRule ? 38 : 17;
+      this.modalHeight = this.isShowRule ? 41 : 17;
       console.log('isShowRule', this.isShowRule);
     },
     showLate(){
@@ -1119,7 +1119,7 @@ textarea {
 .leave-reason-selection {
   display: flex;
   flex-direction: column;
-  margin: 0 10rpx 70rpx 10rpx;
+  margin: 0 10rpx 50rpx 10rpx;
   padding: 10rpx;
 }
 
