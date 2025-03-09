@@ -78,12 +78,6 @@
 				"iconPath": "static/icons/home.png",
 				"selectedIconPath": "static/icons/home_hover.png"
 			},
-			// {
-			// 	"pagePath": "pages/leave/index",
-			// 	"text": "请假",
-			// 	"iconPath": "static/icons/leave.png",
-			// 	"selectedIconPath": "static/icons/leave_hover.png"
-			// },
 			{
 				"pagePath": "pages/statistics/index",
 				"text": "我的",

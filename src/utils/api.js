@@ -90,3 +90,9 @@ export function lateSubmit(params = {}) {
     data: params,
   });
 }
+// 封装获取小程序配置接口
+export function getSetting(params = {}) {
+  return request({
+    url: `${BASE_URL}/wechat/getSetting`
+  });
+}

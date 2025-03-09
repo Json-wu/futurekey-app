@@ -145,6 +145,7 @@ export default {
       uni.setStorageSync('isAgreed', true);
       uni.removeStorageSync('session_key');
       console.log("登录成功,开始跳转至home页面");
+      uni.setStorageSync("isFirst", true);
       uni.switchTab({
         url: "/pages/home/index",
         success: () => {

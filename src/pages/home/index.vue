@@ -93,6 +93,9 @@
     <!-- 引用 StudentPopup 组件 -->
     <StudentPopup :isVisible="isVisible" :studentList="students" :selectedStudentCode="studentCode"
       @updateStudent="handleUpdateStudent" @update:isVisible="val => isVisible = val" />
+
+    <UserTermPopup :showUserTerm="showUserTerm" @update:showUserTerm="val => showUserTerm = val" />
+    
   </view>
 </template>
 
@@ -100,15 +103,17 @@
 import aboutUsPopup from '@/components/AboutUsPopup.vue';
 import calendarPopup from '@/components/CalendarPopup.vue';
 import studentPopup from '@/components/StudentPopup.vue';
+import UserTermPopup from '@/components/UserTermPopup.vue';
 
-import { getCourseList, getStudentList } from '../../utils/api';
-import { onShow } from '@dcloudio/uni-app';
+import { getCourseList, getStudentList, getSetting } from '../../utils/api';
+import { onLoad } from '@dcloudio/uni-app';
 
 export default {
   components: {
     aboutUsPopup,
     calendarPopup,
-    studentPopup
+    studentPopup,
+    UserTermPopup
   },
   data() {
     return {
@@ -116,6 +121,7 @@ export default {
       loading: true,
       studentCode: "",
       showAbout: false, // 控制弹窗显示/隐藏x
+      showUserTerm: false,
       currentYear: 0, // 当前年份
       currentMonth: 0, // 当前月份
       startDate: '',       // 开始日期
@@ -139,9 +145,55 @@ export default {
         0: "待出席",
         1: "已出席",
         2: "已请假",
-        3: "已缺课"
-      }
-    };
+        3: "已缺课",
+        4: "上课中"
+      },
+      wechatSet: {
+        show_remain: false,
+        show_order: false,
+        show_exprire: false,
+        user_term:''
+      },
+      userTermContent: `
+**甲方**：FutureKey 开心英语（以下简称“甲方”）  
+**乙方**：客户（以下简称“乙方”）
+
+为保障课程的顺利进行，明确请假与补课相关事宜，甲乙双方就课程请假规则达成如下协议，以共同遵守。
+
+## **第一条 每月请假规定**
+1. 乙方每月可享有 **1 次不扣课时的请假**，需提前 **24 小时** 申请，并在**两周内申请补课**。
+
+## **第二条 课时不退情形**
+在以下情况下，乙方的课时**不予退还**：
+1. **无故缺课**，即乙方未提前提交请假申请且未出席课程；
+2. **未提前 24 小时请假**；
+3. **超过每月 1 次的请假机会**。
+
+对于因上述原因缺课的处理方式：
+- **若课程有回放**，甲方将仅提供回放，不安排补课；
+- **若课程无回放**，乙方可在**两周内申请补课**。
+
+## **第三条 连续请假规定**
+1. 乙方如需连续请假 **2 节及以上**，应**提前一周通知**甲方，所请假课时可顺延，并可申请补课。
+2. 乙方未提前一周通知的，甲方有权按**第二条**相关规定处理。
+
+## **第四条 1v1 课程的特殊规定**
+1. 乙方迟到 **5 分钟后**，甲方授课老师有权退出教室，课程将按正常进行处理，课时不予退还。
+2. 若乙方未成功出席该节课，可在**两周内申请补课**。
+
+## **第五条 因甲方原因调整课程**
+1. 因甲方原因调整课程的，不计入乙方请假次数，且课时不受影响。
+2. 甲方将与乙方协商调整后的上课时间。
+
+## **第六条 请假方式**
+1. 乙方请假需通过甲方指定的小程序自助申请。
+2. 如遇特殊情况需要帮助，乙方可联系课程顾问协助处理。
+
+## **第七条 其他**
+1. 本规则适用于乙方报名的所有 FutureKey英语课程，自签署或接受之日起生效。
+2. 甲方有权根据实际运营情况对本规则进行调整，并提前通知乙方，调整后的规则适用于所有后续课程。
+3. 本规则未尽事宜，双方可协商解决，如有争议，双方同意按照友好协商原则解决。`
+    }
   },
   created() {
     this.timezones = this.$global.timezones;
@@ -152,8 +204,21 @@ export default {
     this.$global.timezone = this.$global.timezones[this.selectedTimeZoneIndex].value;
     this.selectIndex = uni.getStorageSync("selectIndex") || 0;
     this.studentCode = uni.getStorageSync("studentCode") || '';
+    uni.setStorageSync('userTermContent', this.userTermContent);
   },
   methods: {
+    getSetting() {
+      getSetting().then(res => {
+        if (res.code == 0) {
+          this.wechatSet = res.data;
+          if(this.wechatSet.user_term) {
+            this.userTermContent = this.wechatSet.user_term;
+          }
+          uni.setStorageSync('userTermContent', this.userTermContent);
+          this.showUserTerm = true;
+        }
+      });
+    },
     showModal() {
       this.isVisible = true;
     },
@@ -348,13 +413,15 @@ export default {
       this.init();
     }
   },
-  // onLoad() {
-  //   this.setDefaultWeek(); // 初始化默认本周日期
-  //   this.initCalendar();   // 初始化日历
-  //   this.load();
-  // },
+
   onShow() {
-      this.setDefaultWeek(); // 初始化默认本周日期
+    if(uni.getStorageSync("isFirst")){
+      if(!uni.getStorageSync("userTermAgree")) {
+        this.getSetting();
+      }
+      uni.setStorageSync("isFirst", false);
+    }
+    this.setDefaultWeek(); // 初始化默认本周日期
     this.initCalendar();   // 初始化日历
     this.load();
   },
@@ -571,6 +638,11 @@ export default {
 /* 已缺课 */
 .status-absent {
   background-color: #ff9900;
+}
+
+/* 上课中 */
+.status-teaching {
+  background-color: #ce1a06;
 }
 
 .course-arrow {
@@ -822,5 +894,51 @@ export default {
 
 .other-month {
   color: #ccc;
+}
+
+
+
+.modal {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 20rpx;
+  border-radius: 10rpx;
+  width: 80%;
+  height: 510px;
+}
+
+.scroll-container {
+  height: 400px; /* 设置固定高度 */
+  overflow-y: scroll; /* 启用纵向滚动 */
+  padding: 10px;
+}
+.userbutton {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  text-align: center;
+  font-weight: bold;
+  padding: 20rpx 30rpx;
+}
+.cancel {
+  border: none;
+  background: transparent
+}
+.confirm {
+  border: none;
+  background: transparent;
+  color: #d28e11;
 }
 </style>

@@ -59,9 +59,13 @@
           <text class="label">课程总节数</text>
           <text class="stat-value">{{ totalData.count }}</text>
         </view>
-        <view class="stat-item">
+        <view class="stat-item" v-if="wechatSet.show_exprire">
           <text class="label">下次续订日期</text>
           <text class="stat-value">{{ totalData.exprire_dt || '-' }}</text>
+        </view>
+        <view class="stat-item" v-if="wechatSet.show_remain">
+          <text class="label">剩余课时</text>
+          <text class="stat-value">{{ totalData.remain || '-' }}</text>
         </view>
         <view class="stat-item">
           <text class="label">教务顾问</text>
@@ -106,11 +110,11 @@
         </view>
 
         <!-- 历史订单 -->
-        <view class="titlehistory" v-show="isShowHistoryOrder">
+        <view class="titlehistory" v-if="wechatSet.show_order">
           <text>历史订单</text>
         </view>
 
-        <scroll-view class="contentdiv" scroll-x="true" v-show="isShowHistoryOrder">
+        <scroll-view class="contentdiv" scroll-x="true" v-if="wechatSet.show_order">
           <view class="table">
             <!-- 表头 -->
             <view class="table-row table-header">
@@ -194,7 +198,7 @@ import aboutUsPopup from '@/components/AboutUsPopup.vue';
 import calendarPopup from '@/components/CalendarPopup.vue';
 import studentPopup from '@/components/StudentPopup.vue';
 
-import { getCourseList, getOrderList, saveInfo, downloadPDF_course, downloadPDF_order } from '../../utils/api';
+import { getCourseList, getOrderList, saveInfo, downloadPDF_course, downloadPDF_order, getSetting } from '../../utils/api';
 
 export default {
   components: {
@@ -204,7 +208,6 @@ export default {
   },
   data() {
     return {
-      isShowHistoryOrder: false,
       showAbout: false,
       hasCourses: false,
       hasOrders: false,
@@ -249,8 +252,15 @@ export default {
         hour: 0,
         count: 0,
         nextDate: '-',
-        consultant: '无'
+        consultant: '无',
+        remain: '-'
       },
+      wechatSet: {
+        show_remain: false,
+        show_order: false,
+        show_exprire: false,
+        user_term:''
+      }
     };
   },
   computed: {
@@ -298,8 +308,15 @@ export default {
     this.selectedTimeZoneIndex = uni.getStorageSync("timezoneIndex") || 0;
     this.startDate = this.$global.startDate;
     this.endDate = this.$global.endDate;
+    this.getSetting();
   },
   methods: {
+    async getSetting() {
+      const res = await getSetting();
+        if (res.code == 0) {
+          this.wechatSet = res.data;
+        }
+    },
     showAboutUs() {
       this.showAbout = true;
     },

@@ -115,7 +115,7 @@
     </view>
 
     <!-- 底部按钮区域 -->
-    <view class="bottom-container" v-show="!(isShow || isShowLate)">
+    <view class="bottom-container">
       <view class="bottom-buttons">
         <!-- 统计按钮 -->
         <view class="button-item" @click="showLate">
@@ -134,7 +134,7 @@
 
     <!-- Modal -->
     <view v-show="isShow" class="modal">
-      <view class="modal-content"  :style="{height: modalHeight+'rem'}">
+      <view class="modal-content">
         <view class="calendar-header">
           <text class="datechoose-text">请假申请</text>
           <view class="close-btn" @tap="hideLeave">×</view>
@@ -152,7 +152,7 @@
             <li class="tipli2"> - 若课程有回放，仅提供回放，不安排补课；</li>
             <li class="tipli2"> - 若课程无回放，可在两周内申请补课。</li>
             <li class="tipli">如需连续请假 2 节以上，需提前一周通知，课时可顺延，并可申请补课。</li>
-            <li class="tipli">1v1 课程） 学生迟到 5 分钟后，老师有权退出教室。若学生未成功出席，可在两周内申请补课。</li>
+            <li class="tipli">（1v1 课程）学生迟到 5 分钟后，老师有权退出教室。若学生未成功出席，可在两周内申请补课。</li>
             <li class="tipli">因老师原因调整课程，不计入学生请假次数，课时不受影响。</li>
           </view>
         </view>
@@ -185,7 +185,7 @@
 
     <!-- Modal 迟到弹窗，选择预计迟到分钟数（15分钟以内），备注-->
      <view v-show="isShowLate" class="modal">
-      <view class="modal-content"  :style="{height: (modalHeight+1)+'rem'}">
+      <view class="modal-content">
         <view class="calendar-header">
           <text class="datechoose-text">迟到申请</text>
           <view class="close-btn" @tap="hideLate">×</view>  
@@ -193,7 +193,7 @@
 
         <view class="rule-section"> 
           <view class="rule-header">
-            <view>选择迟到分钟数，并输入备注信息，通知老师课堂等待！！！</view>
+            <view>选择预计迟到分钟数、迟到原因，通知老师课堂等待！！！</view>
           </view>
         </view> 
         <view class="leave-reason-selection">
@@ -205,7 +205,7 @@
 
           <picker mode="selector" :range="lateReasons" @change="onReasonChange">
             <view class="picker">
-              选择迟到原因：  {{ lateReasons[selectLateReason] }} ▼
+              迟到原因：  {{ lateReasons[selectLateReason] }} ▼
             </view>
           </picker>
           
@@ -225,18 +225,25 @@
         </view>
       </view>
      </view>
+
+     <UserTermPopup :showUserTerm="showUserTerm" @update:showUserTerm="val => showUserTerm = val" />
   </view>
 </template>
 
 <script>
 import { getCourseInfo, deleteFile, leaveSubmit, lateSubmit } from '../../utils/api';
+import UserTermPopup from '@/components/UserTermPopup.vue';
 
 export default {
+  components: {
+    UserTermPopup
+  },
   data() {
     return {
       courseData: {},
       currentCourseId: '',
       currentTab: 'before', // 当前选中的Tab
+      showUserTerm: false,
       deadline: '', // 截止日期
       beforeHomework: '',
       afterHomework: '',
@@ -252,15 +259,18 @@ export default {
       openfilesPath: [],
       isShow: false, // Controls modal visibility
       leaveReasons: ['事假', '病假', '其他'], // Leave reasons
+      leaveReasons_en: ['Personal leave', 'Sick leave', 'Other'], // Leave reasons
       selectedReason: 0, // Index of selected leave reason
       leaveCount: 0, // 本月请假次数
       remarks: '', 
       isShowRule: false,
       isShowLate: false,
       lateMinutes: [3, 5, 10, 15],
+      lateMinutes_en: ['Three', 'Five', 'Ten', 'Fifteen'],
       selectLateMinute: 0,
       lateremarks: '',
-      lateReasons: ['网络连接不稳定 🌐','麦克风/摄像头问题 🎤','软件崩溃/更新 🔄','起床晚了 ⏰','身体不适 🤒','时间记错了 📅','家中有人来访 🚪','其他原因'],
+      lateReasons: ['时间冲突 📅','身体不适 🤒','网络连接不稳定 🌐','其他原因'],
+      lateReasons_en: ['Time conflict 📅','Feeling unwell 🤒','Unstable internet connection 🌐','Other reasons'],
       selectLateReason: 0,
       modalHeight: 17
     };
@@ -584,6 +594,10 @@ export default {
       this.downloadAndOpenFile(furl, fileType);
     },
     showLeave() {
+      if(!uni.getStorageSync("userTermAgree")) {
+        this.showUserTerm = true;
+        return;
+      }
       if(this.courseData.state==1) {
         uni.showToast({
           title: '课程已结束，无法请假',
@@ -635,7 +649,7 @@ export default {
     },
     async handleLeave() {
       // Handle leave confirmation logic here
-      const reason = this.leaveReasons[this.selectedReason];
+      const reason = this.leaveReasons_en[this.selectedReason];
       const remarks = this.remarks;
       this.hideLeave();
       uni.showLoading({
@@ -721,9 +735,8 @@ export default {
       });
     },
     async handleLate() {
-      // Handle leave confirmation logic here
-      const minute = this.lateMinutes[this.selectLateMinute];
-      const lateremarks = this.leaveReasons[this.selectLateReason];
+      const minute = this.lateMinutes_en[this.selectLateMinute];
+      const lateremarks = this.lateReasons_en[this.selectLateReason];
       this.hideLate();
       uni.showLoading({
         title: '提交中...'
@@ -1100,7 +1113,7 @@ textarea {
   justify-content: center;
   align-items: center;
   position: fixed;
-  z-index: 1;
+  z-index: 1000;
   left: 0;
   top: 0;
   width: 100%;
@@ -1113,7 +1126,6 @@ textarea {
   padding: 20rpx;
   border-radius: 10rpx;
   width: 80%;
-  height: 17rem;
 }
 
 .leave-reason-selection {
